@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User } from 'lucide-react';
+import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User, Plus } from 'lucide-react';
 import { useTasks, useTechnicians, useDeleteTask } from '@/hooks/useDatabase';
 import { TaskDetailDialog } from '@/components/TaskDetailDialog';
 import { SendWhatsAppDialog } from '@/components/SendWhatsAppDialog';
+import { AddTaskDialog } from '@/components/AddTaskDialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
