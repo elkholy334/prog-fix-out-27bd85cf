@@ -22,6 +22,7 @@ const FILTER_TABS: { key: FilterTab; label: string }[] = [
 export const TasksList = () => {
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [whatsappTask, setWhatsappTask] = useState<Task | null>(null);
 
   const filteredTasks = sampleTasks.filter((task) => {
     if (activeFilter === 'all') return true;
