@@ -4,8 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, Save, Link2 } from 'lucide-react';
+import { Eye, EyeOff, Save, Link2, Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSetting, useUpsertSetting, useTechnicians } from '@/hooks/useDatabase';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface WhatsAppConfig {
   apiToken: string;
@@ -28,31 +31,68 @@ const DEFAULT_ENDPOINTS = {
   sendDoc: 'https://pro.whats360.live/api/v1/send-doc',
 };
 
-const loadWhatsAppConfig = (): WhatsAppConfig => {
-  try {
-    const saved = localStorage.getItem('whatsapp_config');
-    if (saved) return JSON.parse(saved);
-  } catch {}
-  return {
-    apiToken: '',
-    instanceId: '',
-    defaultPhone: '',
-    endpoints: { ...DEFAULT_ENDPOINTS },
-  };
-};
-
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
-  const [waConfig, setWaConfig] = useState<WhatsAppConfig>(loadWhatsAppConfig);
+  const { data: waConfigData } = useSetting('whatsapp_config');
+  const { data: generalData } = useSetting('general');
+  const { data: technicians = [] } = useTechnicians();
+  const upsertSetting = useUpsertSetting();
+  const queryClient = useQueryClient();
+
+  const [waConfig, setWaConfig] = useState<WhatsAppConfig>({
+    apiToken: '', instanceId: '', defaultPhone: '', endpoints: { ...DEFAULT_ENDPOINTS },
+  });
   const [showToken, setShowToken] = useState(false);
+  const [shopName, setShopName] = useState('شركة الفيروز للستالايت');
+  const [delayHours, setDelayHours] = useState(24);
+  const [newTechName, setNewTechName] = useState('');
+
+  useEffect(() => {
+    if (waConfigData) setWaConfig(waConfigData as unknown as WhatsAppConfig);
+  }, [waConfigData]);
+
+  useEffect(() => {
+    if (generalData) {
+      const g = generalData as any;
+      if (g.shopName) setShopName(g.shopName);
+      if (g.delayHours) setDelayHours(g.delayHours);
+    }
+  }, [generalData]);
 
   const saveWhatsAppConfig = () => {
+    // Also save to localStorage for the send function
     localStorage.setItem('whatsapp_config', JSON.stringify(waConfig));
-    toast.success('تم حفظ إعدادات الواتساب بنجاح');
+    upsertSetting.mutate(
+      { key: 'whatsapp_config', value: waConfig as any },
+      { onSuccess: () => toast.success('تم حفظ إعدادات الواتساب بنجاح') }
+    );
+  };
+
+  const saveGeneral = () => {
+    upsertSetting.mutate(
+      { key: 'general', value: { shopName, delayHours } as any },
+      { onSuccess: () => toast.success('تم حفظ الإعدادات العامة') }
+    );
+  };
+
+  const addTechnician = async () => {
+    if (!newTechName.trim()) return;
+    const { error } = await supabase.from('technicians').insert({ name: newTechName.trim() });
+    if (error) { toast.error('فشل في إضافة الفني'); return; }
+    toast.success('تم إضافة الفني');
+    setNewTechName('');
+    queryClient.invalidateQueries({ queryKey: ['technicians'] });
+  };
+
+  const deleteTechnician = async (id: string) => {
+    const { error } = await supabase.from('technicians').update({ is_active: false }).eq('id', id);
+    if (error) { toast.error('فشل في حذف الفني'); return; }
+    toast.success('تم حذف الفني');
+    queryClient.invalidateQueries({ queryKey: ['technicians'] });
   };
 
   return (
@@ -74,26 +114,43 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
             <TabsContent value="general" className="space-y-4">
               <div className="space-y-1.5">
                 <Label className="text-right block">اسم المحل</Label>
-                <Input defaultValue="شركة الفيروز للستالايت" className="text-right" />
+                <Input value={shopName} onChange={(e) => setShopName(e.target.value)} className="text-right" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-right block">حد التأخير (ساعات)</Label>
-                <Input type="number" defaultValue={24} className="text-right" />
+                <Input type="number" value={delayHours} onChange={(e) => setDelayHours(Number(e.target.value))} className="text-right" />
               </div>
-              <Button className="w-full gradient-hero text-primary-foreground font-bold">
+              <Button className="w-full gradient-hero text-primary-foreground font-bold" onClick={saveGeneral}>
                 حفظ الكل
               </Button>
             </TabsContent>
 
             <TabsContent value="team" className="space-y-4">
               <p className="text-center text-muted-foreground text-sm">إدارة فريق العمل والفنيين</p>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={addTechnician} className="gradient-hero text-primary-foreground">
+                  <Plus className="h-4 w-4" />
+                </Button>
+                <Input
+                  value={newTechName}
+                  onChange={(e) => setNewTechName(e.target.value)}
+                  placeholder="اسم الفني الجديد"
+                  className="text-right"
+                  onKeyDown={(e) => e.key === 'Enter' && addTechnician()}
+                />
+              </div>
               <div className="space-y-2">
-                {['النبراوي', 'مصطفى', 'علي شعت', 'هشام', 'محمد عربود'].map((name) => (
-                  <div key={name} className="flex items-center justify-between bg-muted rounded-lg px-3 py-2">
-                    <Button variant="ghost" size="sm" className="text-destructive text-xs">حذف</Button>
-                    <span className="font-medium text-sm">{name}</span>
+                {technicians.map((tech) => (
+                  <div key={tech.id} className="flex items-center justify-between bg-muted rounded-lg px-3 py-2">
+                    <Button variant="ghost" size="sm" className="text-destructive text-xs" onClick={() => deleteTechnician(tech.id)}>
+                      حذف
+                    </Button>
+                    <span className="font-medium text-sm">{tech.name}</span>
                   </div>
                 ))}
+                {technicians.length === 0 && (
+                  <p className="text-center text-muted-foreground text-sm py-4">لا يوجد فنيين. أضف فني جديد أعلاه.</p>
+                )}
               </div>
             </TabsContent>
 
@@ -102,7 +159,6 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
             </TabsContent>
 
             <TabsContent value="whatsapp" className="space-y-6">
-              {/* API Configuration Section */}
               <div className="border-2 border-success/30 rounded-xl p-4 space-y-4 bg-success/5">
                 <div className="flex items-center justify-center gap-2 text-success">
                   <Link2 className="h-5 w-5" />
@@ -112,12 +168,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                 <div className="space-y-1.5">
                   <Label className="text-right block text-sm font-medium">API Token</Label>
                   <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="shrink-0"
-                      onClick={() => setShowToken(!showToken)}
-                    >
+                    <Button variant="outline" size="icon" className="shrink-0" onClick={() => setShowToken(!showToken)}>
                       {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                     <Input
@@ -125,8 +176,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                       value={waConfig.apiToken}
                       onChange={(e) => setWaConfig({ ...waConfig, apiToken: e.target.value })}
                       placeholder="أدخل API Token الخاص بك"
-                      className="text-left font-mono text-sm"
-                      dir="ltr"
+                      className="text-left font-mono text-sm" dir="ltr"
                     />
                   </div>
                 </div>
@@ -137,8 +187,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                     value={waConfig.instanceId}
                     onChange={(e) => setWaConfig({ ...waConfig, instanceId: e.target.value })}
                     placeholder="مثال: device_mn3g1rl8"
-                    className="text-left font-mono text-sm"
-                    dir="ltr"
+                    className="text-left font-mono text-sm" dir="ltr"
                   />
                 </div>
 
@@ -148,19 +197,13 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                     value={waConfig.defaultPhone}
                     onChange={(e) => setWaConfig({ ...waConfig, defaultPhone: e.target.value })}
                     placeholder="بكود الدولة بدون + (مثال: 201234567890)"
-                    className="text-left font-mono text-sm"
-                    dir="ltr"
+                    className="text-left font-mono text-sm" dir="ltr"
                   />
-                  <p className="text-xs text-muted-foreground text-right">بكود الدولة بدون + (مثال: 201234567890)</p>
                 </div>
 
-                {/* API Endpoints */}
                 <div className="space-y-3 border border-border rounded-lg p-3">
                   <div className="flex items-center justify-between">
-                    <button
-                      className="text-xs text-primary hover:underline"
-                      onClick={() => setWaConfig({ ...waConfig, endpoints: { ...DEFAULT_ENDPOINTS } })}
-                    >
+                    <button className="text-xs text-primary hover:underline" onClick={() => setWaConfig({ ...waConfig, endpoints: { ...DEFAULT_ENDPOINTS } })}>
                       إعادة تعيين
                     </button>
                     <h4 className="text-sm font-medium flex items-center gap-1.5">
@@ -168,65 +211,34 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                       روابط الـ API Endpoints
                     </h4>
                   </div>
-
-                  <EndpointField
-                    label="Send Text"
-                    emoji="💬"
-                    value={waConfig.endpoints.sendText}
-                    onChange={(v) => setWaConfig({ ...waConfig, endpoints: { ...waConfig.endpoints, sendText: v } })}
-                  />
-                  <EndpointField
-                    label="Send Image"
-                    emoji="🖼️"
-                    value={waConfig.endpoints.sendImage}
-                    onChange={(v) => setWaConfig({ ...waConfig, endpoints: { ...waConfig.endpoints, sendImage: v } })}
-                  />
-                  <EndpointField
-                    label="Send Video"
-                    emoji="🎬"
-                    value={waConfig.endpoints.sendVideo}
-                    onChange={(v) => setWaConfig({ ...waConfig, endpoints: { ...waConfig.endpoints, sendVideo: v } })}
-                  />
-                  <EndpointField
-                    label="Send Audio"
-                    emoji="🎵"
-                    value={waConfig.endpoints.sendAudio}
-                    onChange={(v) => setWaConfig({ ...waConfig, endpoints: { ...waConfig.endpoints, sendAudio: v } })}
-                  />
-                  <EndpointField
-                    label="Send Document"
-                    emoji="📄"
-                    value={waConfig.endpoints.sendDoc}
-                    onChange={(v) => setWaConfig({ ...waConfig, endpoints: { ...waConfig.endpoints, sendDoc: v } })}
-                  />
-
-                  <p className="text-xs text-muted-foreground text-right">غيّر الروابط لو تستخدم مزود خدمة تاني</p>
+                  {[
+                    { key: 'sendText' as const, label: 'Send Text', emoji: '💬' },
+                    { key: 'sendImage' as const, label: 'Send Image', emoji: '🖼️' },
+                    { key: 'sendVideo' as const, label: 'Send Video', emoji: '🎬' },
+                    { key: 'sendAudio' as const, label: 'Send Audio', emoji: '🎵' },
+                    { key: 'sendDoc' as const, label: 'Send Document', emoji: '📄' },
+                  ].map(({ key, label, emoji }) => (
+                    <div key={key} className="space-y-1">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1 justify-end">{emoji} {label}</span>
+                      <Input
+                        value={waConfig.endpoints[key]}
+                        onChange={(e) => setWaConfig({ ...waConfig, endpoints: { ...waConfig.endpoints, [key]: e.target.value } })}
+                        className="text-left font-mono text-xs h-8" dir="ltr"
+                      />
+                    </div>
+                  ))}
                 </div>
 
-                <Button
-                  className="w-full gradient-success text-success-foreground font-bold py-3"
-                  onClick={saveWhatsAppConfig}
-                >
+                <Button className="w-full gradient-success text-success-foreground font-bold py-3" onClick={saveWhatsAppConfig}>
                   <Save className="h-4 w-4 ml-2" />
                   حفظ الإعدادات
                 </Button>
               </div>
 
-              {/* WhatsApp Templates */}
               <h3 className="text-center font-bold text-primary">رسائل الواتساب التلقائية</h3>
-
-              <WhatsAppMessage
-                title="عند الحجز"
-                message={`أهلا وسهلاً أ / {العميل}\nلقد تم حجز طلب صيانة بتاريخ {الموعد}\nالمشكله الخاصه بيك هي {المشكلة}\nسوف يتم ارسال الفني خلال اقرب وقت باذن الله`}
-              />
-              <WhatsAppMessage
-                title="عند الاكتمال"
-                message={`أهلا وسهلاً أ / {العميل}\nلقد تم اتمام عمليه الصيانة بنجاح\nفي تمام الساعه {الوقت}\nعن طريق الفني {الفني}\nو المبلغ المدفوع هو {المبلغ}`}
-              />
-              <WhatsAppMessage
-                title="للمتابعة"
-                message={`أهلا وسهلاً أ / {العميل}\nلقد تم اتمام عمليه الصيانه بنجاح\nما رأيك و تقييمك للخدمه المقدمه لك\nبحيث تقييمك من 1 الي 10\n*شكرا لاهتمامك*`}
-              />
+              <WhatsAppMessage title="عند الحجز" message={`أهلا وسهلاً أ / {العميل}\nلقد تم حجز طلب صيانة بتاريخ {الموعد}\nالمشكله الخاصه بيك هي {المشكلة}\nسوف يتم ارسال الفني خلال اقرب وقت باذن الله`} />
+              <WhatsAppMessage title="عند الاكتمال" message={`أهلا وسهلاً أ / {العميل}\nلقد تم اتمام عمليه الصيانة بنجاح\nفي تمام الساعه {الوقت}\nعن طريق الفني {الفني}\nو المبلغ المدفوع هو {المبلغ}`} />
+              <WhatsAppMessage title="للمتابعة" message={`أهلا وسهلاً أ / {العميل}\nلقد تم اتمام عمليه الصيانه بنجاح\nما رأيك و تقييمك للخدمه المقدمه لك\nبحيث تقييمك من 1 الي 10\n*شكرا لاهتمامك*`} />
             </TabsContent>
           </Tabs>
         </div>
@@ -235,29 +247,9 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   );
 };
 
-const EndpointField = ({ label, emoji, value, onChange }: { label: string; emoji: string; value: string; onChange: (v: string) => void }) => (
-  <div className="space-y-1">
-    <span className="text-xs text-muted-foreground flex items-center gap-1 justify-end">
-      {emoji} {label}
-    </span>
-    <Input
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="text-left font-mono text-xs h-8"
-      dir="ltr"
-    />
-  </div>
-);
-
 const WhatsAppMessage = ({ title, message }: { title: string; message: string }) => (
   <div className="border border-border rounded-lg p-3 space-y-2">
-    <div className="flex items-center justify-between">
-      <div className="flex gap-1">
-        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground">▲</Button>
-        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground">▼</Button>
-      </div>
-      <h4 className="font-medium text-sm">{title}</h4>
-    </div>
+    <h4 className="font-medium text-sm text-right">{title}</h4>
     <textarea
       className="w-full rounded-lg border border-input bg-muted/50 px-3 py-2 text-sm text-right min-h-[100px] resize-none"
       defaultValue={message}
