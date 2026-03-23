@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User, Plus } from 'lucide-react';
 import { useTasks, useTechnicians, useDeleteTask } from '@/hooks/useDatabase';
 import { useAuth } from '@/hooks/useAuth';
