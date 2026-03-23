@@ -80,34 +80,10 @@ const Login = () => {
 
     let loginEmail = email;
 
-    // For technician role, get email from selected technician profile
     if (selectedRole === 'technician' && selectedTechId) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('technician_id', selectedTechId)
-        .single();
-
-      if (profile) {
-        // Get user email from auth
-        const { data } = await supabase.rpc('has_role', { _user_id: profile.id, _role: 'technician' });
-        // We need the actual email - fetch from app_settings or use known pattern
-        // Since we seeded users with known emails, let's look up by profile
-        const { data: userData } = await supabase.auth.admin?.getUserById?.(profile.id) || { data: null };
-        
-        // Fallback: use the technician name to derive email (matching seed pattern)
-        const tech = technicians.find(t => t.id === selectedTechId);
-        if (tech) {
-          // Match the seeded email pattern
-          const nameToEmail: Record<string, string> = {
-            'احمد رضوان': 'ahmadredwan@app.com',
-            'كريم الخولي': 'kareemelkholy@app.com',
-            'أحمد الخولي': 'ahmadelkholy@app.com',
-            'سنبل': 'sonbol@app.com',
-            'علي شعت': 'alishaat@app.com',
-          };
-          loginEmail = nameToEmail[tech.name] || email;
-        }
+      const tech = technicians.find(t => t.id === selectedTechId);
+      if (tech?.email) {
+        loginEmail = tech.email;
       }
     }
 
