@@ -1,4 +1,4 @@
-import { Settings, LayoutDashboard, ListTodo, Database, LogOut } from 'lucide-react';
+import { Settings, LayoutDashboard, ListTodo, Database, LogOut, BarChart3, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -6,27 +6,36 @@ interface AppHeaderProps {
   currentView: string;
   onViewChange: (view: 'dashboard' | 'tasks') => void;
   onSettingsOpen: () => void;
+  onBackupOpen?: () => void;
+  onStatsOpen?: () => void;
+  onAccountOpen?: () => void;
 }
 
-export const AppHeader = ({ currentView, onViewChange, onSettingsOpen }: AppHeaderProps) => {
+export const AppHeader = ({ currentView, onViewChange, onSettingsOpen, onBackupOpen, onStatsOpen, onAccountOpen }: AppHeaderProps) => {
   const { role, fullName, signOut } = useAuth();
   const isAdmin = role === 'admin';
 
   return (
     <header className="gradient-hero text-header-foreground sticky top-0 z-50">
       <div className="container flex items-center justify-between py-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {isAdmin && (
             <>
-              <Button variant="ghost" size="icon" className="text-header-foreground hover:bg-header-foreground/10" onClick={onSettingsOpen}>
+              <Button variant="ghost" size="icon" className="text-header-foreground hover:bg-header-foreground/10" onClick={onSettingsOpen} title="الإعدادات">
                 <Settings className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" className="text-header-foreground hover:bg-header-foreground/10">
+              <Button variant="ghost" size="icon" className="text-header-foreground hover:bg-header-foreground/10" onClick={onBackupOpen} title="النسخ الاحتياطي">
                 <Database className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="text-header-foreground hover:bg-header-foreground/10" onClick={onStatsOpen} title="الإحصائيات">
+                <BarChart3 className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="text-header-foreground hover:bg-header-foreground/10" onClick={onAccountOpen} title="كشف الحساب">
+                <Receipt className="h-5 w-5" />
               </Button>
             </>
           )}
-          <Button variant="ghost" size="icon" className="text-header-foreground hover:bg-header-foreground/10" onClick={signOut}>
+          <Button variant="ghost" size="icon" className="text-header-foreground hover:bg-header-foreground/10" onClick={signOut} title="تسجيل الخروج">
             <LogOut className="h-5 w-5" />
           </Button>
         </div>
