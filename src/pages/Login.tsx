@@ -47,33 +47,18 @@ const Login = () => {
   useEffect(() => {
     if (selectedRole === 'technician') {
       const fetchTechnicians = async () => {
-        // Get technicians list
         const { data: techs } = await supabase
           .from('technicians')
-          .select('id, name')
+          .select('id, name, email')
           .eq('is_active', true)
           .order('name');
 
         if (techs) {
-          // Get profiles to map technician_id to email
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select('technician_id, id')
-            .in('technician_id', techs.map(t => t.id));
-
-          // We need to get emails from auth - use a workaround via profiles
-          const techOptions: TechnicianOption[] = techs.map(t => {
-            const profile = profiles?.find(p => p.technician_id === t.id);
-            // Build email from name pattern used in seed
-            const emailMap: Record<string, string> = {};
-            // We'll just store name and let user select, email will be derived
-            return {
-              id: t.id,
-              name: t.name,
-              email: '', // Will be filled from profile
-            };
-          });
-          setTechnicians(techOptions);
+          setTechnicians(techs.map(t => ({
+            id: t.id,
+            name: t.name,
+            email: (t as any).email || '',
+          })));
 
           // Check if there's a remembered technician
           const saved = localStorage.getItem(REMEMBER_KEY);
