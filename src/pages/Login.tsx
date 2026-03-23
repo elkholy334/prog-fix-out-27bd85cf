@@ -35,6 +35,7 @@ const Login = () => {
         .eq('is_active', true)
         .order('name');
 
+      console.log('Fetched technicians:', techs);
       const techUsers: UserOption[] = (techs || []).map(t => ({
         id: t.id,
         name: t.name,
@@ -75,9 +76,11 @@ const Login = () => {
     if (!selectedUser) return;
     setLoading(true);
 
+    console.log('Login attempt:', { email: selectedUser.email, selectedUser });
     const { error } = await signIn(selectedUser.email, password);
+    console.log('Login result:', { error });
     if (error) {
-      toast.error('كلمة المرور غير صحيحة');
+      toast.error('كلمة المرور غير صحيحة: ' + error);
     } else if (rememberMe) {
       localStorage.setItem(REMEMBER_KEY, JSON.stringify({
         email: selectedUser.email,
