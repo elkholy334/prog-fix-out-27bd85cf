@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User } from 'lucide-react';
+import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User, Plus } from 'lucide-react';
 import { useTasks, useTechnicians, useDeleteTask } from '@/hooks/useDatabase';
 import { TaskDetailDialog } from '@/components/TaskDetailDialog';
 import { SendWhatsAppDialog } from '@/components/SendWhatsAppDialog';
+import { AddTaskDialog } from '@/components/AddTaskDialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
@@ -44,7 +45,8 @@ export const TasksList = () => {
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [selectedTask, setSelectedTask] = useState<TaskRow | null>(null);
   const [whatsappTask, setWhatsappTask] = useState<TaskRow | null>(null);
-  
+  const [addTaskOpen, setAddTaskOpen] = useState(false);
+
   const { data: tasks = [], isLoading } = useTasks();
   const { data: technicians = [] } = useTechnicians();
   const deleteTask = useDeleteTask();
@@ -69,6 +71,20 @@ export const TasksList = () => {
 
   return (
     <div className="space-y-4 animate-slide-up">
+      {/* Add Task Button */}
+      <div className="flex items-center justify-between">
+        <Button
+          className="gradient-hero text-primary-foreground font-bold px-6 py-2.5 shadow-card hover:shadow-card-hover"
+          onClick={() => setAddTaskOpen(true)}
+        >
+          <Plus className="h-5 w-5 ml-2" />
+          إضافة مهمة جديدة
+        </Button>
+        <span className="text-sm text-muted-foreground">
+          {filteredTasks.length} مهمة
+        </span>
+      </div>
+
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
         {FILTER_TABS.map((tab) => (
           <button
@@ -179,6 +195,7 @@ export const TasksList = () => {
 
       <TaskDetailDialog task={selectedTask} onClose={() => setSelectedTask(null)} />
       <SendWhatsAppDialog task={whatsappTask} onClose={() => setWhatsappTask(null)} />
+      <AddTaskDialog open={addTaskOpen} onOpenChange={setAddTaskOpen} />
     </div>
   );
 };
