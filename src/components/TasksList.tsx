@@ -344,6 +344,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
                     onStatusChange={setStatusTask}
                     onDetails={setSelectedTask}
                     onWhatsApp={setWhatsappTask}
+                    onToggleFavorite={handleToggleFavorite}
                   />
                 );
               })}
