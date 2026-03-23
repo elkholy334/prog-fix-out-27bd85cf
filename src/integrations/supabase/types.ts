@@ -164,6 +164,7 @@ export type Database = {
           email: string | null
           id: string
           is_active: boolean
+          is_admin: boolean | null
           name: string
           tasks_count: number
           updated_at: string
@@ -174,6 +175,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          is_admin?: boolean | null
           name: string
           tasks_count?: number
           updated_at?: string
@@ -184,6 +186,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          is_admin?: boolean | null
           name?: string
           tasks_count?: number
           updated_at?: string

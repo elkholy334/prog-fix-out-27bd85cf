@@ -26,43 +26,24 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  // Load all users from technicians + check roles
+  // Load all users from technicians table
   useEffect(() => {
     const fetchUsers = async () => {
       const { data: techs } = await supabase
         .from('technicians')
-        .select('id, name, email, color')
+        .select('id, name, email, color, is_admin')
         .eq('is_active', true)
         .order('name');
 
-      console.log('Fetched technicians:', techs);
-
       if (!techs) return;
 
-      // Get profiles to check which ones have admin role
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, technician_id')
-        .in('technician_id', techs.map(t => t.id));
-
-      const { data: adminRoles } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .eq('role', 'admin');
-
-      const adminUserIds = new Set((adminRoles || []).map(r => r.user_id));
-
-      const allUsers: UserOption[] = techs.map(t => {
-        const profile = (profiles || []).find(p => p.technician_id === t.id);
-        const isAdmin = profile ? adminUserIds.has(profile.id) : false;
-        return {
-          id: t.id,
-          name: t.name,
-          email: (t as any).email || '',
-          role: isAdmin ? 'admin' as const : 'technician' as const,
-          color: t.color,
-        };
-      });
+      const allUsers: UserOption[] = techs.map(t => ({
+        id: t.id,
+        name: t.name,
+        email: (t as any).email || '',
+        role: (t as any).is_admin ? 'admin' as const : 'technician' as const,
+        color: t.color,
+      }));
 
       // Sort: admin first
       allUsers.sort((a, b) => {
