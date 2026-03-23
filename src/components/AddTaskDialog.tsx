@@ -36,6 +36,13 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
   const [requiredTechnician, setRequiredTechnician] = useState('');
   const [assignedTechnicians, setAssignedTechnicians] = useState<string[]>([]);
 
+  // Select all technicians by default when dialog opens
+  useEffect(() => {
+    if (open && technicians.length > 0) {
+      setAssignedTechnicians(technicians.map(t => t.id));
+    }
+  }, [open, technicians]);
+
   const resetForm = () => {
     setClientName('');
     setPhone('');
