@@ -3,6 +3,7 @@ import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User } from 'lu
 import { sampleTasks, technicians } from '@/data/mockData';
 import { Task, TaskStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/task';
 import { TaskDetailDialog } from '@/components/TaskDetailDialog';
+import { SendWhatsAppDialog } from '@/components/SendWhatsAppDialog';
 import { Button } from '@/components/ui/button';
 
 type FilterTab = 'all' | 'assigned' | TaskStatus;
@@ -21,6 +22,7 @@ const FILTER_TABS: { key: FilterTab; label: string }[] = [
 export const TasksList = () => {
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [whatsappTask, setWhatsappTask] = useState<Task | null>(null);
 
   const filteredTasks = sampleTasks.filter((task) => {
     if (activeFilter === 'all') return true;
@@ -30,7 +32,6 @@ export const TasksList = () => {
 
   return (
     <div className="space-y-4 animate-slide-up">
-      {/* Filter Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
         {FILTER_TABS.map((tab) => (
           <button
@@ -48,10 +49,9 @@ export const TasksList = () => {
         ))}
       </div>
 
-      {/* Tasks Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredTasks.map((task) => (
-          <TaskCard key={task.id} task={task} onSelect={setSelectedTask} />
+          <TaskCard key={task.id} task={task} onSelect={setSelectedTask} onWhatsApp={setWhatsappTask} />
         ))}
       </div>
 
@@ -62,6 +62,7 @@ export const TasksList = () => {
       )}
 
       <TaskDetailDialog task={selectedTask} onClose={() => setSelectedTask(null)} />
+      <SendWhatsAppDialog task={whatsappTask} onClose={() => setWhatsappTask(null)} />
     </div>
   );
 };
@@ -69,16 +70,16 @@ export const TasksList = () => {
 interface TaskCardProps {
   task: Task;
   onSelect: (task: Task) => void;
+  onWhatsApp: (task: Task) => void;
 }
 
-const TaskCard = ({ task, onSelect }: TaskCardProps) => {
+const TaskCard = ({ task, onSelect, onWhatsApp }: TaskCardProps) => {
   const techName = task.requiredTechnician
     ? technicians.find((t) => t.id === task.requiredTechnician)?.name
     : '';
 
   return (
     <div className="bg-card-warm rounded-xl border border-accent/20 shadow-card hover:shadow-card-hover transition-all overflow-hidden">
-      {/* Header */}
       <div className="p-4 pb-2">
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -94,7 +95,6 @@ const TaskCard = ({ task, onSelect }: TaskCardProps) => {
         <p className="text-sm text-muted-foreground">{task.type}</p>
       </div>
 
-      {/* Details */}
       <div className="px-4 pb-2 space-y-1.5 text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <Clock className="h-3.5 w-3.5" />
@@ -118,14 +118,12 @@ const TaskCard = ({ task, onSelect }: TaskCardProps) => {
         </div>
       </div>
 
-      {/* Status */}
       <div className="px-4 py-2">
         <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-medium w-full text-center ${STATUS_COLORS[task.status]}`}>
           {STATUS_LABELS[task.status]}
         </span>
       </div>
 
-      {/* Actions */}
       <div className="flex items-center justify-between px-4 py-3 border-t border-accent/20">
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10">
@@ -134,7 +132,7 @@ const TaskCard = ({ task, onSelect }: TaskCardProps) => {
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted">
             <Eye className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-success hover:bg-success/10">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-success hover:bg-success/10" onClick={() => onWhatsApp(task)}>
             <MessageCircle className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted">
