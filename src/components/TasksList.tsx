@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User, Plus } from 'lucide-react';
 import { useTasks, useTechnicians, useDeleteTask } from '@/hooks/useDatabase';
 import { useAuth } from '@/hooks/useAuth';
@@ -31,6 +31,15 @@ const STATUS_COLORS: Record<string, string> = {
   unrated: 'bg-muted text-muted-foreground',
 };
 
+const CARD_BORDER_COLORS: Record<string, string> = {
+  waiting: 'border-l-4 border-l-accent',
+  in_progress: 'border-l-4 border-l-success',
+  completed: 'border-l-4 border-l-primary',
+  postponed: 'border-l-4 border-l-warning',
+  late: 'border-l-4 border-l-destructive',
+  unrated: 'border-l-4 border-l-muted-foreground',
+};
+
 const FILTER_TABS: { key: FilterTab; label: string }[] = [
   { key: 'all', label: 'الكل' },
   { key: 'assigned', label: 'مطلوب مني' },
@@ -42,12 +51,18 @@ const FILTER_TABS: { key: FilterTab; label: string }[] = [
   { key: 'unrated', label: 'بلا تقييم' },
 ];
 
-export const TasksList = () => {
-  const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
+interface TasksListProps {
+  initialFilter?: string;
+}
+
+export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
+  const [activeFilter, setActiveFilter] = useState<FilterTab>(initialFilter);
   const [selectedTask, setSelectedTask] = useState<TaskRow | null>(null);
   const [whatsappTask, setWhatsappTask] = useState<TaskRow | null>(null);
   const [addTaskOpen, setAddTaskOpen] = useState(false);
   const [statusTask, setStatusTask] = useState<TaskRow | null>(null);
+
+  useEffect(() => { setActiveFilter(initialFilter); }, [initialFilter]);
 
   const { role, technicianId } = useAuth();
   const isAdmin = role === 'admin';
@@ -141,7 +156,7 @@ export const TasksList = () => {
             const daysAgo = getDaysAgo(task.created_at);
 
             return (
-              <div key={task.id} className="bg-card-warm rounded-xl border border-accent/20 shadow-card hover:shadow-card-hover transition-all overflow-hidden">
+              <div key={task.id} className={`bg-card rounded-xl border border-accent/20 shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BORDER_COLORS[task.status] || ''}`}>
                 <div className="p-4 pb-2">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">

@@ -1,7 +1,11 @@
 import { Trophy, Calendar, CalendarDays, Award, AlertTriangle, Clock, CheckCircle2, Pause, Wrench } from 'lucide-react';
 import { useDashboardStats, useTechnicians } from '@/hooks/useDatabase';
 
-export const Dashboard = () => {
+interface DashboardProps {
+  onFilterTasks?: (status: string) => void;
+}
+
+export const Dashboard = ({ onFilterTasks }: DashboardProps) => {
   const { data: stats = { waiting: 0, in_progress: 0, completed: 0, postponed: 0, late: 0 } } = useDashboardStats();
   const { data: technicians = [] } = useTechnicians();
 
@@ -45,11 +49,11 @@ export const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <StatCard label="قيد الانتظار" value={stats.waiting} gradient="gradient-gold" icon={<Clock className="h-6 w-6" />} />
-        <StatCard label="قيد التنفيذ" value={stats.in_progress} gradient="gradient-success" icon={<Wrench className="h-6 w-6" />} />
-        <StatCard label="مكتملة" value={stats.completed} gradient="gradient-info" icon={<CheckCircle2 className="h-6 w-6" />} />
-        <StatCard label="مؤجلة" value={stats.postponed} gradient="gradient-gold" icon={<Pause className="h-6 w-6" />} />
-        <StatCard label="متأخرة" value={stats.late} gradient="gradient-danger" icon={<AlertTriangle className="h-6 w-6" />} />
+        <StatCard label="قيد الانتظار" value={stats.waiting} gradient="gradient-gold" icon={<Clock className="h-6 w-6" />} onClick={() => onFilterTasks?.('waiting')} />
+        <StatCard label="قيد التنفيذ" value={stats.in_progress} gradient="gradient-success" icon={<Wrench className="h-6 w-6" />} onClick={() => onFilterTasks?.('in_progress')} />
+        <StatCard label="مكتملة" value={stats.completed} gradient="gradient-info" icon={<CheckCircle2 className="h-6 w-6" />} onClick={() => onFilterTasks?.('completed')} />
+        <StatCard label="مؤجلة" value={stats.postponed} gradient="gradient-gold" icon={<Pause className="h-6 w-6" />} onClick={() => onFilterTasks?.('postponed')} />
+        <StatCard label="متأخرة" value={stats.late} gradient="gradient-danger" icon={<AlertTriangle className="h-6 w-6" />} onClick={() => onFilterTasks?.('late')} />
       </div>
     </div>
   );
@@ -93,12 +97,15 @@ const PerformerCard = ({ title, subtitle, icon, performers, gradient, iconBg }: 
   </div>
 );
 
-const StatCard = ({ label, value, gradient, icon }: { label: string; value: number; gradient: string; icon: React.ReactNode }) => (
-  <div className={`${gradient} rounded-xl p-4 text-center text-primary-foreground shadow-card hover:shadow-card-hover transition-all hover:-translate-y-0.5`}>
+const StatCard = ({ label, value, gradient, icon, onClick }: { label: string; value: number; gradient: string; icon: React.ReactNode; onClick?: () => void }) => (
+  <button
+    onClick={onClick}
+    className={`${gradient} rounded-xl p-4 text-center text-primary-foreground shadow-card hover:shadow-card-hover transition-all hover:-translate-y-1 hover:scale-105 cursor-pointer w-full`}
+  >
     <div className="flex items-center justify-center gap-2 mb-1">
       {icon}
       <span className="text-xs font-medium">{label}</span>
     </div>
     <p className="text-3xl font-bold">{value}</p>
-  </div>
+  </button>
 );

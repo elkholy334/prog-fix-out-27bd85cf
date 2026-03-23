@@ -12,18 +12,24 @@ const Index = () => {
   const isAdmin = role === 'admin';
   const [currentView, setCurrentView] = useState<View>(isAdmin ? 'dashboard' : 'tasks');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [initialFilter, setInitialFilter] = useState<string>('all');
+
+  const handleFilterFromDashboard = (status: string) => {
+    setInitialFilter(status);
+    setCurrentView('tasks');
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <AppHeader
         currentView={currentView}
-        onViewChange={setCurrentView}
+        onViewChange={(v) => { setCurrentView(v); if (v === 'tasks') setInitialFilter('all'); }}
         onSettingsOpen={() => setSettingsOpen(true)}
       />
       <main className="container py-4 animate-fade-in">
-        {currentView === 'dashboard' && isAdmin && <Dashboard />}
-        {currentView === 'tasks' && <TasksList />}
-        {currentView === 'dashboard' && !isAdmin && <TasksList />}
+        {currentView === 'dashboard' && isAdmin && <Dashboard onFilterTasks={handleFilterFromDashboard} />}
+        {currentView === 'tasks' && <TasksList initialFilter={initialFilter} />}
+        {currentView === 'dashboard' && !isAdmin && <TasksList initialFilter="all" />}
       </main>
       {isAdmin && <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />}
     </div>
