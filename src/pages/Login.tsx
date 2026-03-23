@@ -35,6 +35,7 @@ const Login = () => {
         .eq('is_active', true)
         .order('name');
 
+      console.log('Fetched technicians:', techs);
       const techUsers: UserOption[] = (techs || []).map(t => ({
         id: t.id,
         name: t.name,
