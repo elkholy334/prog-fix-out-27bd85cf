@@ -13,6 +13,7 @@ interface UserOption {
   name: string;
   email: string;
   role: 'admin' | 'technician';
+  color?: string;
 }
 
 const REMEMBER_KEY = 'remembered_login';
