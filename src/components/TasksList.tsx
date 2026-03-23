@@ -79,9 +79,10 @@ interface SortableTaskCardProps {
   onStatusChange: (task: TaskRow) => void;
   onDetails: (task: TaskRow) => void;
   onWhatsApp: (task: TaskRow) => void;
+  onToggleFavorite: (task: TaskRow) => void;
 }
 
-const SortableTaskCard = ({ task, techName, daysAgo, isAdmin, onDelete, onStatusChange, onDetails, onWhatsApp }: SortableTaskCardProps) => {
+const SortableTaskCard = ({ task, techName, daysAgo, isAdmin, onDelete, onStatusChange, onDetails, onWhatsApp, onToggleFavorite }: SortableTaskCardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
 
   const style = {
@@ -92,7 +93,7 @@ const SortableTaskCard = ({ task, techName, daysAgo, isAdmin, onDelete, onStatus
   };
 
   return (
-    <div ref={setNodeRef} style={style} className={`bg-card rounded-xl border border-accent/20 shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BORDER_COLORS[task.status] || ''}`}>
+    <div ref={setNodeRef} style={style} className={`bg-card rounded-xl border shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BORDER_COLORS[task.status] || ''} ${task.is_favorite ? 'border-accent ring-2 ring-accent/30 shadow-[0_0_15px_hsl(var(--accent)/0.2)]' : 'border-accent/20'}`}>
       {/* Drag Handle */}
       <div
         {...attributes}
@@ -111,7 +112,9 @@ const SortableTaskCard = ({ task, techName, daysAgo, isAdmin, onDelete, onStatus
               منذ {daysAgo} يوم
             </span>
           </div>
-          <Star className={`h-5 w-5 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground'}`} />
+          <button onClick={() => onToggleFavorite(task)} className="hover:scale-125 transition-transform">
+            <Star className={`h-5 w-5 ${task.is_favorite ? 'fill-accent text-accent drop-shadow-[0_0_6px_hsl(var(--accent))]' : 'text-muted-foreground hover:text-accent'}`} />
+          </button>
         </div>
         <h3 className="font-bold text-lg text-foreground">{task.client_name}</h3>
         <p className="text-sm text-muted-foreground">{task.type}</p>
@@ -258,6 +261,17 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
     });
   };
 
+  const updateTask = useUpdateTask();
+
+  const handleToggleFavorite = (task: TaskRow) => {
+    updateTask.mutate(
+      { id: task.id, is_favorite: !task.is_favorite },
+      {
+        onSuccess: () => toast.success(task.is_favorite ? 'تم إزالة النجمة' : '⭐ تم تمييز المهمة كمهمة'),
+      }
+    );
+  };
+
   const getDaysAgo = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime();
     return Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -330,6 +344,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
                     onStatusChange={setStatusTask}
                     onDetails={setSelectedTask}
                     onWhatsApp={setWhatsappTask}
+                    onToggleFavorite={handleToggleFavorite}
                   />
                 );
               })}
