@@ -14,7 +14,147 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      app_settings: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          address: string | null
+          assigned_technicians: string[] | null
+          client_name: string
+          created_at: string
+          expected_amount: number | null
+          id: number
+          is_favorite: boolean | null
+          paid_amount: number | null
+          phone: string
+          problem: string | null
+          repair_date: string | null
+          required_technician: string | null
+          scheduled_date: string | null
+          scheduled_time: string | null
+          shop_net: number | null
+          start_time: string | null
+          status: string
+          technician_commission: number | null
+          technician_id: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          assigned_technicians?: string[] | null
+          client_name: string
+          created_at?: string
+          expected_amount?: number | null
+          id?: number
+          is_favorite?: boolean | null
+          paid_amount?: number | null
+          phone: string
+          problem?: string | null
+          repair_date?: string | null
+          required_technician?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          shop_net?: number | null
+          start_time?: string | null
+          status?: string
+          technician_commission?: number | null
+          technician_id?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          assigned_technicians?: string[] | null
+          client_name?: string
+          created_at?: string
+          expected_amount?: number | null
+          id?: number
+          is_favorite?: boolean | null
+          paid_amount?: number | null
+          phone?: string
+          problem?: string | null
+          repair_date?: string | null
+          required_technician?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          shop_net?: number | null
+          start_time?: string | null
+          status?: string
+          technician_commission?: number | null
+          technician_id?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_required_technician_fkey"
+            columns: ["required_technician"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      technicians: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          tasks_count: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          tasks_count?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          tasks_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
