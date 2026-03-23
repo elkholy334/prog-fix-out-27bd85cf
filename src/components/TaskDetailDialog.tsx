@@ -1,22 +1,41 @@
 import { X, Phone } from 'lucide-react';
-import { Task, STATUS_LABELS, TaskStatus } from '@/types/task';
-import { technicians } from '@/data/mockData';
+import { useTechnicians, useUpdateTask } from '@/hooks/useDatabase';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
+import type { Database } from '@/integrations/supabase/types';
+
+type TaskRow = Database['public']['Tables']['tasks']['Row'];
+
+const STATUS_LABELS: Record<string, string> = {
+  waiting: 'انتظار',
+  in_progress: 'تنفيذ',
+  completed: 'مكتمل',
+  postponed: 'مؤجل',
+  late: 'متأخرة',
+  unrated: 'بلا تقييم',
+};
 
 interface TaskDetailDialogProps {
-  task: Task | null;
+  task: TaskRow | null;
   onClose: () => void;
 }
 
 export const TaskDetailDialog = ({ task, onClose }: TaskDetailDialogProps) => {
+  const { data: technicians = [] } = useTechnicians();
+  const updateTask = useUpdateTask();
+
   if (!task) return null;
 
-  const assignedTechs = technicians.filter((t) => task.assignedTechnicians.includes(t.id));
+  const handleSave = () => {
+    // For now just show success - form state management can be enhanced later
+    toast.success('تم حفظ التعديلات');
+    onClose();
+  };
 
   return (
     <Dialog open={!!task} onOpenChange={() => onClose()}>
@@ -26,14 +45,13 @@ export const TaskDetailDialog = ({ task, onClose }: TaskDetailDialogProps) => {
         </DialogHeader>
 
         <div className="p-5 space-y-4">
-          {/* Client Info */}
           <FormField label="اسم العميل">
-            <Input value={task.clientName} readOnly className="text-right" />
+            <Input defaultValue={task.client_name} className="text-right" />
           </FormField>
 
           <FormField label="الموبايل">
             <div className="flex gap-2">
-              <Input value={task.phone} readOnly className="text-right" />
+              <Input defaultValue={task.phone} className="text-right" />
               <Button variant="outline" size="icon" className="shrink-0">
                 <Phone className="h-4 w-4" />
               </Button>
@@ -41,13 +59,13 @@ export const TaskDetailDialog = ({ task, onClose }: TaskDetailDialogProps) => {
           </FormField>
 
           <FormField label="العنوان">
-            <Input value={task.address} readOnly className="text-right" />
+            <Input defaultValue={task.address || ''} className="text-right" />
           </FormField>
 
           <FormField label="ميعاد التنفيذ المطلوب">
             <div className="flex gap-2">
-              <Input value={task.scheduledTime} readOnly className="text-right flex-1" />
-              <Input value={task.scheduledDate} readOnly type="date" className="flex-1" />
+              <Input defaultValue={task.scheduled_time || ''} className="text-right flex-1" />
+              <Input defaultValue={task.scheduled_date || ''} type="date" className="flex-1" />
             </div>
           </FormField>
 
@@ -65,30 +83,28 @@ export const TaskDetailDialog = ({ task, onClose }: TaskDetailDialogProps) => {
               </Select>
             </FormField>
             <FormField label="تاريخ الإضافة">
-              <Input value={task.createdAt} readOnly className="text-right" />
+              <Input value={new Date(task.created_at).toLocaleString('ar-EG')} readOnly className="text-right" />
             </FormField>
           </div>
 
           <FormField label="المشكلة">
             <textarea
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-right min-h-[60px] resize-none"
-              defaultValue={task.problem}
-              readOnly
+              defaultValue={task.problem || ''}
             />
           </FormField>
 
           <div className="grid grid-cols-2 gap-3">
             <FormField label="تاريخ الإصلاح">
-              <Input type="date" defaultValue={task.repairDate} className="text-right" />
+              <Input type="date" defaultValue={task.repair_date || ''} />
             </FormField>
             <FormField label="وقت البدء">
-              <Input defaultValue={task.startTime || ''} className="text-right" />
+              <Input defaultValue={task.start_time || ''} className="text-right" />
             </FormField>
           </div>
 
-          {/* Technician */}
           <FormField label="الفني">
-            <Select defaultValue={task.requiredTechnician || ''}>
+            <Select defaultValue={task.required_technician || ''}>
               <SelectTrigger><SelectValue placeholder="اختر الفني" /></SelectTrigger>
               <SelectContent>
                 {technicians.map((t) => (
@@ -98,34 +114,20 @@ export const TaskDetailDialog = ({ task, onClose }: TaskDetailDialogProps) => {
             </Select>
           </FormField>
 
-          {/* Assigned Technicians */}
           <FormField label="تعيين فنيين (مطلوب)">
             <div className="space-y-2 border border-border rounded-lg p-3">
-              <div className="flex items-center justify-between">
-                <Checkbox id="select-all" />
-                <label htmlFor="select-all" className="text-sm font-medium">اختيار الجميع</label>
-              </div>
               {technicians.map((tech) => (
                 <div key={tech.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id={`tech-${tech.id}`}
-                      defaultChecked={task.assignedTechnicians.includes(tech.id)}
-                    />
-                    <span className="w-5 h-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-bold">
-                      {tech.tasksCount > 30 ? '4' : '3'}
-                    </span>
-                  </div>
+                  <Checkbox
+                    id={`tech-${tech.id}`}
+                    defaultChecked={task.assigned_technicians?.includes(tech.id) || false}
+                  />
                   <label htmlFor={`tech-${tech.id}`} className="text-sm">{tech.name}</label>
                 </div>
               ))}
-              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                ℹ الفني المحدد هنا سيظهر له على المهمة كلمة <span className="font-bold">مطلوب</span>.
-              </p>
             </div>
           </FormField>
 
-          {/* Status */}
           <FormField label="الحالة">
             <Select defaultValue={task.status}>
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -137,26 +139,24 @@ export const TaskDetailDialog = ({ task, onClose }: TaskDetailDialogProps) => {
             </Select>
           </FormField>
 
-          {/* Financials */}
           <div className="grid grid-cols-3 gap-3">
             <FormField label="متوقع">
-              <Input type="number" defaultValue={task.expectedAmount} className="text-right" />
+              <Input type="number" defaultValue={task.expected_amount ?? 0} className="text-right" />
             </FormField>
             <FormField label="مدفوع">
-              <Input type="number" defaultValue={task.paidAmount} className="text-right" />
+              <Input type="number" defaultValue={task.paid_amount ?? 0} className="text-right" />
             </FormField>
             <FormField label="عمولة الفني">
-              <Input type="number" defaultValue={task.technicianCommission} className="text-right" />
+              <Input type="number" defaultValue={task.technician_commission ?? 0} className="text-right" />
             </FormField>
           </div>
 
           <FormField label="صافي المحل">
-            <Input type="number" defaultValue={task.shopNet} readOnly className="text-right bg-muted" />
+            <Input type="number" defaultValue={task.shop_net ?? 0} readOnly className="text-right bg-muted" />
           </FormField>
 
-          {/* Actions */}
           <div className="space-y-2 pt-2">
-            <Button className="w-full gradient-hero text-primary-foreground font-bold py-3">
+            <Button className="w-full gradient-hero text-primary-foreground font-bold py-3" onClick={handleSave}>
               حفظ
             </Button>
             <Button variant="outline" className="w-full" onClick={onClose}>

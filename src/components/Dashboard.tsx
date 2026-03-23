@@ -1,18 +1,20 @@
 import { Trophy, Calendar, CalendarDays, Award, AlertTriangle, Clock, CheckCircle2, Pause, Wrench } from 'lucide-react';
-import { dashboardStats, technicians } from '@/data/mockData';
+import { useDashboardStats, useTechnicians } from '@/hooks/useDatabase';
 
 export const Dashboard = () => {
-  const topAllTime = [...technicians].sort((a, b) => b.tasksCount - a.tasksCount).slice(0, 3);
+  const { data: stats = { waiting: 0, in_progress: 0, completed: 0, postponed: 0, late: 0 } } = useDashboardStats();
+  const { data: technicians = [] } = useTechnicians();
+
+  const topAllTime = [...technicians].sort((a, b) => b.tasks_count - a.tasks_count).slice(0, 3);
 
   return (
     <div className="space-y-6 animate-slide-up">
-      {/* Top Performers */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <PerformerCard
           title="نجم التركيبات"
           subtitle="إجمالي التركيبات (كل الوقت)"
           icon={<Trophy className="h-8 w-8" />}
-          performers={topAllTime}
+          performers={topAllTime.map(t => ({ id: t.id, name: t.name, count: t.tasks_count, color: t.color }))}
           gradient="gradient-gold"
           iconBg="bg-accent"
         />
@@ -20,7 +22,7 @@ export const Dashboard = () => {
           title="نجم الشهر"
           subtitle="أعلى 3 هذا الشهر"
           icon={<Calendar className="h-8 w-8" />}
-          performers={topAllTime.slice(0, 2)}
+          performers={[]}
           gradient="gradient-info"
           iconBg="bg-info"
         />
@@ -42,38 +44,12 @@ export const Dashboard = () => {
         />
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <StatCard
-          label="قيد الانتظار"
-          value={dashboardStats.waiting}
-          gradient="gradient-gold"
-          icon={<Clock className="h-6 w-6" />}
-        />
-        <StatCard
-          label="قيد التنفيذ"
-          value={dashboardStats.inProgress}
-          gradient="gradient-success"
-          icon={<Wrench className="h-6 w-6" />}
-        />
-        <StatCard
-          label="مكتملة"
-          value={dashboardStats.completed}
-          gradient="gradient-info"
-          icon={<CheckCircle2 className="h-6 w-6" />}
-        />
-        <StatCard
-          label="مؤجلة"
-          value={dashboardStats.postponed}
-          gradient="gradient-gold"
-          icon={<Pause className="h-6 w-6" />}
-        />
-        <StatCard
-          label="متأخرة"
-          value={dashboardStats.late}
-          gradient="gradient-danger"
-          icon={<AlertTriangle className="h-6 w-6" />}
-        />
+        <StatCard label="قيد الانتظار" value={stats.waiting} gradient="gradient-gold" icon={<Clock className="h-6 w-6" />} />
+        <StatCard label="قيد التنفيذ" value={stats.in_progress} gradient="gradient-success" icon={<Wrench className="h-6 w-6" />} />
+        <StatCard label="مكتملة" value={stats.completed} gradient="gradient-info" icon={<CheckCircle2 className="h-6 w-6" />} />
+        <StatCard label="مؤجلة" value={stats.postponed} gradient="gradient-gold" icon={<Pause className="h-6 w-6" />} />
+        <StatCard label="متأخرة" value={stats.late} gradient="gradient-danger" icon={<AlertTriangle className="h-6 w-6" />} />
       </div>
     </div>
   );
@@ -83,7 +59,7 @@ interface PerformerCardProps {
   title: string;
   subtitle: string;
   icon: React.ReactNode;
-  performers: { id: string; name: string; tasksCount: number; color: string }[];
+  performers: { id: string; name: string; count: number; color: string }[];
   gradient: string;
   iconBg: string;
 }
@@ -101,9 +77,9 @@ const PerformerCard = ({ title, subtitle, icon, performers, gradient, iconBg }: 
       {performers.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground py-2">لا يوجد بيانات</p>
       ) : (
-        performers.map((p, i) => (
+        performers.map((p) => (
           <div key={p.id} className="flex items-center justify-between bg-card-warm rounded-lg px-3 py-2 border border-accent/30">
-            <span className="text-sm text-muted-foreground">{p.tasksCount} عملية</span>
+            <span className="text-sm text-muted-foreground">{p.count} عملية</span>
             <div className="flex items-center gap-2">
               <span className="font-medium text-sm">{p.name}</span>
               <div className="w-7 h-7 rounded-full flex items-center justify-center text-primary-foreground" style={{ backgroundColor: p.color }}>
@@ -117,14 +93,7 @@ const PerformerCard = ({ title, subtitle, icon, performers, gradient, iconBg }: 
   </div>
 );
 
-interface StatCardProps {
-  label: string;
-  value: number;
-  gradient: string;
-  icon: React.ReactNode;
-}
-
-const StatCard = ({ label, value, gradient, icon }: StatCardProps) => (
+const StatCard = ({ label, value, gradient, icon }: { label: string; value: number; gradient: string; icon: React.ReactNode }) => (
   <div className={`${gradient} rounded-xl p-4 text-center text-primary-foreground shadow-card hover:shadow-card-hover transition-all hover:-translate-y-0.5`}>
     <div className="flex items-center justify-center gap-2 mb-1">
       {icon}
