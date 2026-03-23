@@ -22,12 +22,15 @@ Deno.serve(async (req) => {
     { email: "arboud@app.com", password: "123456", fullName: "محمد عربود", role: "technician", technicianId: "658a4745-4dff-412f-94ca-f672e8de4575" },
     { email: "on@app.com", password: "123456", fullName: "on", role: "technician", technicianId: "2dc02d54-bfda-4a6b-920a-4e4bf2e58967" },
     { email: "serawy@app.com", password: "123456", fullName: "السراوي", role: "technician", technicianId: "4d46f9ea-f3ad-410f-b35b-294ae6f90e1c" },
+    { email: "ahmadredwan@app.com", password: "123456", fullName: "احمد رضوان", role: "technician", technicianId: "331ebdcf-c964-4418-9739-8f831d7d887c" },
+    { email: "kareemelkholy@app.com", password: "123456", fullName: "كريم الخولي", role: "technician", technicianId: "9caf9c0a-c248-4122-8a7e-f2cc088ebef6" },
+    { email: "ahmadelkholy@app.com", password: "123456", fullName: "أحمد الخولي", role: "technician", technicianId: "17d4e5a1-fdbb-4e4e-9893-97cadd56ce4a" },
+    { email: "sonbol@app.com", password: "123456", fullName: "سونيبول", role: "technician", technicianId: "071424b5-4756-4660-8530-1b4727665b12" },
   ];
 
   const results = [];
 
   for (const u of users) {
-    // Check if user already exists
     const { data: existing } = await supabaseAdmin.auth.admin.listUsers();
     const found = existing?.users?.find((x: any) => x.email === u.email);
     
@@ -51,7 +54,6 @@ Deno.serve(async (req) => {
       results.push({ email: u.email, status: "created" });
     }
 
-    // Update profile with technician_id
     if (u.technicianId) {
       await supabaseAdmin.from("profiles").upsert({
         id: userId,
@@ -60,7 +62,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Upsert role
     await supabaseAdmin.from("user_roles").upsert(
       { user_id: userId, role: u.role },
       { onConflict: "user_id,role" }
