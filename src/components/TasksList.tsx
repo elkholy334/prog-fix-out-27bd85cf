@@ -3,6 +3,7 @@ import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User } from 'lu
 import { sampleTasks, technicians } from '@/data/mockData';
 import { Task, TaskStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/task';
 import { TaskDetailDialog } from '@/components/TaskDetailDialog';
+import { SendWhatsAppDialog } from '@/components/SendWhatsAppDialog';
 import { Button } from '@/components/ui/button';
 
 type FilterTab = 'all' | 'assigned' | TaskStatus;
