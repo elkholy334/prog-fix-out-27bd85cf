@@ -195,6 +195,7 @@ export const TasksList = () => {
 
       <TaskDetailDialog task={selectedTask} onClose={() => setSelectedTask(null)} />
       <SendWhatsAppDialog task={whatsappTask} onClose={() => setWhatsappTask(null)} />
+      <AddTaskDialog open={addTaskOpen} onOpenChange={setAddTaskOpen} />
     </div>
   );
 };
