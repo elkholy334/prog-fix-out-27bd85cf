@@ -51,8 +51,12 @@ const FILTER_TABS: { key: FilterTab; label: string }[] = [
   { key: 'unrated', label: 'بلا تقييم' },
 ];
 
-export const TasksList = () => {
-  const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
+interface TasksListProps {
+  initialFilter?: string;
+}
+
+export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
+  const [activeFilter, setActiveFilter] = useState<FilterTab>(initialFilter);
   const [selectedTask, setSelectedTask] = useState<TaskRow | null>(null);
   const [whatsappTask, setWhatsappTask] = useState<TaskRow | null>(null);
   const [addTaskOpen, setAddTaskOpen] = useState(false);
