@@ -93,7 +93,7 @@ const SortableTaskCard = ({ task, techName, daysAgo, isAdmin, onDelete, onStatus
   };
 
   return (
-    <div ref={setNodeRef} style={style} className={`bg-card rounded-xl border border-accent/20 shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BORDER_COLORS[task.status] || ''}`}>
+    <div ref={setNodeRef} style={style} className={`bg-card rounded-xl border shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BORDER_COLORS[task.status] || ''} ${task.is_favorite ? 'border-accent ring-2 ring-accent/30 shadow-[0_0_15px_hsl(var(--accent)/0.2)]' : 'border-accent/20'}`}>
       {/* Drag Handle */}
       <div
         {...attributes}
