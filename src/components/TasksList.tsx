@@ -31,6 +31,15 @@ const STATUS_COLORS: Record<string, string> = {
   unrated: 'bg-muted text-muted-foreground',
 };
 
+const CARD_BORDER_COLORS: Record<string, string> = {
+  waiting: 'border-l-4 border-l-accent',
+  in_progress: 'border-l-4 border-l-success',
+  completed: 'border-l-4 border-l-primary',
+  postponed: 'border-l-4 border-l-warning',
+  late: 'border-l-4 border-l-destructive',
+  unrated: 'border-l-4 border-l-muted-foreground',
+};
+
 const FILTER_TABS: { key: FilterTab; label: string }[] = [
   { key: 'all', label: 'الكل' },
   { key: 'assigned', label: 'مطلوب مني' },
