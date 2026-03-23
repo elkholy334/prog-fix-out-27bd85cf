@@ -112,7 +112,9 @@ const SortableTaskCard = ({ task, techName, daysAgo, isAdmin, onDelete, onStatus
               منذ {daysAgo} يوم
             </span>
           </div>
-          <Star className={`h-5 w-5 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground'}`} />
+          <button onClick={() => onToggleFavorite(task)} className="hover:scale-125 transition-transform">
+            <Star className={`h-5 w-5 ${task.is_favorite ? 'fill-accent text-accent drop-shadow-[0_0_6px_hsl(var(--accent))]' : 'text-muted-foreground hover:text-accent'}`} />
+          </button>
         </div>
         <h3 className="font-bold text-lg text-foreground">{task.client_name}</h3>
         <p className="text-sm text-muted-foreground">{task.type}</p>
