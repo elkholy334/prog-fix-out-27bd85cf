@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User, Plus } from 'lucide-react';
 import { useTasks, useTechnicians, useDeleteTask } from '@/hooks/useDatabase';
+import { useAuth } from '@/hooks/useAuth';
 import { TaskDetailDialog } from '@/components/TaskDetailDialog';
 import { SendWhatsAppDialog } from '@/components/SendWhatsAppDialog';
 import { AddTaskDialog } from '@/components/AddTaskDialog';
+import { StatusChangeDialog } from '@/components/StatusChangeDialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 
 type TaskRow = Database['public']['Tables']['tasks']['Row'];
-type TaskStatus = string;
 type FilterTab = 'all' | 'assigned' | string;
 
 const STATUS_LABELS: Record<string, string> = {
@@ -46,12 +47,22 @@ export const TasksList = () => {
   const [selectedTask, setSelectedTask] = useState<TaskRow | null>(null);
   const [whatsappTask, setWhatsappTask] = useState<TaskRow | null>(null);
   const [addTaskOpen, setAddTaskOpen] = useState(false);
+  const [statusTask, setStatusTask] = useState<TaskRow | null>(null);
+
+  const { role, technicianId } = useAuth();
+  const isAdmin = role === 'admin';
+  const isTechnician = role === 'technician';
 
   const { data: tasks = [], isLoading } = useTasks();
   const { data: technicians = [] } = useTechnicians();
   const deleteTask = useDeleteTask();
 
-  const filteredTasks = tasks.filter((task) => {
+  // Technicians only see tasks assigned to them
+  const visibleTasks = isTechnician
+    ? tasks.filter((t) => t.required_technician === technicianId || t.technician_id === technicianId)
+    : tasks;
+
+  const filteredTasks = visibleTasks.filter((task) => {
     if (activeFilter === 'all') return true;
     if (activeFilter === 'assigned') return task.required_technician != null;
     return task.status === activeFilter;
@@ -69,21 +80,36 @@ export const TasksList = () => {
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   };
 
+  const maskPhone = (phone: string) => {
+    if (!phone || phone.length < 4) return '****';
+    return '****' + phone.slice(-2);
+  };
+
   return (
     <div className="space-y-4 animate-slide-up">
-      {/* Add Task Button */}
-      <div className="flex items-center justify-between">
-        <Button
-          className="gradient-hero text-primary-foreground font-bold px-6 py-2.5 shadow-card hover:shadow-card-hover"
-          onClick={() => setAddTaskOpen(true)}
-        >
-          <Plus className="h-5 w-5 ml-2" />
-          إضافة مهمة جديدة
-        </Button>
-        <span className="text-sm text-muted-foreground">
-          {filteredTasks.length} مهمة
-        </span>
-      </div>
+      {/* Add Task Button - Admin only */}
+      {isAdmin && (
+        <div className="flex items-center justify-between">
+          <Button
+            className="gradient-hero text-primary-foreground font-bold px-6 py-2.5 shadow-card hover:shadow-card-hover"
+            onClick={() => setAddTaskOpen(true)}
+          >
+            <Plus className="h-5 w-5 ml-2" />
+            إضافة مهمة جديدة
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {filteredTasks.length} مهمة
+          </span>
+        </div>
+      )}
+
+      {!isAdmin && (
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground font-bold">
+            المهام المطلوبة منك ({filteredTasks.length})
+          </span>
+        </div>
+      )}
 
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
         {FILTER_TABS.map((tab) => (
@@ -156,26 +182,43 @@ export const TasksList = () => {
                   )}
                 </div>
 
+                {/* Status badge - clickable for admin to change, clickable for tech to start */}
                 <div className="px-4 py-2">
-                  <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-medium w-full text-center ${STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}>
-                    {STATUS_LABELS[task.status] || task.status}
-                  </span>
+                  <button
+                    onClick={() => setStatusTask(task)}
+                    className={`inline-block px-4 py-1.5 rounded-full text-sm font-medium w-full text-center cursor-pointer hover:opacity-80 transition-opacity ${STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
+                  >
+                    {isAdmin
+                      ? STATUS_LABELS[task.status] || task.status
+                      : task.status === 'waiting'
+                        ? '🚀 بدء المهمة'
+                        : STATUS_LABELS[task.status] || task.status}
+                  </button>
                 </div>
 
                 <div className="flex items-center justify-between px-4 py-3 border-t border-accent/20">
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleDelete(task.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {isAdmin && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleDelete(task.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted">
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-success hover:bg-success/10" onClick={() => setWhatsappTask(task)}>
-                      <MessageCircle className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted">
-                      <Phone className="h-4 w-4" />
-                    </Button>
+                    {/* WhatsApp - admin only, phone hidden from technician */}
+                    {isAdmin && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-success hover:bg-success/10" onClick={() => setWhatsappTask(task)}>
+                        <MessageCircle className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {/* Phone - admin only */}
+                    {isAdmin && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted"
+                        onClick={() => window.open(`tel:${task.phone}`)}>
+                        <Phone className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                   <Button variant="outline" size="sm" className="text-xs border-border" onClick={() => setSelectedTask(task)}>
                     التفاصيل
@@ -194,8 +237,9 @@ export const TasksList = () => {
       )}
 
       <TaskDetailDialog task={selectedTask} onClose={() => setSelectedTask(null)} />
-      <SendWhatsAppDialog task={whatsappTask} onClose={() => setWhatsappTask(null)} />
-      <AddTaskDialog open={addTaskOpen} onOpenChange={setAddTaskOpen} />
+      {isAdmin && <SendWhatsAppDialog task={whatsappTask} onClose={() => setWhatsappTask(null)} />}
+      {isAdmin && <AddTaskDialog open={addTaskOpen} onOpenChange={setAddTaskOpen} />}
+      <StatusChangeDialog task={statusTask} onClose={() => setStatusTask(null)} />
     </div>
   );
 };
