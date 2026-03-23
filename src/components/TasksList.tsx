@@ -79,9 +79,10 @@ interface SortableTaskCardProps {
   onStatusChange: (task: TaskRow) => void;
   onDetails: (task: TaskRow) => void;
   onWhatsApp: (task: TaskRow) => void;
+  onToggleFavorite: (task: TaskRow) => void;
 }
 
-const SortableTaskCard = ({ task, techName, daysAgo, isAdmin, onDelete, onStatusChange, onDetails, onWhatsApp }: SortableTaskCardProps) => {
+const SortableTaskCard = ({ task, techName, daysAgo, isAdmin, onDelete, onStatusChange, onDetails, onWhatsApp, onToggleFavorite }: SortableTaskCardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
 
   const style = {
