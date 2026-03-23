@@ -62,7 +62,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
   const [addTaskOpen, setAddTaskOpen] = useState(false);
   const [statusTask, setStatusTask] = useState<TaskRow | null>(null);
 
-  const { role, technicianId } = useAuth();
+  useEffect(() => { setActiveFilter(initialFilter); }, [initialFilter]);
   const isAdmin = role === 'admin';
   const isTechnician = role === 'technician';
 
