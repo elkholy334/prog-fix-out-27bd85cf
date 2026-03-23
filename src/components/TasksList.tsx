@@ -261,6 +261,17 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
     });
   };
 
+  const updateTask = useUpdateTask();
+
+  const handleToggleFavorite = (task: TaskRow) => {
+    updateTask.mutate(
+      { id: task.id, is_favorite: !task.is_favorite },
+      {
+        onSuccess: () => toast.success(task.is_favorite ? 'تم إزالة النجمة' : '⭐ تم تمييز المهمة كمهمة'),
+      }
+    );
+  };
+
   const getDaysAgo = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime();
     return Math.floor(diff / (1000 * 60 * 60 * 24));
