@@ -45,7 +45,8 @@ export const TasksList = () => {
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [selectedTask, setSelectedTask] = useState<TaskRow | null>(null);
   const [whatsappTask, setWhatsappTask] = useState<TaskRow | null>(null);
-  
+  const [addTaskOpen, setAddTaskOpen] = useState(false);
+
   const { data: tasks = [], isLoading } = useTasks();
   const { data: technicians = [] } = useTechnicians();
   const deleteTask = useDeleteTask();
@@ -70,6 +71,20 @@ export const TasksList = () => {
 
   return (
     <div className="space-y-4 animate-slide-up">
+      {/* Add Task Button */}
+      <div className="flex items-center justify-between">
+        <Button
+          className="gradient-hero text-primary-foreground font-bold px-6 py-2.5 shadow-card hover:shadow-card-hover"
+          onClick={() => setAddTaskOpen(true)}
+        >
+          <Plus className="h-5 w-5 ml-2" />
+          إضافة مهمة جديدة
+        </Button>
+        <span className="text-sm text-muted-foreground">
+          {filteredTasks.length} مهمة
+        </span>
+      </div>
+
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
         {FILTER_TABS.map((tab) => (
           <button
