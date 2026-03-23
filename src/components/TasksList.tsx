@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User, Plus } from 'lucide-react';
-import { useTasks, useTechnicians, useDeleteTask } from '@/hooks/useDatabase';
+import { useState, useEffect, useMemo } from 'react';
+import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User, Plus, GripVertical } from 'lucide-react';
+import { useTasks, useTechnicians, useDeleteTask, useUpdateTask } from '@/hooks/useDatabase';
 import { useAuth } from '@/hooks/useAuth';
 import { TaskDetailDialog } from '@/components/TaskDetailDialog';
 import { SendWhatsAppDialog } from '@/components/SendWhatsAppDialog';
@@ -9,6 +9,24 @@ import { StatusChangeDialog } from '@/components/StatusChangeDialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 type TaskRow = Database['public']['Tables']['tasks']['Row'];
 type FilterTab = 'all' | 'assigned' | string;
@@ -51,6 +69,123 @@ const FILTER_TABS: { key: FilterTab; label: string }[] = [
   { key: 'unrated', label: 'بلا تقييم' },
 ];
 
+// ---- Sortable Task Card ----
+interface SortableTaskCardProps {
+  task: TaskRow;
+  techName: string;
+  daysAgo: number;
+  isAdmin: boolean;
+  onDelete: (id: number) => void;
+  onStatusChange: (task: TaskRow) => void;
+  onDetails: (task: TaskRow) => void;
+  onWhatsApp: (task: TaskRow) => void;
+}
+
+const SortableTaskCard = ({ task, techName, daysAgo, isAdmin, onDelete, onStatusChange, onDetails, onWhatsApp }: SortableTaskCardProps) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : undefined,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className={`bg-card rounded-xl border border-accent/20 shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BORDER_COLORS[task.status] || ''}`}>
+      {/* Drag Handle */}
+      <div
+        {...attributes}
+        {...listeners}
+        className="flex items-center justify-center py-1.5 cursor-grab active:cursor-grabbing bg-muted/50 hover:bg-muted transition-colors"
+      >
+        <GripVertical className="h-4 w-4 text-muted-foreground" />
+      </div>
+
+      <div className="p-4 pb-2">
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">#{task.id}</span>
+            <span className="flex items-center gap-1 text-xs bg-muted rounded-full px-2 py-0.5">
+              <Clock className="h-3 w-3" />
+              منذ {daysAgo} يوم
+            </span>
+          </div>
+          <Star className={`h-5 w-5 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground'}`} />
+        </div>
+        <h3 className="font-bold text-lg text-foreground">{task.client_name}</h3>
+        <p className="text-sm text-muted-foreground">{task.type}</p>
+      </div>
+
+      <div className="px-4 pb-2 space-y-1.5 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <Clock className="h-3.5 w-3.5" />
+          <span>{new Date(task.created_at).toLocaleString('ar-EG')}</span>
+        </div>
+        {task.address && (
+          <div className="flex items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5" />
+            <span>{task.address}</span>
+          </div>
+        )}
+        {techName && (
+          <div className="flex items-center gap-1.5">
+            <User className="h-3.5 w-3.5" />
+            <span>{techName}</span>
+          </div>
+        )}
+        {task.scheduled_time && (
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5" />
+            <span>موعد التنفيذ: {task.scheduled_time}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="px-4 py-2">
+        <button
+          onClick={() => onStatusChange(task)}
+          className={`inline-block px-4 py-1.5 rounded-full text-sm font-medium w-full text-center cursor-pointer hover:opacity-80 transition-opacity ${STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
+        >
+          {isAdmin
+            ? STATUS_LABELS[task.status] || task.status
+            : task.status === 'waiting'
+              ? '🚀 بدء المهمة'
+              : STATUS_LABELS[task.status] || task.status}
+        </button>
+      </div>
+
+      <div className="flex items-center justify-between px-4 py-3 border-t border-accent/20">
+        <div className="flex items-center gap-1">
+          {isAdmin && (
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => onDelete(task.id)}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted">
+            <Eye className="h-4 w-4" />
+          </Button>
+          {isAdmin && (
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-success hover:bg-success/10" onClick={() => onWhatsApp(task)}>
+              <MessageCircle className="h-4 w-4" />
+            </Button>
+          )}
+          {isAdmin && (
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted"
+              onClick={() => window.open(`tel:${task.phone}`)}>
+              <Phone className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        <Button variant="outline" size="sm" className="text-xs border-border" onClick={() => onDetails(task)}>
+          التفاصيل
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// ---- Main List ----
 interface TasksListProps {
   initialFilter?: string;
 }
@@ -61,6 +196,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
   const [whatsappTask, setWhatsappTask] = useState<TaskRow | null>(null);
   const [addTaskOpen, setAddTaskOpen] = useState(false);
   const [statusTask, setStatusTask] = useState<TaskRow | null>(null);
+  const [orderedIds, setOrderedIds] = useState<number[]>([]);
 
   useEffect(() => { setActiveFilter(initialFilter); }, [initialFilter]);
 
@@ -72,16 +208,48 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
   const { data: technicians = [] } = useTechnicians();
   const deleteTask = useDeleteTask();
 
-  // Technicians only see tasks assigned to them
   const visibleTasks = isTechnician
     ? tasks.filter((t) => t.required_technician === technicianId || t.technician_id === technicianId)
     : tasks;
 
-  const filteredTasks = visibleTasks.filter((task) => {
+  const baseFiltered = visibleTasks.filter((task) => {
     if (activeFilter === 'all') return true;
     if (activeFilter === 'assigned') return task.required_technician != null;
     return task.status === activeFilter;
   });
+
+  // Sync orderedIds when tasks change
+  useEffect(() => {
+    setOrderedIds(baseFiltered.map(t => t.id));
+  }, [tasks, activeFilter]);
+
+  const filteredTasks = useMemo(() => {
+    const taskMap = new Map(baseFiltered.map(t => [t.id, t]));
+    const ordered = orderedIds.filter(id => taskMap.has(id)).map(id => taskMap.get(id)!);
+    // Add any new tasks not in orderedIds
+    const orderedSet = new Set(orderedIds);
+    baseFiltered.forEach(t => { if (!orderedSet.has(t.id)) ordered.push(t); });
+    return ordered;
+  }, [baseFiltered, orderedIds]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setOrderedIds(prev => {
+      const oldIndex = prev.indexOf(Number(active.id));
+      const newIndex = prev.indexOf(Number(over.id));
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+
+    toast.success('تم إعادة ترتيب المهام');
+  };
 
   const handleDelete = (id: number) => {
     deleteTask.mutate(id, {
@@ -95,14 +263,8 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   };
 
-  const maskPhone = (phone: string) => {
-    if (!phone || phone.length < 4) return '****';
-    return '****' + phone.slice(-2);
-  };
-
   return (
     <div className="space-y-4 animate-slide-up">
-      {/* Add Task Button - Admin only */}
       {isAdmin && (
         <div className="flex items-center justify-between">
           <Button
@@ -148,101 +310,32 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
           <p className="text-lg">جاري التحميل...</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTasks.map((task) => {
-            const techName = task.required_technician
-              ? technicians.find((t) => t.id === task.required_technician)?.name
-              : '';
-            const daysAgo = getDaysAgo(task.created_at);
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={filteredTasks.map(t => t.id)} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredTasks.map((task) => {
+                const techName = task.required_technician
+                  ? technicians.find((t) => t.id === task.required_technician)?.name || ''
+                  : '';
+                const daysAgo = getDaysAgo(task.created_at);
 
-            return (
-              <div key={task.id} className={`bg-card rounded-xl border border-accent/20 shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BORDER_COLORS[task.status] || ''}`}>
-                <div className="p-4 pb-2">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">#{task.id}</span>
-                      <span className="flex items-center gap-1 text-xs bg-muted rounded-full px-2 py-0.5">
-                        <Clock className="h-3 w-3" />
-                        منذ {daysAgo} يوم
-                      </span>
-                    </div>
-                    <Star className={`h-5 w-5 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground'}`} />
-                  </div>
-                  <h3 className="font-bold text-lg text-foreground">{task.client_name}</h3>
-                  <p className="text-sm text-muted-foreground">{task.type}</p>
-                </div>
-
-                <div className="px-4 pb-2 space-y-1.5 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span>{new Date(task.created_at).toLocaleString('ar-EG')}</span>
-                  </div>
-                  {task.address && (
-                    <div className="flex items-center gap-1.5">
-                      <MapPin className="h-3.5 w-3.5" />
-                      <span>{task.address}</span>
-                    </div>
-                  )}
-                  {techName && (
-                    <div className="flex items-center gap-1.5">
-                      <User className="h-3.5 w-3.5" />
-                      <span>{techName}</span>
-                    </div>
-                  )}
-                  {task.scheduled_time && (
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span>موعد التنفيذ: {task.scheduled_time}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Status badge - clickable for admin to change, clickable for tech to start */}
-                <div className="px-4 py-2">
-                  <button
-                    onClick={() => setStatusTask(task)}
-                    className={`inline-block px-4 py-1.5 rounded-full text-sm font-medium w-full text-center cursor-pointer hover:opacity-80 transition-opacity ${STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
-                  >
-                    {isAdmin
-                      ? STATUS_LABELS[task.status] || task.status
-                      : task.status === 'waiting'
-                        ? '🚀 بدء المهمة'
-                        : STATUS_LABELS[task.status] || task.status}
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between px-4 py-3 border-t border-accent/20">
-                  <div className="flex items-center gap-1">
-                    {isAdmin && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleDelete(task.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    {/* WhatsApp - admin only, phone hidden from technician */}
-                    {isAdmin && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-success hover:bg-success/10" onClick={() => setWhatsappTask(task)}>
-                        <MessageCircle className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {/* Phone - admin only */}
-                    {isAdmin && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted"
-                        onClick={() => window.open(`tel:${task.phone}`)}>
-                        <Phone className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                  <Button variant="outline" size="sm" className="text-xs border-border" onClick={() => setSelectedTask(task)}>
-                    التفاصيل
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                return (
+                  <SortableTaskCard
+                    key={task.id}
+                    task={task}
+                    techName={techName}
+                    daysAgo={daysAgo}
+                    isAdmin={isAdmin}
+                    onDelete={handleDelete}
+                    onStatusChange={setStatusTask}
+                    onDetails={setSelectedTask}
+                    onWhatsApp={setWhatsappTask}
+                  />
+                );
+              })}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {!isLoading && filteredTasks.length === 0 && (
