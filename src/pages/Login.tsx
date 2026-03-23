@@ -13,6 +13,7 @@ interface UserOption {
   name: string;
   email: string;
   role: 'admin' | 'technician';
+  color?: string;
 }
 
 const REMEMBER_KEY = 'remembered_login';
@@ -25,29 +26,50 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  // Load all users (admins + technicians)
+  // Load all users from technicians + check roles
   useEffect(() => {
     const fetchUsers = async () => {
-      // Fetch technicians
       const { data: techs } = await supabase
         .from('technicians')
-        .select('id, name, email')
+        .select('id, name, email, color')
         .eq('is_active', true)
         .order('name');
 
       console.log('Fetched technicians:', techs);
-      const techUsers: UserOption[] = (techs || []).map(t => ({
-        id: t.id,
-        name: t.name,
-        email: (t as any).email || '',
-        role: 'technician' as const,
-      }));
 
-      // Add admin manually (seeded)
-      const allUsers: UserOption[] = [
-        { id: 'admin', name: 'المالك', email: 'admin@app.com', role: 'admin' },
-        ...techUsers,
-      ];
+      if (!techs) return;
+
+      // Get profiles to check which ones have admin role
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, technician_id')
+        .in('technician_id', techs.map(t => t.id));
+
+      const { data: adminRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
+
+      const adminUserIds = new Set((adminRoles || []).map(r => r.user_id));
+
+      const allUsers: UserOption[] = techs.map(t => {
+        const profile = (profiles || []).find(p => p.technician_id === t.id);
+        const isAdmin = profile ? adminUserIds.has(profile.id) : false;
+        return {
+          id: t.id,
+          name: t.name,
+          email: (t as any).email || '',
+          role: isAdmin ? 'admin' as const : 'technician' as const,
+          color: t.color,
+        };
+      });
+
+      // Sort: admin first
+      allUsers.sort((a, b) => {
+        if (a.role === 'admin' && b.role !== 'admin') return -1;
+        if (a.role !== 'admin' && b.role === 'admin') return 1;
+        return 0;
+      });
 
       setUsers(allUsers);
     };
@@ -116,19 +138,39 @@ const Login = () => {
 
             {/* Users Grid */}
             <div className="grid grid-cols-3 gap-3">
-              {users.map(user => (
-                <button
-                  key={user.id}
-                  onClick={() => setSelectedUser(user)}
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl bg-card border border-border hover:border-primary/40 hover:shadow-card transition-all group"
-                >
-                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                    <User className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
-                  <span className="font-bold text-xs text-foreground text-center leading-tight">{user.name}</span>
-                  <span className="text-[10px] text-muted-foreground">{getRoleLabel(user.role)}</span>
-                </button>
-              ))}
+              {users.map(user => {
+                const isAdmin = user.role === 'admin';
+                return (
+                  <button
+                    key={user.id}
+                    onClick={() => setSelectedUser(user)}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all group ${
+                      isAdmin
+                        ? 'bg-primary/5 border-primary/30 hover:border-primary hover:shadow-lg col-span-3 flex-row justify-center py-5'
+                        : 'bg-card border-border hover:border-primary/40 hover:shadow-card'
+                    }`}
+                  >
+                    <div className={`rounded-full flex items-center justify-center transition-colors ${
+                      isAdmin
+                        ? 'w-14 h-14 bg-primary/15 group-hover:bg-primary/25'
+                        : 'w-12 h-12 bg-muted group-hover:bg-primary/10'
+                    }`}>
+                      {isAdmin
+                        ? <Shield className="h-7 w-7 text-primary" />
+                        : <User className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                      }
+                    </div>
+                    <div className={isAdmin ? 'mr-3 text-right' : 'text-center'}>
+                      <span className={`font-bold text-foreground leading-tight ${isAdmin ? 'text-sm' : 'text-xs'}`}>
+                        {user.name}
+                      </span>
+                      <span className={`block text-muted-foreground ${isAdmin ? 'text-xs' : 'text-[10px]'}`}>
+                        {getRoleLabel(user.role)}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
 
             <p className="text-center text-xs text-muted-foreground pt-2">
