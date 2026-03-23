@@ -154,7 +154,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
             const daysAgo = getDaysAgo(task.created_at);
 
             return (
-              <div key={task.id} className="bg-card-warm rounded-xl border border-accent/20 shadow-card hover:shadow-card-hover transition-all overflow-hidden">
+              <div key={task.id} className={`bg-card rounded-xl border border-accent/20 shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BORDER_COLORS[task.status] || ''}`}>
                 <div className="p-4 pb-2">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
