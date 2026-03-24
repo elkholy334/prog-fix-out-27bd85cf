@@ -53,7 +53,12 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   const [newTechName, setNewTechName] = useState('');
 
   useEffect(() => {
-    if (waConfigData) setWaConfig(waConfigData as unknown as WhatsAppConfig);
+    if (waConfigData) {
+      const config = waConfigData as unknown as WhatsAppConfig;
+      setWaConfig(config);
+      // Sync to localStorage so sendWhatsAppMessage can read it
+      localStorage.setItem('whatsapp_config', JSON.stringify(config));
+    }
   }, [waConfigData]);
 
   useEffect(() => {
