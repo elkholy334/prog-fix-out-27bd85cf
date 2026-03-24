@@ -29,26 +29,32 @@ export const sendWhatsAppMessage = async (phone: string, message: string): Promi
     return { success: false, error: 'إعدادات الواتساب غير مكتملة. يرجى إدخال API Token و Instance ID في الإعدادات.' };
   }
 
-  // Ensure phone is in correct format (no + sign, with country code)
+  // Ensure phone is in correct format
   const cleanPhone = phone.replace(/[^0-9]/g, '');
   if (!cleanPhone || cleanPhone.length < 10) {
     return { success: false, error: 'رقم الهاتف غير صالح' };
   }
 
+  // Normalize to international format (Egypt by default)
+  const normalizedPhone = cleanPhone.startsWith('20')
+    ? cleanPhone
+    : cleanPhone.startsWith('0')
+      ? `20${cleanPhone.slice(1)}`
+      : cleanPhone.length === 10
+        ? `20${cleanPhone}`
+        : cleanPhone;
+
+  
+
   try {
     const url = new URL(config.endpoints.sendText);
     url.searchParams.set('token', config.apiToken);
     url.searchParams.set('instance_id', config.instanceId);
+    url.searchParams.set('jid', normalizedPhone);
+    url.searchParams.set('msg', message);
     
     const response = await fetch(url.toString(), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        mobile: cleanPhone,
-        text: message,
-      }),
     });
 
     const data = await response.json();
