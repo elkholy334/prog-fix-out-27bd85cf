@@ -119,7 +119,7 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
 تم استلام طلبك وجاري التنفيذ ✨
 
 📋 *تفاصيل الحجز:*
-🔧 نوع العمل: ${type}
+🔧 نوع العمل: ${finalType}
 📍 العنوان: ${address.trim() || 'غير محدد'}
 📅 موعد التنفيذ: ${dateStr}
 ⏰ الوقت المتوقع: ${timeDisplayStr}
