@@ -50,19 +50,11 @@ export const sendWhatsAppMessage = async (phone: string, message: string): Promi
     const url = new URL(config.endpoints.sendText);
     url.searchParams.set('token', config.apiToken);
     url.searchParams.set('instance_id', config.instanceId);
+    url.searchParams.set('jid', normalizedPhone);
+    url.searchParams.set('msg', message);
     
     const response = await fetch(url.toString(), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        jid,
-        msg: message,
-        message,
-        mobile: normalizedPhone,
-        text: message,
-      }),
     });
 
     const data = await response.json();
