@@ -404,6 +404,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
                     isAdmin={isAdmin}
                     onDelete={handleDelete}
                     onStatusChange={setStatusTask}
+                    onComplete={(t) => setCompletionTask(t)}
                     onDetails={setSelectedTask}
                     onWhatsApp={setWhatsappTask}
                     onToggleFavorite={handleToggleFavorite}
