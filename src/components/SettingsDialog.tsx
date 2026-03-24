@@ -48,6 +48,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   });
   const [showToken, setShowToken] = useState(false);
   const [shopName, setShopName] = useState('شركة الفيروز للستالايت');
+  const [adminPhone, setAdminPhone] = useState('');
   const [delayHours, setDelayHours] = useState(24);
   const [newTechName, setNewTechName] = useState('');
 
