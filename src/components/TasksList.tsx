@@ -151,7 +151,10 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
           </button>
         </div>
         <h3 className="font-bold text-lg text-foreground">{task.client_name}</h3>
-        <p className="text-sm text-muted-foreground">{task.type}</p>
+        <div className="flex items-center gap-2">
+          {taskTypeImage && <img src={taskTypeImage} alt={task.type} className="h-6 w-6 rounded object-contain" />}
+          <p className="text-sm text-muted-foreground">{task.type}</p>
+        </div>
       </div>
 
       <div className="px-4 pb-2 space-y-1.5 text-xs text-muted-foreground">
