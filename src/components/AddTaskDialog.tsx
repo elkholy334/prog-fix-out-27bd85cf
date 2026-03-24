@@ -241,11 +241,14 @@ ${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
             <Select value={type} onValueChange={(v) => { setType(v); if (v !== 'أخرى') setCustomType(''); }}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="تركيب كاميرات">تركيب كاميرات</SelectItem>
-                <SelectItem value="تركيب هوائي">تركيب هوائي</SelectItem>
-                <SelectItem value="تركيب طبق">تركيب طبق</SelectItem>
-                <SelectItem value="صيانة">صيانة</SelectItem>
-                <SelectItem value="أخرى">أخرى</SelectItem>
+                {taskTypes.map((t: any) => (
+                  <SelectItem key={t.id} value={t.name}>
+                    <span className="flex items-center gap-2">
+                      {t.imageUrl && <img src={t.imageUrl} alt={t.name} className="h-5 w-5 rounded object-contain" />}
+                      {t.name}
+                    </span>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             {type === 'أخرى' && (
