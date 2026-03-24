@@ -94,7 +94,7 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
         client_name: clientName.trim(),
         phone: phone.trim(),
         address: address.trim(),
-        type,
+        type: finalType,
         problem: problem.trim(),
         scheduled_date: scheduledDate ? format(scheduledDate, 'yyyy-MM-dd') : null,
         scheduled_time: timeStr,
