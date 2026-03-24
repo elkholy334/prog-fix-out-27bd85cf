@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { useCreateTask, useTechnicians } from '@/hooks/useDatabase';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
+import { sendWhatsAppMessage } from '@/lib/whatsapp';
 
 interface AddTaskDialogProps {
   open: boolean;
