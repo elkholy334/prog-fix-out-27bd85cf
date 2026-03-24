@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User, Plus, GripVertical, Timer } from 'lucide-react';
+import { Star, Clock, MapPin, Phone, Archive, MessageCircle, Trash2, User, Plus, GripVertical, Timer } from 'lucide-react';
 import { useTasks, useTechnicians, useDeleteTask, useUpdateTask } from '@/hooks/useDatabase';
 import { useAuth } from '@/hooks/useAuth';
 import { TaskDetailDialog } from '@/components/TaskDetailDialog';
@@ -68,6 +68,7 @@ const FILTER_TABS: { key: FilterTab; label: string }[] = [
   { key: 'postponed', label: 'مؤجل' },
   { key: 'late', label: 'متأخرة' },
   { key: 'unrated', label: 'بلا تقييم' },
+  { key: 'archived', label: '📦 الأرشيف' },
 ];
 
 // ---- Elapsed Timer Component ----
@@ -107,9 +108,10 @@ interface SortableTaskCardProps {
   onDetails: (task: TaskRow) => void;
   onWhatsApp: (task: TaskRow) => void;
   onToggleFavorite: (task: TaskRow) => void;
+  onArchive: (task: TaskRow) => void;
 }
 
-const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin, onDelete, onStatusChange, onComplete, onDetails, onWhatsApp, onToggleFavorite }: SortableTaskCardProps) => {
+const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin, onDelete, onStatusChange, onComplete, onDetails, onWhatsApp, onToggleFavorite, onArchive }: SortableTaskCardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
 
   const style = {
@@ -123,14 +125,16 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
 
   return (
     <div ref={setNodeRef} style={style} className={`bg-card rounded-xl border shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BORDER_COLORS[task.status] || ''} ${isExecuting ? 'animate-pulse-glow border-success ring-2 ring-success/40' : ''} ${task.is_favorite ? 'border-accent ring-2 ring-accent/30 shadow-[0_0_15px_hsl(var(--accent)/0.2)]' : !isExecuting ? 'border-accent/20' : ''}`}>
-      {/* Drag Handle */}
-      <div
-        {...attributes}
-        {...listeners}
-        className="flex items-center justify-center py-1.5 cursor-grab active:cursor-grabbing bg-muted/50 hover:bg-muted transition-colors"
-      >
-        <GripVertical className="h-4 w-4 text-muted-foreground" />
-      </div>
+      {/* Drag Handle - Admin only */}
+      {isAdmin && (
+        <div
+          {...attributes}
+          {...listeners}
+          className="flex items-center justify-center py-1.5 cursor-grab active:cursor-grabbing bg-muted/50 hover:bg-muted transition-colors"
+        >
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </div>
+      )}
 
       <div className="p-4 pb-2">
         <div className="flex items-start justify-between mb-2">
@@ -221,9 +225,12 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
               <Trash2 className="h-4 w-4" />
             </Button>
           )}
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted">
-            <Eye className="h-4 w-4" />
-          </Button>
+          {isAdmin && (
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted" onClick={() => onArchive(task)}
+              title={task.is_archived ? 'إلغاء الأرشفة' : 'أرشفة'}>
+              <Archive className="h-4 w-4" />
+            </Button>
+          )}
           {isAdmin && (
             <Button variant="ghost" size="icon" className="h-8 w-8 text-success hover:bg-success/10" onClick={() => onWhatsApp(task)}>
               <MessageCircle className="h-4 w-4" />
@@ -273,6 +280,9 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
     : tasks;
 
   const baseFiltered = visibleTasks.filter((task) => {
+    if (activeFilter === 'archived') return task.is_archived === true;
+    // Hide archived from all other filters
+    if (task.is_archived) return false;
     if (activeFilter === 'all') return true;
     if (activeFilter === 'assigned') return task.required_technician != null;
     return task.status === activeFilter;
@@ -336,6 +346,16 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
     );
   };
 
+  const handleArchive = (task: TaskRow) => {
+    const newVal = !task.is_archived;
+    updateTask.mutate(
+      { id: task.id, is_archived: newVal },
+      {
+        onSuccess: () => toast.success(newVal ? '📦 تم أرشفة المهمة' : '📋 تم إلغاء الأرشفة'),
+      }
+    );
+  };
+
   const getDaysAgo = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime();
     return Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -367,7 +387,9 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
       )}
 
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {FILTER_TABS.map((tab) => (
+        {FILTER_TABS
+          .filter(tab => isAdmin || (tab.key !== 'archived'))
+          .map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveFilter(tab.key)}
@@ -401,20 +423,21 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
                 const daysAgo = getDaysAgo(task.created_at);
 
                 return (
-                  <SortableTaskCard
-                    key={task.id}
-                    task={task}
-                    techName={techName}
-                    executingTechName={executingTechName}
-                    daysAgo={daysAgo}
-                    isAdmin={isAdmin}
-                    onDelete={handleDelete}
-                    onStatusChange={setStatusTask}
-                    onComplete={(t) => setCompletionTask(t)}
-                    onDetails={setSelectedTask}
-                    onWhatsApp={setWhatsappTask}
-                    onToggleFavorite={handleToggleFavorite}
-                  />
+                    <SortableTaskCard
+                      key={task.id}
+                      task={task}
+                      techName={techName}
+                      executingTechName={executingTechName}
+                      daysAgo={daysAgo}
+                      isAdmin={isAdmin}
+                      onDelete={handleDelete}
+                      onStatusChange={setStatusTask}
+                      onComplete={(t) => setCompletionTask(t)}
+                      onDetails={setSelectedTask}
+                      onWhatsApp={setWhatsappTask}
+                      onToggleFavorite={handleToggleFavorite}
+                      onArchive={handleArchive}
+                    />
                 );
               })}
             </div>
