@@ -76,9 +76,16 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
 
   const saveGeneral = () => {
     upsertSetting.mutate(
-      { key: 'general', value: { shopName, delayHours } as any },
+      { key: 'general', value: { shopName, adminPhone, delayHours } as any },
       { onSuccess: () => toast.success('تم حفظ الإعدادات العامة') }
     );
+  };
+
+  const updateCommissionRate = async (techId: string, rate: number) => {
+    const { error } = await supabase.from('technicians').update({ commission_rate: rate } as any).eq('id', techId);
+    if (error) { toast.error('فشل في تحديث النسبة'); return; }
+    toast.success('تم تحديث نسبة العمولة');
+    queryClient.invalidateQueries({ queryKey: ['technicians'] });
   };
 
   const addTechnician = async () => {
