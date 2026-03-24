@@ -10,7 +10,7 @@ import { CalendarIcon, Loader2, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { useCreateTask, useTechnicians } from '@/hooks/useDatabase';
+import { useCreateTask, useTechnicians, useSetting } from '@/hooks/useDatabase';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { sendWhatsAppMessage } from '@/lib/whatsapp';
