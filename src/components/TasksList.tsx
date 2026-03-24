@@ -162,7 +162,6 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
           <p className="text-sm text-muted-foreground">{task.type}</p>
         </div>
       </div>
-      </div>
 
       <div className="px-4 pb-2 space-y-1.5 text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
