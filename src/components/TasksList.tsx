@@ -277,7 +277,16 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
 
   const { data: tasks = [], isLoading } = useTasks();
   const { data: technicians = [] } = useTechnicians();
+  const { data: taskTypesData } = useSetting('task_types');
   const deleteTask = useDeleteTask();
+
+  const taskTypeImageMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (Array.isArray(taskTypesData)) {
+      (taskTypesData as any[]).forEach((t: any) => { if (t.imageUrl) map[t.name] = t.imageUrl; });
+    }
+    return map;
+  }, [taskTypesData]);
 
   const visibleTasks = isTechnician
     ? tasks.filter((t) => t.required_technician === technicianId || t.technician_id === technicianId)
