@@ -35,6 +35,12 @@ export const StatusChangeDialog = ({ task, onClose, onComplete }: Props) => {
   if (!task) return null;
 
   const handleChange = (newStatus: string) => {
+    if (newStatus === 'completed' && onComplete && task) {
+      onComplete(task);
+      onClose();
+      return;
+    }
+
     if (newStatus === 'in_progress' && role === 'admin') {
       setShowTechSelect(true);
       return;
