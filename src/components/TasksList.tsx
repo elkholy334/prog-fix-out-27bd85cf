@@ -377,6 +377,9 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
                 const techName = task.required_technician
                   ? technicians.find((t) => t.id === task.required_technician)?.name || ''
                   : '';
+                const executingTechName = task.technician_id
+                  ? technicians.find((t) => t.id === task.technician_id)?.name || ''
+                  : '';
                 const daysAgo = getDaysAgo(task.created_at);
 
                 return (
@@ -384,6 +387,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
                     key={task.id}
                     task={task}
                     techName={techName}
+                    executingTechName={executingTechName}
                     daysAgo={daysAgo}
                     isAdmin={isAdmin}
                     onDelete={handleDelete}
