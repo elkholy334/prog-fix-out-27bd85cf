@@ -23,7 +23,18 @@ interface AddTaskDialogProps {
 export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
   const { data: technicians = [] } = useTechnicians();
   const { data: generalData } = useSetting('general');
+  const { data: taskTypesData } = useSetting('task_types');
   const createTask = useCreateTask();
+
+  const taskTypes = Array.isArray(taskTypesData) 
+    ? (taskTypesData as any[]).sort((a: any, b: any) => a.order - b.order)
+    : [
+        { id: '1', name: 'تركيب كاميرات', imageUrl: '', order: 0 },
+        { id: '2', name: 'تركيب هوائي', imageUrl: '', order: 1 },
+        { id: '3', name: 'تركيب طبق', imageUrl: '', order: 2 },
+        { id: '4', name: 'صيانة', imageUrl: '', order: 3 },
+        { id: '5', name: 'أخرى', imageUrl: '', order: 4 },
+      ];
 
   const [clientName, setClientName] = useState('');
   const [phone, setPhone] = useState('');
