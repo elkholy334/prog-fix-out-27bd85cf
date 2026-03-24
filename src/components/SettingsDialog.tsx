@@ -60,6 +60,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     if (generalData) {
       const g = generalData as any;
       if (g.shopName) setShopName(g.shopName);
+      if (g.adminPhone) setAdminPhone(g.adminPhone);
       if (g.delayHours) setDelayHours(g.delayHours);
     }
   }, [generalData]);
