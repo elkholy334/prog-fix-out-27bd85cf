@@ -248,6 +248,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
   const [whatsappTask, setWhatsappTask] = useState<TaskRow | null>(null);
   const [addTaskOpen, setAddTaskOpen] = useState(false);
   const [statusTask, setStatusTask] = useState<TaskRow | null>(null);
+  const [completionTask, setCompletionTask] = useState<TaskRow | null>(null);
   const [orderedIds, setOrderedIds] = useState<number[]>([]);
 
   useEffect(() => { setActiveFilter(initialFilter); }, [initialFilter]);
