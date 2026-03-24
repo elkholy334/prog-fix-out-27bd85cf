@@ -79,6 +79,7 @@ export type Database = {
           created_at: string
           expected_amount: number | null
           id: number
+          is_archived: boolean
           is_favorite: boolean | null
           money_delivered_to_shop: boolean | null
           paid_amount: number | null
@@ -106,6 +107,7 @@ export type Database = {
           created_at?: string
           expected_amount?: number | null
           id?: number
+          is_archived?: boolean
           is_favorite?: boolean | null
           money_delivered_to_shop?: boolean | null
           paid_amount?: number | null
@@ -133,6 +135,7 @@ export type Database = {
           created_at?: string
           expected_amount?: number | null
           id?: number
+          is_archived?: boolean
           is_favorite?: boolean | null
           money_delivered_to_shop?: boolean | null
           paid_amount?: number | null
