@@ -421,19 +421,21 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
                 const daysAgo = getDaysAgo(task.created_at);
 
                 return (
-                  <SortableTaskCard
-                    key={task.id}
-                    task={task}
-                    techName={techName}
-                    executingTechName={executingTechName}
-                    daysAgo={daysAgo}
-                    isAdmin={isAdmin}
-                    onDelete={handleDelete}
-                    onStatusChange={setStatusTask}
-                    onComplete={(t) => setCompletionTask(t)}
-                    onDetails={setSelectedTask}
-                    onWhatsApp={setWhatsappTask}
-                    onToggleFavorite={handleToggleFavorite}
+                    <SortableTaskCard
+                      key={task.id}
+                      task={task}
+                      techName={techName}
+                      executingTechName={executingTechName}
+                      daysAgo={daysAgo}
+                      isAdmin={isAdmin}
+                      onDelete={handleDelete}
+                      onStatusChange={setStatusTask}
+                      onComplete={(t) => setCompletionTask(t)}
+                      onDetails={setSelectedTask}
+                      onWhatsApp={setWhatsappTask}
+                      onToggleFavorite={handleToggleFavorite}
+                      onArchive={handleArchive}
+                    />
                   />
                 );
               })}
