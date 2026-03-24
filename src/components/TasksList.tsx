@@ -68,6 +68,7 @@ const FILTER_TABS: { key: FilterTab; label: string }[] = [
   { key: 'postponed', label: 'مؤجل' },
   { key: 'late', label: 'متأخرة' },
   { key: 'unrated', label: 'بلا تقييم' },
+  { key: 'archived', label: '📦 الأرشيف' },
 ];
 
 // ---- Elapsed Timer Component ----
