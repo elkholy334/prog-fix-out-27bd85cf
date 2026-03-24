@@ -117,6 +117,8 @@ ${notes ? `📝 ملاحظات: ${notes}` : ''}
 📱 رقم العميل: ${task.phone}
 🔧 النوع: ${task.type}
 👨‍🔧 الفني: ${techName}
+🕐 وقت بدء العمل: ${startTimeFormatted}
+🕑 وقت الانتهاء: ${endTimeFormatted}
 
 💰 *التفاصيل المالية:*
 المبلغ المدفوع: ${paidAmount} جنيه
