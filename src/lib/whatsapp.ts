@@ -36,7 +36,10 @@ export const sendWhatsAppMessage = async (phone: string, message: string): Promi
   }
 
   try {
-    const response = await fetch(config.endpoints.sendText, {
+    const url = new URL(config.endpoints.sendText);
+    url.searchParams.set('token', config.apiToken);
+    
+    const response = await fetch(url.toString(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -45,7 +48,6 @@ export const sendWhatsAppMessage = async (phone: string, message: string): Promi
         client_id: config.instanceId,
         mobile: cleanPhone,
         text: message,
-        token: config.apiToken,
       }),
     });
 
