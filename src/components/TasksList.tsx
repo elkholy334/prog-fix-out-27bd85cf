@@ -102,6 +102,7 @@ interface SortableTaskCardProps {
   executingTechName: string;
   daysAgo: number;
   isAdmin: boolean;
+  taskTypeImage?: string;
   onDelete: (id: number) => void;
   onStatusChange: (task: TaskRow) => void;
   onComplete: (task: TaskRow) => void;
