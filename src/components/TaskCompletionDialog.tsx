@@ -31,12 +31,18 @@ export const TaskCompletionDialog = ({ task, onClose }: Props) => {
   const [moneyDelivered, setMoneyDelivered] = useState(false);
   const [notes, setNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [showPostpone, setShowPostpone] = useState(false);
+  const [postponeDate, setPostponeDate] = useState<Date>();
+  const [postponeTime, setPostponeTime] = useState('');
 
   useEffect(() => {
     if (task) {
       setPaidAmount(0);
       setMoneyDelivered(false);
       setNotes('');
+      setShowPostpone(false);
+      setPostponeDate(undefined);
+      setPostponeTime('');
     }
   }, [task]);
 
