@@ -49,8 +49,6 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   const { data: taskTypesData } = useSetting('task_types');
   const { data: technicians = [] } = useTechnicians();
   const upsertSetting = useUpsertSetting();
-  const upsertSetting = useUpsertSetting();
-  const queryClient = useQueryClient();
 
   const [waConfig, setWaConfig] = useState<WhatsAppConfig>({
     apiToken: '', instanceId: '', defaultPhone: '', endpoints: { ...DEFAULT_ENDPOINTS },
