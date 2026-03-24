@@ -49,6 +49,15 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   const { data: taskTypesData } = useSetting('task_types');
   const { data: technicians = [] } = useTechnicians();
   const upsertSetting = useUpsertSetting();
+  const queryClient = useQueryClient();
+
+  const DEFAULT_TASK_TYPES: TaskType[] = [
+    { id: '1', name: 'تركيب كاميرات', imageUrl: '', order: 0 },
+    { id: '2', name: 'تركيب هوائي', imageUrl: '', order: 1 },
+    { id: '3', name: 'تركيب طبق', imageUrl: '', order: 2 },
+    { id: '4', name: 'صيانة', imageUrl: '', order: 3 },
+    { id: '5', name: 'أخرى', imageUrl: '', order: 4 },
+  ];
 
   const [waConfig, setWaConfig] = useState<WhatsAppConfig>({
     apiToken: '', instanceId: '', defaultPhone: '', endpoints: { ...DEFAULT_ENDPOINTS },
@@ -58,7 +67,13 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   const [adminPhone, setAdminPhone] = useState('');
   const [delayHours, setDelayHours] = useState(24);
   const [newTechName, setNewTechName] = useState('');
-
+  const [taskTypes, setTaskTypes] = useState<TaskType[]>(DEFAULT_TASK_TYPES);
+  const [newTypeName, setNewTypeName] = useState('');
+  const [newTypeImage, setNewTypeImage] = useState('');
+  const [editingTypeId, setEditingTypeId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editImage, setEditImage] = useState('');
+  const [draggedTypeId, setDraggedTypeId] = useState<string | null>(null);
   useEffect(() => {
     if (waConfigData) {
       const config = waConfigData as unknown as WhatsAppConfig;
