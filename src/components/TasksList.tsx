@@ -50,13 +50,13 @@ const STATUS_COLORS: Record<string, string> = {
   unrated: 'bg-muted text-muted-foreground',
 };
 
-const CARD_BORDER_COLORS: Record<string, string> = {
-  waiting: 'border-l-4 border-l-accent',
-  in_progress: 'border-l-4 border-l-success',
-  completed: 'border-l-4 border-l-primary',
-  postponed: 'border-l-4 border-l-warning',
-  late: 'border-l-4 border-l-destructive',
-  unrated: 'border-l-4 border-l-muted-foreground',
+const CARD_BG_COLORS: Record<string, string> = {
+  waiting: 'bg-[hsl(42_100%_96%)] border-accent/40',
+  in_progress: 'bg-[hsl(145_60%_96%)] border-success/40',
+  completed: 'bg-[hsl(215_80%_96%)] border-primary/40',
+  postponed: 'bg-[hsl(35_95%_95%)] border-warning/40',
+  late: 'bg-[hsl(0_72%_96%)] border-destructive/40',
+  unrated: 'bg-muted/30 border-muted-foreground/20',
 };
 
 const FILTER_TABS: { key: FilterTab; label: string }[] = [
