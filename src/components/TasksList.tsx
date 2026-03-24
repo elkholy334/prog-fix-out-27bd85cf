@@ -125,14 +125,16 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
 
   return (
     <div ref={setNodeRef} style={style} className={`bg-card rounded-xl border shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BORDER_COLORS[task.status] || ''} ${isExecuting ? 'animate-pulse-glow border-success ring-2 ring-success/40' : ''} ${task.is_favorite ? 'border-accent ring-2 ring-accent/30 shadow-[0_0_15px_hsl(var(--accent)/0.2)]' : !isExecuting ? 'border-accent/20' : ''}`}>
-      {/* Drag Handle */}
-      <div
-        {...attributes}
-        {...listeners}
-        className="flex items-center justify-center py-1.5 cursor-grab active:cursor-grabbing bg-muted/50 hover:bg-muted transition-colors"
-      >
-        <GripVertical className="h-4 w-4 text-muted-foreground" />
-      </div>
+      {/* Drag Handle - Admin only */}
+      {isAdmin && (
+        <div
+          {...attributes}
+          {...listeners}
+          className="flex items-center justify-center py-1.5 cursor-grab active:cursor-grabbing bg-muted/50 hover:bg-muted transition-colors"
+        >
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </div>
+      )}
 
       <div className="p-4 pb-2">
         <div className="flex items-start justify-between mb-2">
