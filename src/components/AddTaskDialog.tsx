@@ -100,8 +100,35 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
         status: 'waiting',
       },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
           toast.success('تم إضافة المهمة بنجاح ✅');
+
+          const general = generalData as any;
+          const shopName = general?.shopName || 'المحل';
+
+          // Send WhatsApp confirmation to the client
+          const dateStr = scheduledDate ? format(scheduledDate, 'yyyy/MM/dd') : 'سيتم تحديده';
+          const timeDisplayStr = timeHour ? `${timeHour}:${timeMinute} ${timeAmPm}` : 'سيتم تحديده';
+
+          const clientMsg = `✅ *تم حجز مهمتك بنجاح*
+
+مرحباً أ/ ${clientName.trim()}
+تم استلام طلبك وجاري التنفيذ ✨
+
+📋 *تفاصيل الحجز:*
+🔧 نوع العمل: ${type}
+📍 العنوان: ${address.trim() || 'غير محدد'}
+📅 موعد التنفيذ: ${dateStr}
+⏰ الوقت المتوقع: ${timeDisplayStr}
+${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
+
+سيتواصل معك الفني قبل الموعد لتأكيد الحضور.
+شكراً لثقتكم في ${shopName} 🙏`;
+
+          const clientResult = await sendWhatsAppMessage(phone.trim(), clientMsg);
+          if (clientResult.success) {
+            toast.success('✅ تم إرسال تأكيد الحجز للعميل');
+          }
           
           // Send WhatsApp notification to assigned technicians
           const taskDetails = [
@@ -114,7 +141,6 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
             timeHour ? `⏰ الوقت: ${timeHour}:${timeMinute} ${timeAmPm}` : '',
           ].filter(Boolean).join('\n');
 
-          // Send to each assigned technician that has a phone number
           const techsToNotify = technicians.filter(
             t => assignedTechnicians.includes(t.id) && (t as any).phone
           );
