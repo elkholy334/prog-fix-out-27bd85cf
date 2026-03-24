@@ -225,9 +225,12 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
               <Trash2 className="h-4 w-4" />
             </Button>
           )}
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted">
-            <Eye className="h-4 w-4" />
-          </Button>
+          {isAdmin && (
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted" onClick={() => onArchive(task)}
+              title={task.is_archived ? 'إلغاء الأرشفة' : 'أرشفة'}>
+              <Archive className="h-4 w-4" />
+            </Button>
+          )}
           {isAdmin && (
             <Button variant="ghost" size="icon" className="h-8 w-8 text-success hover:bg-success/10" onClick={() => onWhatsApp(task)}>
               <MessageCircle className="h-4 w-4" />
