@@ -436,7 +436,6 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
                       onToggleFavorite={handleToggleFavorite}
                       onArchive={handleArchive}
                     />
-                  />
                 );
               })}
             </div>
