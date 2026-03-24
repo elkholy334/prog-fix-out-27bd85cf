@@ -281,6 +281,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
 
   const { data: tasks = [], isLoading } = useTasks();
   const { data: technicians = [] } = useTechnicians();
+  const { data: stats = { waiting: 0, in_progress: 0, completed: 0, postponed: 0, late: 0 } } = useDashboardStats();
   const { data: taskTypesData } = useSetting('task_types');
   const deleteTask = useDeleteTask();
 
