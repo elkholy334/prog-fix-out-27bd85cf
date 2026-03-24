@@ -425,7 +425,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={filteredTasks.map(t => t.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
               {filteredTasks.map((task) => {
                 const techName = task.required_technician
                   ? technicians.find((t) => t.id === task.required_technician)?.name || ''
