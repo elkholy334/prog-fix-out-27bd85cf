@@ -177,6 +177,13 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                         onBlur={(e) => updateCommissionRate(tech.id, Number(e.target.value))}
                       />
                       <span className="text-xs text-muted-foreground">%</span>
+                      <Input
+                        defaultValue={(tech as any).phone || ''}
+                        className="w-32 text-left font-mono text-xs h-8"
+                        placeholder="رقم الواتساب"
+                        dir="ltr"
+                        onBlur={(e) => updateTechPhone(tech.id, e.target.value)}
+                      />
                     </div>
                     <span className="font-medium text-sm">{tech.name}</span>
                   </div>
