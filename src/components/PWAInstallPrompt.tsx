@@ -37,11 +37,20 @@ export const PWAInstallPrompt = () => {
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setTimeout(() => setShowPrompt(true), 3000);
+      setShowPrompt(true);
     };
 
     window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+
+    // Fallback: show reminder after 5 seconds even without the event
+    const fallbackTimer = setTimeout(() => {
+      setShowPrompt(true);
+    }, 5000);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   const handleInstall = async () => {
