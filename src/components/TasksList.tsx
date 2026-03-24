@@ -125,76 +125,78 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
   const isExecuting = task.status === 'in_progress';
 
   return (
-    <div ref={setNodeRef} style={style} className={`bg-card rounded-xl border shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BORDER_COLORS[task.status] || ''} ${isExecuting ? 'animate-pulse-glow border-success ring-2 ring-success/40' : ''} ${task.is_favorite ? 'border-accent ring-2 ring-accent/30 shadow-[0_0_15px_hsl(var(--accent)/0.2)]' : !isExecuting ? 'border-accent/20' : ''}`}>
-      {/* Drag Handle - Admin only */}
+    <div ref={setNodeRef} style={style} className={`bg-card rounded-2xl border-2 shadow-card hover:shadow-card-hover transition-all overflow-hidden ${isExecuting ? 'border-success ring-2 ring-success/40 animate-pulse-glow' : task.is_favorite ? 'border-accent ring-2 ring-accent/30 shadow-[0_0_15px_hsl(var(--accent)/0.2)]' : 'border-accent/20'}`}>
+      {/* Drag Handle */}
       {isAdmin && (
         <div
           {...attributes}
           {...listeners}
-          className="flex items-center justify-center py-1.5 cursor-grab active:cursor-grabbing bg-muted/50 hover:bg-muted transition-colors"
+          className="flex items-center justify-center py-1 cursor-grab active:cursor-grabbing hover:bg-muted/50 transition-colors"
         >
-          <GripVertical className="h-4 w-4 text-muted-foreground" />
+          <GripVertical className="h-4 w-4 text-muted-foreground/50" />
         </div>
       )}
 
-      <div className="p-4 pb-2">
-        <div className="flex items-start justify-between mb-2">
+      <div className="px-4 pt-2 pb-1">
+        {/* Top row: Star | days ago + id */}
+        <div className="flex items-center justify-between mb-3">
+          <button onClick={() => onToggleFavorite(task)} className="hover:scale-125 transition-transform">
+            <Star className={`h-6 w-6 ${task.is_favorite ? 'fill-accent text-accent drop-shadow-[0_0_8px_hsl(var(--accent))]' : 'text-muted-foreground/40 hover:text-accent'}`} />
+          </button>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">#{task.id}</span>
-            <span className="flex items-center gap-1 text-xs bg-muted rounded-full px-2 py-0.5">
+            <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/60 rounded-full px-2.5 py-1">
               <Clock className="h-3 w-3" />
               منذ {daysAgo} يوم
             </span>
-          </div>
-          <button onClick={() => onToggleFavorite(task)} className="hover:scale-125 transition-transform">
-            <Star className={`h-5 w-5 ${task.is_favorite ? 'fill-accent text-accent drop-shadow-[0_0_6px_hsl(var(--accent))]' : 'text-muted-foreground hover:text-accent'}`} />
-          </button>
-        </div>
-        <div className="flex items-center justify-center gap-3 flex-row-reverse">
-          {taskTypeImage && (
-            <img src={taskTypeImage} alt={task.type} className="h-14 w-14 rounded-lg object-contain shrink-0" />
-          )}
-          <div className="text-center">
-            <h3 className="font-bold text-lg text-foreground">{task.client_name}</h3>
-            <p className="text-sm text-muted-foreground">{task.type}</p>
+            <span className="text-xs font-bold text-muted-foreground">#{task.id}</span>
           </div>
         </div>
-      </div>
 
-      <div className="px-4 pb-2 space-y-1.5 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <Clock className="h-3.5 w-3.5" />
-          <span>{new Date(task.created_at).toLocaleString('ar-EG')}</span>
+        {/* Center: Logo + Name + Type */}
+        <div className="flex flex-col items-center text-center mb-3">
+          {taskTypeImage && (
+            <img src={taskTypeImage} alt={task.type} className="h-16 w-16 rounded-xl object-contain mb-2 drop-shadow-md" />
+          )}
+          <h3 className="font-bold text-lg text-foreground leading-tight">{task.client_name}</h3>
+          <p className="text-sm text-muted-foreground">{task.type}</p>
         </div>
-        {task.address && (
-          <div className="flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5" />
-            <span>{task.address}</span>
+
+        {/* Info rows */}
+        <div className="space-y-1.5 text-xs text-muted-foreground mb-3">
+          <div className="flex items-center justify-end gap-1.5">
+            <span>{new Date(task.created_at).toLocaleString('ar-EG')}</span>
+            <Clock className="h-3.5 w-3.5 text-muted-foreground/70" />
           </div>
-        )}
-        {techName && (
-          <div className="flex items-center gap-1.5">
-            <User className="h-3.5 w-3.5" />
-            <span>مطلوب: {techName}</span>
-          </div>
-        )}
-        {executingTechName && task.status !== 'in_progress' && (
-          <div className="flex items-center gap-1.5 text-primary font-bold">
-            <User className="h-3.5 w-3.5" />
-            <span>نفذ بواسطة: {executingTechName}</span>
-          </div>
-        )}
-        {task.scheduled_time && (
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5" />
-            <span>موعد التنفيذ: {task.scheduled_time}</span>
-          </div>
-        )}
+          {task.address && (
+            <div className="flex items-center justify-end gap-1.5">
+              <span>{task.address}</span>
+              <MapPin className="h-3.5 w-3.5 text-muted-foreground/70" />
+            </div>
+          )}
+          {task.scheduled_time && (
+            <div className="flex items-center justify-end gap-1.5">
+              <span>موعد التنفيذ: {task.scheduled_time}</span>
+              <Clock className="h-3.5 w-3.5 text-muted-foreground/70" />
+            </div>
+          )}
+          {techName && (
+            <div className="flex items-center justify-end gap-1.5">
+              <span>مطلوب: {techName}</span>
+              <User className="h-3.5 w-3.5 text-muted-foreground/70" />
+            </div>
+          )}
+          {executingTechName && task.status !== 'in_progress' && (
+            <div className="flex items-center justify-end gap-1.5 text-primary font-bold">
+              <span>نفذ بواسطة: {executingTechName}</span>
+              <User className="h-3.5 w-3.5" />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Execution Banner */}
       {isExecuting && (
-        <div className="mx-4 mb-2 p-3 rounded-lg bg-success/10 border border-success/30">
+        <div className="mx-4 mb-2 p-3 rounded-xl bg-success/10 border border-success/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Timer className="h-4 w-4 text-success animate-pulse" />
@@ -203,18 +205,19 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
             {task.start_time && <ElapsedTimer startTime={task.start_time} />}
           </div>
           {executingTechName && (
-            <div className="flex items-center gap-1.5 mt-1.5">
-              <User className="h-3.5 w-3.5 text-success" />
+            <div className="flex items-center gap-1.5 mt-1.5 justify-end">
               <span className="text-xs font-bold text-foreground">{executingTechName}</span>
+              <User className="h-3.5 w-3.5 text-success" />
             </div>
           )}
         </div>
       )}
 
-      <div className="px-4 py-2">
+      {/* Status Button */}
+      <div className="px-4 pb-3">
         <button
           onClick={() => isExecuting ? onComplete(task) : onStatusChange(task)}
-          className={`inline-block px-4 py-1.5 rounded-full text-sm font-medium w-full text-center cursor-pointer hover:opacity-80 transition-opacity ${isExecuting ? 'bg-success text-success-foreground' : STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
+          className={`w-full py-2.5 rounded-xl text-sm font-bold text-center cursor-pointer hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98] ${isExecuting ? 'bg-success text-success-foreground' : STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
         >
           {isExecuting
             ? '✅ اتمام المهمة'
@@ -226,32 +229,33 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
         </button>
       </div>
 
-      <div className="flex items-center justify-between px-4 py-3 border-t border-accent/20">
-        <div className="flex items-center gap-1">
+      {/* Action Buttons */}
+      <div className="flex items-center justify-between px-3 py-2.5 border-t border-accent/10 bg-muted/30">
+        <div className="flex items-center gap-0.5">
           {isAdmin && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => onDelete(task.id)}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg" onClick={() => onDelete(task.id)}>
               <Trash2 className="h-4 w-4" />
             </Button>
           )}
           {isAdmin && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted" onClick={() => onArchive(task)}
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted rounded-lg" onClick={() => onArchive(task)}
               title={task.is_archived ? 'إلغاء الأرشفة' : 'أرشفة'}>
               <Archive className="h-4 w-4" />
             </Button>
           )}
           {isAdmin && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-success hover:bg-success/10" onClick={() => onWhatsApp(task)}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-success/70 hover:text-success hover:bg-success/10 rounded-lg" onClick={() => onWhatsApp(task)}>
               <MessageCircle className="h-4 w-4" />
             </Button>
           )}
           {isAdmin && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted"
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted rounded-lg"
               onClick={() => window.open(`tel:${task.phone}`)}>
               <Phone className="h-4 w-4" />
             </Button>
           )}
         </div>
-        <Button variant="outline" size="sm" className="text-xs border-border" onClick={() => onDetails(task)}>
+        <Button variant="outline" size="sm" className="text-xs border-accent/20 rounded-lg hover:bg-accent/10" onClick={() => onDetails(task)}>
           التفاصيل
         </Button>
       </div>
