@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useUpdateTask } from '@/hooks/useDatabase';
+import { useUpdateTask, useTechnicians } from '@/hooks/useDatabase';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import type { Database } from '@/integrations/supabase/types';
 
 type TaskRow = Database['public']['Tables']['tasks']['Row'];
@@ -22,30 +25,66 @@ interface Props {
 }
 
 export const StatusChangeDialog = ({ task, onClose }: Props) => {
-  const { role } = useAuth();
+  const { role, technicianId } = useAuth();
   const updateTask = useUpdateTask();
+  const { data: technicians = [] } = useTechnicians();
+  const [showTechSelect, setShowTechSelect] = useState(false);
+  const [selectedTechId, setSelectedTechId] = useState('');
 
   if (!task) return null;
 
   const handleChange = (newStatus: string) => {
+    if (newStatus === 'in_progress' && role === 'admin') {
+      setShowTechSelect(true);
+      return;
+    }
+
     updateTask.mutate(
       { id: task.id, status: newStatus },
       {
         onSuccess: () => {
           toast.success('تم تحديث الحالة');
           onClose();
+          setShowTechSelect(false);
         },
         onError: () => toast.error('فشل في تحديث الحالة'),
       }
     );
   };
 
-  const handleStartTask = () => {
+  const handleStartWithTech = () => {
+    if (!selectedTechId) return;
     updateTask.mutate(
-      { id: task.id, status: 'in_progress', start_time: new Date().toISOString() },
+      {
+        id: task.id,
+        status: 'in_progress',
+        start_time: new Date().toISOString(),
+        technician_id: selectedTechId,
+      },
       {
         onSuccess: () => {
-          toast.success('تم بدء المهمة');
+          const techName = technicians.find(t => t.id === selectedTechId)?.name || '';
+          toast.success(`🚀 تم بدء المهمة - الفني: ${techName}`);
+          onClose();
+          setShowTechSelect(false);
+          setSelectedTechId('');
+        },
+        onError: () => toast.error('فشل في بدء المهمة'),
+      }
+    );
+  };
+
+  const handleTechStartTask = () => {
+    updateTask.mutate(
+      {
+        id: task.id,
+        status: 'in_progress',
+        start_time: new Date().toISOString(),
+        technician_id: technicianId || undefined,
+      },
+      {
+        onSuccess: () => {
+          toast.success('🚀 تم بدء المهمة');
           onClose();
         },
         onError: () => toast.error('فشل في بدء المهمة'),
@@ -53,16 +92,62 @@ export const StatusChangeDialog = ({ task, onClose }: Props) => {
     );
   };
 
+  const handleClose = () => {
+    setShowTechSelect(false);
+    setSelectedTechId('');
+    onClose();
+  };
+
   return (
-    <Dialog open={!!task} onOpenChange={() => onClose()}>
+    <Dialog open={!!task} onOpenChange={handleClose}>
       <DialogContent className="max-w-sm" dir="rtl">
         <DialogHeader>
           <DialogTitle>
-            {role === 'admin' ? 'تغيير حالة المهمة' : 'بدء المهمة'}
+            {showTechSelect
+              ? 'اختر الفني لبدء التنفيذ'
+              : role === 'admin'
+                ? 'تغيير حالة المهمة'
+                : 'بدء المهمة'}
           </DialogTitle>
         </DialogHeader>
 
-        {role === 'admin' ? (
+        {showTechSelect ? (
+          <div className="space-y-4 mt-2">
+            <p className="text-sm text-muted-foreground">
+              المهمة: <span className="font-bold text-foreground">{task.client_name}</span>
+            </p>
+            <div className="space-y-2">
+              <Label>اختر الفني</Label>
+              <Select value={selectedTechId} onValueChange={setSelectedTechId}>
+                <SelectTrigger className="text-right">
+                  <SelectValue placeholder="اختر الفني..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {technicians.map(tech => (
+                    <SelectItem key={tech.id} value={tech.id}>
+                      {tech.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                className="flex-1 bg-success text-success-foreground font-bold"
+                onClick={handleStartWithTech}
+                disabled={!selectedTechId || updateTask.isPending}
+              >
+                🚀 بدء التنفيذ
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowTechSelect(false)}
+              >
+                رجوع
+              </Button>
+            </div>
+          </div>
+        ) : role === 'admin' ? (
           <div className="grid grid-cols-2 gap-2 mt-2">
             {ALL_STATUSES.map((s) => (
               <Button
@@ -83,7 +168,7 @@ export const StatusChangeDialog = ({ task, onClose }: Props) => {
             </p>
             <Button
               className="w-full bg-success text-success-foreground font-bold"
-              onClick={handleStartTask}
+              onClick={handleTechStartTask}
               disabled={updateTask.isPending || task.status === 'in_progress'}
             >
               {task.status === 'in_progress' ? 'المهمة قيد التنفيذ بالفعل' : '🚀 بدء المهمة'}
