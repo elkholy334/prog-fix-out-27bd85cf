@@ -73,7 +73,7 @@ export const StatusChangeDialog = ({ task, onClose, onComplete }: Props) => {
       {
         onSuccess: () => {
           toast.success('تم تحديث الحالة');
-          if (newStatus === 'postponed' || newStatus === 'waiting') {
+          if (newStatus === 'postponed') {
             sendStatusWhatsApp(newStatus);
           }
           onClose();
