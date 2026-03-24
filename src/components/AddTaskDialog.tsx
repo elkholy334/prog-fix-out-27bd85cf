@@ -138,7 +138,7 @@ ${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
             `📋 *مهمة جديدة*`,
             `👤 العميل: ${clientName.trim()}`,
             `📍 العنوان: ${address.trim() || 'غير محدد'}`,
-            `🔧 النوع: ${type}`,
+            `🔧 النوع: ${finalType}`,
             `📝 التفاصيل: ${problem.trim() || 'غير محدد'}`,
             scheduledDate ? `📅 الموعد: ${format(scheduledDate, 'yyyy/MM/dd')}` : '',
             timeHour ? `⏰ الوقت: ${timeHour}:${timeMinute} ${timeAmPm}` : '',
