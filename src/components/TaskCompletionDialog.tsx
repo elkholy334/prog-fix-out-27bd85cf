@@ -56,7 +56,7 @@ export const TaskCompletionDialog = ({ task, onClose }: Props) => {
       await updateTask.mutateAsync({
         id: task.id,
         status: 'completed',
-        expected_amount: expectedAmount,
+        paid_amount: paidAmount,
         paid_amount: paidAmount,
         technician_commission: commission,
         shop_net: shopNet,
