@@ -387,7 +387,9 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
       )}
 
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {FILTER_TABS.map((tab) => (
+        {FILTER_TABS
+          .filter(tab => isAdmin || (tab.key !== 'archived'))
+          .map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveFilter(tab.key)}
