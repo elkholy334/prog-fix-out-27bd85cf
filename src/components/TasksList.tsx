@@ -125,13 +125,13 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
   const isExecuting = task.status === 'in_progress';
 
   return (
-    <div ref={setNodeRef} style={style} className={`bg-card rounded-2xl border-2 shadow-card hover:shadow-card-hover transition-all overflow-hidden ${isExecuting ? 'border-success ring-2 ring-success/40 animate-pulse-glow' : task.is_favorite ? 'border-accent ring-2 ring-accent/30 shadow-[0_0_15px_hsl(var(--accent)/0.2)]' : 'border-accent/20'}`}>
+    <div ref={setNodeRef} style={style} className={`rounded-2xl border-2 shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BG_COLORS[task.status] || 'bg-card border-accent/20'} ${isExecuting ? 'animate-pulse-glow ring-2 ring-success/40' : ''} ${task.is_favorite ? 'ring-2 ring-accent/30 shadow-[0_0_15px_hsl(var(--accent)/0.2)]' : ''}`}>
       {/* Drag Handle */}
       {isAdmin && (
         <div
           {...attributes}
           {...listeners}
-          className="flex items-center justify-center py-1 cursor-grab active:cursor-grabbing hover:bg-muted/50 transition-colors"
+          className="flex items-center justify-center py-1 cursor-grab active:cursor-grabbing hover:bg-black/5 transition-colors"
         >
           <GripVertical className="h-4 w-4 text-muted-foreground/50" />
         </div>
@@ -144,7 +144,7 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
             <Star className={`h-6 w-6 ${task.is_favorite ? 'fill-accent text-accent drop-shadow-[0_0_8px_hsl(var(--accent))]' : 'text-muted-foreground/40 hover:text-accent'}`} />
           </button>
           <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/60 rounded-full px-2.5 py-1">
+            <span className="flex items-center gap-1 text-xs text-muted-foreground bg-white/60 rounded-full px-2.5 py-1">
               <Clock className="h-3 w-3" />
               منذ {daysAgo} يوم
             </span>
@@ -152,41 +152,43 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
           </div>
         </div>
 
-        {/* Center: Logo + Name + Type */}
-        <div className="flex flex-col items-center text-center mb-3">
+        {/* Center: Logo beside Name + Type */}
+        <div className="flex items-center justify-center gap-3 mb-3">
           {taskTypeImage && (
-            <img src={taskTypeImage} alt={task.type} className="h-16 w-16 rounded-xl object-contain mb-2 drop-shadow-md" />
+            <img src={taskTypeImage} alt={task.type} className="h-14 w-14 rounded-xl object-contain shrink-0 drop-shadow-md" />
           )}
-          <h3 className="font-bold text-lg text-foreground leading-tight">{task.client_name}</h3>
-          <p className="text-sm text-muted-foreground">{task.type}</p>
+          <div className="text-center">
+            <h3 className="font-bold text-lg text-foreground leading-tight">{task.client_name}</h3>
+            <p className="text-sm text-muted-foreground">{task.type}</p>
+          </div>
         </div>
 
-        {/* Info rows */}
+        {/* Info rows - aligned right */}
         <div className="space-y-1.5 text-xs text-muted-foreground mb-3">
-          <div className="flex items-center justify-end gap-1.5">
+          <div className="flex items-center gap-1.5 justify-end">
             <span>{new Date(task.created_at).toLocaleString('ar-EG')}</span>
-            <Clock className="h-3.5 w-3.5 text-muted-foreground/70" />
+            <Clock className="h-3.5 w-3.5" />
           </div>
           {task.address && (
-            <div className="flex items-center justify-end gap-1.5">
+            <div className="flex items-center gap-1.5 justify-end">
               <span>{task.address}</span>
-              <MapPin className="h-3.5 w-3.5 text-muted-foreground/70" />
+              <MapPin className="h-3.5 w-3.5" />
             </div>
           )}
           {task.scheduled_time && (
-            <div className="flex items-center justify-end gap-1.5">
+            <div className="flex items-center gap-1.5 justify-end">
               <span>موعد التنفيذ: {task.scheduled_time}</span>
-              <Clock className="h-3.5 w-3.5 text-muted-foreground/70" />
+              <Clock className="h-3.5 w-3.5" />
             </div>
           )}
           {techName && (
-            <div className="flex items-center justify-end gap-1.5">
+            <div className="flex items-center gap-1.5 justify-end">
               <span>مطلوب: {techName}</span>
-              <User className="h-3.5 w-3.5 text-muted-foreground/70" />
+              <User className="h-3.5 w-3.5" />
             </div>
           )}
           {executingTechName && task.status !== 'in_progress' && (
-            <div className="flex items-center justify-end gap-1.5 text-primary font-bold">
+            <div className="flex items-center gap-1.5 justify-end text-primary font-bold">
               <span>نفذ بواسطة: {executingTechName}</span>
               <User className="h-3.5 w-3.5" />
             </div>
@@ -230,7 +232,7 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-t border-accent/10 bg-muted/30">
+      <div className="flex items-center justify-between px-3 py-2.5 border-t border-black/5 bg-white/40">
         <div className="flex items-center gap-0.5">
           {isAdmin && (
             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg" onClick={() => onDelete(task.id)}>
@@ -255,7 +257,7 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
             </Button>
           )}
         </div>
-        <Button variant="outline" size="sm" className="text-xs border-accent/20 rounded-lg hover:bg-accent/10" onClick={() => onDetails(task)}>
+        <Button variant="outline" size="sm" className="text-xs border-black/10 rounded-lg hover:bg-white/60 bg-white/40" onClick={() => onDetails(task)}>
           التفاصيل
         </Button>
       </div>
