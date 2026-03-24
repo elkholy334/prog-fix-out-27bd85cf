@@ -227,7 +227,7 @@ ${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
 
           {/* Type */}
           <FormField label="نوع المهمة">
-            <Select value={type} onValueChange={setType}>
+            <Select value={type} onValueChange={(v) => { setType(v); if (v !== 'أخرى') setCustomType(''); }}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="تركيب كاميرات">تركيب كاميرات</SelectItem>
@@ -237,6 +237,14 @@ ${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
                 <SelectItem value="أخرى">أخرى</SelectItem>
               </SelectContent>
             </Select>
+            {type === 'أخرى' && (
+              <Input
+                value={customType}
+                onChange={(e) => setCustomType(e.target.value)}
+                placeholder="اكتب نوع المهمة..."
+                className="text-right mt-2"
+              />
+            )}
           </FormField>
 
           {/* Problem */}
