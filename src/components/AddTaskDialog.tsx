@@ -29,6 +29,7 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [type, setType] = useState('تركيب كاميرات');
+  const [customType, setCustomType] = useState('');
   const [problem, setProblem] = useState('');
   const [scheduledDate, setScheduledDate] = useState<Date>();
   const [scheduledTime, setScheduledTime] = useState('');
@@ -65,6 +66,7 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
     setPhone('');
     setAddress('');
     setType('تركيب كاميرات');
+    setCustomType('');
     setProblem('');
     setScheduledDate(undefined);
     setTimeHour('');
@@ -85,13 +87,14 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
     }
 
     const timeStr = timeHour ? `${timeHour}:${timeMinute} ${timeAmPm}` : '';
+    const finalType = type === 'أخرى' && customType.trim() ? customType.trim() : type;
 
     createTask.mutate(
       {
         client_name: clientName.trim(),
         phone: phone.trim(),
         address: address.trim(),
-        type,
+        type: finalType,
         problem: problem.trim(),
         scheduled_date: scheduledDate ? format(scheduledDate, 'yyyy-MM-dd') : null,
         scheduled_time: timeStr,
@@ -116,7 +119,7 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
 تم استلام طلبك وجاري التنفيذ ✨
 
 📋 *تفاصيل الحجز:*
-🔧 نوع العمل: ${type}
+🔧 نوع العمل: ${finalType}
 📍 العنوان: ${address.trim() || 'غير محدد'}
 📅 موعد التنفيذ: ${dateStr}
 ⏰ الوقت المتوقع: ${timeDisplayStr}
@@ -135,7 +138,7 @@ ${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
             `📋 *مهمة جديدة*`,
             `👤 العميل: ${clientName.trim()}`,
             `📍 العنوان: ${address.trim() || 'غير محدد'}`,
-            `🔧 النوع: ${type}`,
+            `🔧 النوع: ${finalType}`,
             `📝 التفاصيل: ${problem.trim() || 'غير محدد'}`,
             scheduledDate ? `📅 الموعد: ${format(scheduledDate, 'yyyy/MM/dd')}` : '',
             timeHour ? `⏰ الوقت: ${timeHour}:${timeMinute} ${timeAmPm}` : '',
@@ -224,7 +227,7 @@ ${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
 
           {/* Type */}
           <FormField label="نوع المهمة">
-            <Select value={type} onValueChange={setType}>
+            <Select value={type} onValueChange={(v) => { setType(v); if (v !== 'أخرى') setCustomType(''); }}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="تركيب كاميرات">تركيب كاميرات</SelectItem>
@@ -234,6 +237,14 @@ ${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
                 <SelectItem value="أخرى">أخرى</SelectItem>
               </SelectContent>
             </Select>
+            {type === 'أخرى' && (
+              <Input
+                value={customType}
+                onChange={(e) => setCustomType(e.target.value)}
+                placeholder="اكتب نوع المهمة..."
+                className="text-right mt-2"
+              />
+            )}
           </FormField>
 
           {/* Problem */}
