@@ -87,6 +87,7 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
     }
 
     const timeStr = timeHour ? `${timeHour}:${timeMinute} ${timeAmPm}` : '';
+    const finalType = type === 'أخرى' && customType.trim() ? customType.trim() : type;
 
     createTask.mutate(
       {
