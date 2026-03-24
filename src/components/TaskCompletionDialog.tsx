@@ -23,7 +23,6 @@ export const TaskCompletionDialog = ({ task, onClose }: Props) => {
   const { data: technicians = [] } = useTechnicians();
   const { data: generalData } = useSetting('general');
 
-  const [expectedAmount, setExpectedAmount] = useState(0);
   const [paidAmount, setPaidAmount] = useState(0);
   const [moneyDelivered, setMoneyDelivered] = useState(false);
   const [notes, setNotes] = useState('');
@@ -31,8 +30,7 @@ export const TaskCompletionDialog = ({ task, onClose }: Props) => {
 
   useEffect(() => {
     if (task) {
-      setExpectedAmount(Number(task.expected_amount) || 0);
-      setPaidAmount(Number(task.paid_amount) || 0);
+      setPaidAmount(0);
       setMoneyDelivered(false);
       setNotes('');
     }
@@ -58,7 +56,6 @@ export const TaskCompletionDialog = ({ task, onClose }: Props) => {
       await updateTask.mutateAsync({
         id: task.id,
         status: 'completed',
-        expected_amount: expectedAmount,
         paid_amount: paidAmount,
         technician_commission: commission,
         shop_net: shopNet,
@@ -104,7 +101,6 @@ ${notes ? `📝 ملاحظات: ${notes}` : ''}
 👨‍🔧 الفني: ${techName}
 
 💰 *التفاصيل المالية:*
-المبلغ المتوقع: ${expectedAmount} جنيه
 المبلغ المدفوع: ${paidAmount} جنيه
 نسبة الفني (${commissionRate}%): ${commission.toFixed(0)} جنيه
 صافي المحل: ${shopNet.toFixed(0)} جنيه
@@ -161,16 +157,6 @@ ${notes ? `\n📝 ملاحظات الفني: ${notes}` : ''}
               <DollarSign className="h-4 w-4 text-success" />
               التفاصيل المالية
             </h3>
-
-            <div className="space-y-1.5">
-              <Label className="text-right block text-sm">المبلغ المتوقع</Label>
-              <Input
-                type="number"
-                value={expectedAmount}
-                onChange={(e) => setExpectedAmount(Number(e.target.value))}
-                className="text-right"
-              />
-            </div>
 
             <div className="space-y-1.5">
               <Label className="text-right block text-sm">المبلغ المدفوع من العميل</Label>

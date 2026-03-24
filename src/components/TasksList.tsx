@@ -103,12 +103,13 @@ interface SortableTaskCardProps {
   isAdmin: boolean;
   onDelete: (id: number) => void;
   onStatusChange: (task: TaskRow) => void;
+  onComplete: (task: TaskRow) => void;
   onDetails: (task: TaskRow) => void;
   onWhatsApp: (task: TaskRow) => void;
   onToggleFavorite: (task: TaskRow) => void;
 }
 
-const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin, onDelete, onStatusChange, onDetails, onWhatsApp, onToggleFavorite }: SortableTaskCardProps) => {
+const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin, onDelete, onStatusChange, onComplete, onDetails, onWhatsApp, onToggleFavorite }: SortableTaskCardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
 
   const style = {
@@ -162,7 +163,13 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
         {techName && (
           <div className="flex items-center gap-1.5">
             <User className="h-3.5 w-3.5" />
-            <span>{techName}</span>
+            <span>مطلوب: {techName}</span>
+          </div>
+        )}
+        {executingTechName && task.status !== 'in_progress' && (
+          <div className="flex items-center gap-1.5 text-primary font-bold">
+            <User className="h-3.5 w-3.5" />
+            <span>نفذ بواسطة: {executingTechName}</span>
           </div>
         )}
         {task.scheduled_time && (
@@ -194,8 +201,8 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
 
       <div className="px-4 py-2">
         <button
-          onClick={() => onStatusChange(task)}
-          className={`inline-block px-4 py-1.5 rounded-full text-sm font-medium w-full text-center cursor-pointer hover:opacity-80 transition-opacity ${STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
+          onClick={() => isExecuting ? onComplete(task) : onStatusChange(task)}
+          className={`inline-block px-4 py-1.5 rounded-full text-sm font-medium w-full text-center cursor-pointer hover:opacity-80 transition-opacity ${isExecuting ? 'bg-success text-success-foreground' : STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
         >
           {isExecuting
             ? '✅ اتمام المهمة'
@@ -403,6 +410,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
                     isAdmin={isAdmin}
                     onDelete={handleDelete}
                     onStatusChange={setStatusTask}
+                    onComplete={(t) => setCompletionTask(t)}
                     onDetails={setSelectedTask}
                     onWhatsApp={setWhatsappTask}
                     onToggleFavorite={handleToggleFavorite}
