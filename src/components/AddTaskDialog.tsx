@@ -66,6 +66,7 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
     setPhone('');
     setAddress('');
     setType('تركيب كاميرات');
+    setCustomType('');
     setProblem('');
     setScheduledDate(undefined);
     setTimeHour('');
