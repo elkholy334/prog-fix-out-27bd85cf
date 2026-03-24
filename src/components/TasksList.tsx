@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Star, Clock, MapPin, Phone, Archive, MessageCircle, Trash2, User, Plus, GripVertical, Timer } from 'lucide-react';
-import { useTasks, useTechnicians, useDeleteTask, useUpdateTask } from '@/hooks/useDatabase';
+import { useTasks, useTechnicians, useDeleteTask, useUpdateTask, useSetting } from '@/hooks/useDatabase';
 import { useAuth } from '@/hooks/useAuth';
 import { TaskDetailDialog } from '@/components/TaskDetailDialog';
 import { SendWhatsAppDialog } from '@/components/SendWhatsAppDialog';
@@ -102,6 +102,7 @@ interface SortableTaskCardProps {
   executingTechName: string;
   daysAgo: number;
   isAdmin: boolean;
+  taskTypeImage?: string;
   onDelete: (id: number) => void;
   onStatusChange: (task: TaskRow) => void;
   onComplete: (task: TaskRow) => void;
@@ -111,7 +112,7 @@ interface SortableTaskCardProps {
   onArchive: (task: TaskRow) => void;
 }
 
-const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin, onDelete, onStatusChange, onComplete, onDetails, onWhatsApp, onToggleFavorite, onArchive }: SortableTaskCardProps) => {
+const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin, taskTypeImage, onDelete, onStatusChange, onComplete, onDetails, onWhatsApp, onToggleFavorite, onArchive }: SortableTaskCardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
 
   const style = {
@@ -150,7 +151,10 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
           </button>
         </div>
         <h3 className="font-bold text-lg text-foreground">{task.client_name}</h3>
-        <p className="text-sm text-muted-foreground">{task.type}</p>
+        <div className="flex items-center gap-2">
+          {taskTypeImage && <img src={taskTypeImage} alt={task.type} className="h-6 w-6 rounded object-contain" />}
+          <p className="text-sm text-muted-foreground">{task.type}</p>
+        </div>
       </div>
 
       <div className="px-4 pb-2 space-y-1.5 text-xs text-muted-foreground">
@@ -273,7 +277,16 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
 
   const { data: tasks = [], isLoading } = useTasks();
   const { data: technicians = [] } = useTechnicians();
+  const { data: taskTypesData } = useSetting('task_types');
   const deleteTask = useDeleteTask();
+
+  const taskTypeImageMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (Array.isArray(taskTypesData)) {
+      (taskTypesData as any[]).forEach((t: any) => { if (t.imageUrl) map[t.name] = t.imageUrl; });
+    }
+    return map;
+  }, [taskTypesData]);
 
   const visibleTasks = isTechnician
     ? tasks.filter((t) => t.required_technician === technicianId || t.technician_id === technicianId)
@@ -430,6 +443,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
                       executingTechName={executingTechName}
                       daysAgo={daysAgo}
                       isAdmin={isAdmin}
+                      taskTypeImage={taskTypeImageMap[task.type] || ''}
                       onDelete={handleDelete}
                       onStatusChange={setStatusTask}
                       onComplete={(t) => setCompletionTask(t)}

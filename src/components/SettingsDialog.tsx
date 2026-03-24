@@ -4,11 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, Save, Link2, Plus, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Save, Link2, Plus, Loader2, Trash2, GripVertical, Pencil, Check, X, ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSetting, useUpsertSetting, useTechnicians } from '@/hooks/useDatabase';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+
+interface TaskType {
+  id: string;
+  name: string;
+  imageUrl: string;
+  order: number;
+}
 
 interface WhatsAppConfig {
   apiToken: string;
@@ -39,9 +46,18 @@ interface SettingsDialogProps {
 export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   const { data: waConfigData } = useSetting('whatsapp_config');
   const { data: generalData } = useSetting('general');
+  const { data: taskTypesData } = useSetting('task_types');
   const { data: technicians = [] } = useTechnicians();
   const upsertSetting = useUpsertSetting();
   const queryClient = useQueryClient();
+
+  const DEFAULT_TASK_TYPES: TaskType[] = [
+    { id: '1', name: 'تركيب كاميرات', imageUrl: '', order: 0 },
+    { id: '2', name: 'تركيب هوائي', imageUrl: '', order: 1 },
+    { id: '3', name: 'تركيب طبق', imageUrl: '', order: 2 },
+    { id: '4', name: 'صيانة', imageUrl: '', order: 3 },
+    { id: '5', name: 'أخرى', imageUrl: '', order: 4 },
+  ];
 
   const [waConfig, setWaConfig] = useState<WhatsAppConfig>({
     apiToken: '', instanceId: '', defaultPhone: '', endpoints: { ...DEFAULT_ENDPOINTS },
@@ -51,7 +67,13 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   const [adminPhone, setAdminPhone] = useState('');
   const [delayHours, setDelayHours] = useState(24);
   const [newTechName, setNewTechName] = useState('');
-
+  const [taskTypes, setTaskTypes] = useState<TaskType[]>(DEFAULT_TASK_TYPES);
+  const [newTypeName, setNewTypeName] = useState('');
+  const [newTypeImage, setNewTypeImage] = useState('');
+  const [editingTypeId, setEditingTypeId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editImage, setEditImage] = useState('');
+  const [draggedTypeId, setDraggedTypeId] = useState<string | null>(null);
   useEffect(() => {
     if (waConfigData) {
       const config = waConfigData as unknown as WhatsAppConfig;
@@ -69,6 +91,73 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
       if (g.delayHours) setDelayHours(g.delayHours);
     }
   }, [generalData]);
+
+  useEffect(() => {
+    if (taskTypesData) {
+      const types = taskTypesData as unknown as TaskType[];
+      if (Array.isArray(types) && types.length > 0) {
+        setTaskTypes(types.sort((a, b) => a.order - b.order));
+      }
+    }
+  }, [taskTypesData]);
+
+  const saveTaskTypes = (types: TaskType[]) => {
+    upsertSetting.mutate(
+      { key: 'task_types', value: types as any },
+      { onSuccess: () => toast.success('تم حفظ أنواع المهام') }
+    );
+  };
+
+  const addTaskType = () => {
+    if (!newTypeName.trim()) return;
+    const newType: TaskType = {
+      id: Date.now().toString(),
+      name: newTypeName.trim(),
+      imageUrl: newTypeImage.trim(),
+      order: taskTypes.length,
+    };
+    const updated = [...taskTypes, newType];
+    setTaskTypes(updated);
+    saveTaskTypes(updated);
+    setNewTypeName('');
+    setNewTypeImage('');
+  };
+
+  const deleteTaskType = (id: string) => {
+    const updated = taskTypes.filter(t => t.id !== id).map((t, i) => ({ ...t, order: i }));
+    setTaskTypes(updated);
+    saveTaskTypes(updated);
+  };
+
+  const startEditType = (type: TaskType) => {
+    setEditingTypeId(type.id);
+    setEditName(type.name);
+    setEditImage(type.imageUrl);
+  };
+
+  const saveEditType = () => {
+    if (!editingTypeId || !editName.trim()) return;
+    const updated = taskTypes.map(t => t.id === editingTypeId ? { ...t, name: editName.trim(), imageUrl: editImage.trim() } : t);
+    setTaskTypes(updated);
+    saveTaskTypes(updated);
+    setEditingTypeId(null);
+  };
+
+  const handleTypeDragStart = (id: string) => setDraggedTypeId(id);
+  const handleTypeDragOver = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!draggedTypeId || draggedTypeId === targetId) return;
+    const oldIdx = taskTypes.findIndex(t => t.id === draggedTypeId);
+    const newIdx = taskTypes.findIndex(t => t.id === targetId);
+    const reordered = [...taskTypes];
+    const [moved] = reordered.splice(oldIdx, 1);
+    reordered.splice(newIdx, 0, moved);
+    setTaskTypes(reordered.map((t, i) => ({ ...t, order: i })));
+  };
+  const handleTypeDragEnd = () => {
+    saveTaskTypes(taskTypes);
+    setDraggedTypeId(null);
+  };
 
   const saveWhatsAppConfig = () => {
     // Also save to localStorage for the send function
@@ -202,7 +291,71 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
             </TabsContent>
 
             <TabsContent value="tasks" className="space-y-4">
-              <p className="text-center text-muted-foreground text-sm">إعدادات المهام وأنواعها</p>
+              <p className="text-center text-muted-foreground text-sm">إدارة أنواع المهام</p>
+              
+              {/* Add new type */}
+              <div className="space-y-2 border border-border rounded-lg p-3">
+                <Label className="text-right block text-sm font-medium">إضافة نوع جديد</Label>
+                <Input
+                  value={newTypeName}
+                  onChange={(e) => setNewTypeName(e.target.value)}
+                  placeholder="اسم نوع المهمة"
+                  className="text-right"
+                />
+                <div className="flex gap-2">
+                  <Input
+                    value={newTypeImage}
+                    onChange={(e) => setNewTypeImage(e.target.value)}
+                    placeholder="رابط صورة / لوجو (اختياري)"
+                    className="text-left text-xs font-mono" dir="ltr"
+                  />
+                  <ImageIcon className="h-8 w-8 text-muted-foreground shrink-0 mt-1" />
+                </div>
+                <Button size="sm" className="w-full gradient-hero text-primary-foreground" onClick={addTaskType}>
+                  <Plus className="h-4 w-4 ml-1" /> إضافة
+                </Button>
+              </div>
+
+              {/* Types list */}
+              <div className="space-y-2">
+                {taskTypes.map((type) => (
+                  <div
+                    key={type.id}
+                    draggable
+                    onDragStart={() => handleTypeDragStart(type.id)}
+                    onDragOver={(e) => handleTypeDragOver(e, type.id)}
+                    onDragEnd={handleTypeDragEnd}
+                    className={`flex items-center gap-2 bg-muted rounded-lg px-3 py-2 transition-all ${draggedTypeId === type.id ? 'opacity-50' : ''}`}
+                  >
+                    <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab shrink-0" />
+                    
+                    {type.imageUrl && (
+                      <img src={type.imageUrl} alt={type.name} className="h-8 w-8 rounded object-contain shrink-0" />
+                    )}
+
+                    {editingTypeId === type.id ? (
+                      <div className="flex-1 space-y-1">
+                        <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="text-right h-7 text-sm" />
+                        <Input value={editImage} onChange={(e) => setEditImage(e.target.value)} placeholder="رابط الصورة" className="text-left text-xs font-mono h-7" dir="ltr" />
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="ghost" className="h-6 text-success" onClick={saveEditType}><Check className="h-3 w-3" /></Button>
+                          <Button size="sm" variant="ghost" className="h-6 text-destructive" onClick={() => setEditingTypeId(null)}><X className="h-3 w-3" /></Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="flex-1 text-sm font-medium text-right">{type.name}</span>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => startEditType(type)}>
+                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteTaskType(type.id)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
             </TabsContent>
 
             <TabsContent value="whatsapp" className="space-y-6">

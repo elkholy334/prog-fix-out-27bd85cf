@@ -23,7 +23,18 @@ interface AddTaskDialogProps {
 export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
   const { data: technicians = [] } = useTechnicians();
   const { data: generalData } = useSetting('general');
+  const { data: taskTypesData } = useSetting('task_types');
   const createTask = useCreateTask();
+
+  const taskTypes = Array.isArray(taskTypesData) 
+    ? (taskTypesData as any[]).sort((a: any, b: any) => a.order - b.order)
+    : [
+        { id: '1', name: 'تركيب كاميرات', imageUrl: '', order: 0 },
+        { id: '2', name: 'تركيب هوائي', imageUrl: '', order: 1 },
+        { id: '3', name: 'تركيب طبق', imageUrl: '', order: 2 },
+        { id: '4', name: 'صيانة', imageUrl: '', order: 3 },
+        { id: '5', name: 'أخرى', imageUrl: '', order: 4 },
+      ];
 
   const [clientName, setClientName] = useState('');
   const [phone, setPhone] = useState('');
@@ -230,11 +241,14 @@ ${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
             <Select value={type} onValueChange={(v) => { setType(v); if (v !== 'أخرى') setCustomType(''); }}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="تركيب كاميرات">تركيب كاميرات</SelectItem>
-                <SelectItem value="تركيب هوائي">تركيب هوائي</SelectItem>
-                <SelectItem value="تركيب طبق">تركيب طبق</SelectItem>
-                <SelectItem value="صيانة">صيانة</SelectItem>
-                <SelectItem value="أخرى">أخرى</SelectItem>
+                {taskTypes.map((t: any) => (
+                  <SelectItem key={t.id} value={t.name}>
+                    <span className="flex items-center gap-2">
+                      {t.imageUrl && <img src={t.imageUrl} alt={t.name} className="h-5 w-5 rounded object-contain" />}
+                      {t.name}
+                    </span>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             {type === 'أخرى' && (
