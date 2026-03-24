@@ -57,7 +57,6 @@ export const TaskCompletionDialog = ({ task, onClose }: Props) => {
         id: task.id,
         status: 'completed',
         paid_amount: paidAmount,
-        paid_amount: paidAmount,
         technician_commission: commission,
         shop_net: shopNet,
         technician_notes: notes,
