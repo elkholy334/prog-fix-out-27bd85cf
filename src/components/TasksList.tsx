@@ -172,6 +172,25 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
         )}
       </div>
 
+      {/* Execution Banner */}
+      {isExecuting && (
+        <div className="mx-4 mb-2 p-3 rounded-lg bg-success/10 border border-success/30">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Timer className="h-4 w-4 text-success animate-pulse" />
+              <span className="text-xs font-bold text-success">جاري التنفيذ</span>
+            </div>
+            {task.start_time && <ElapsedTimer startTime={task.start_time} />}
+          </div>
+          {executingTechName && (
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <User className="h-3.5 w-3.5 text-success" />
+              <span className="text-xs font-bold text-foreground">{executingTechName}</span>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="px-4 py-2">
         <button
           onClick={() => onStatusChange(task)}
