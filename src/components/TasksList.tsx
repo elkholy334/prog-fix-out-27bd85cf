@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User, Plus, GripVertical } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User, Plus, GripVertical, Timer } from 'lucide-react';
 import { useTasks, useTechnicians, useDeleteTask, useUpdateTask } from '@/hooks/useDatabase';
 import { useAuth } from '@/hooks/useAuth';
 import { TaskDetailDialog } from '@/components/TaskDetailDialog';
