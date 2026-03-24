@@ -23,7 +23,6 @@ export const TaskCompletionDialog = ({ task, onClose }: Props) => {
   const { data: technicians = [] } = useTechnicians();
   const { data: generalData } = useSetting('general');
 
-  const [expectedAmount, setExpectedAmount] = useState(0);
   const [paidAmount, setPaidAmount] = useState(0);
   const [moneyDelivered, setMoneyDelivered] = useState(false);
   const [notes, setNotes] = useState('');
@@ -31,8 +30,7 @@ export const TaskCompletionDialog = ({ task, onClose }: Props) => {
 
   useEffect(() => {
     if (task) {
-      setExpectedAmount(Number(task.expected_amount) || 0);
-      setPaidAmount(Number(task.paid_amount) || 0);
+      setPaidAmount(0);
       setMoneyDelivered(false);
       setNotes('');
     }
