@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useUpdateTask, useTechnicians } from '@/hooks/useDatabase';
+import { useUpdateTask, useTechnicians, useSetting } from '@/hooks/useDatabase';
 import { toast } from 'sonner';
+import { sendWhatsAppMessage } from '@/lib/whatsapp';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
