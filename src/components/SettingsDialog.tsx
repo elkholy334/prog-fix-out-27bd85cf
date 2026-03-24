@@ -291,7 +291,71 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
             </TabsContent>
 
             <TabsContent value="tasks" className="space-y-4">
-              <p className="text-center text-muted-foreground text-sm">إعدادات المهام وأنواعها</p>
+              <p className="text-center text-muted-foreground text-sm">إدارة أنواع المهام</p>
+              
+              {/* Add new type */}
+              <div className="space-y-2 border border-border rounded-lg p-3">
+                <Label className="text-right block text-sm font-medium">إضافة نوع جديد</Label>
+                <Input
+                  value={newTypeName}
+                  onChange={(e) => setNewTypeName(e.target.value)}
+                  placeholder="اسم نوع المهمة"
+                  className="text-right"
+                />
+                <div className="flex gap-2">
+                  <Input
+                    value={newTypeImage}
+                    onChange={(e) => setNewTypeImage(e.target.value)}
+                    placeholder="رابط صورة / لوجو (اختياري)"
+                    className="text-left text-xs font-mono" dir="ltr"
+                  />
+                  <ImageIcon className="h-8 w-8 text-muted-foreground shrink-0 mt-1" />
+                </div>
+                <Button size="sm" className="w-full gradient-hero text-primary-foreground" onClick={addTaskType}>
+                  <Plus className="h-4 w-4 ml-1" /> إضافة
+                </Button>
+              </div>
+
+              {/* Types list */}
+              <div className="space-y-2">
+                {taskTypes.map((type) => (
+                  <div
+                    key={type.id}
+                    draggable
+                    onDragStart={() => handleTypeDragStart(type.id)}
+                    onDragOver={(e) => handleTypeDragOver(e, type.id)}
+                    onDragEnd={handleTypeDragEnd}
+                    className={`flex items-center gap-2 bg-muted rounded-lg px-3 py-2 transition-all ${draggedTypeId === type.id ? 'opacity-50' : ''}`}
+                  >
+                    <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab shrink-0" />
+                    
+                    {type.imageUrl && (
+                      <img src={type.imageUrl} alt={type.name} className="h-8 w-8 rounded object-contain shrink-0" />
+                    )}
+
+                    {editingTypeId === type.id ? (
+                      <div className="flex-1 space-y-1">
+                        <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="text-right h-7 text-sm" />
+                        <Input value={editImage} onChange={(e) => setEditImage(e.target.value)} placeholder="رابط الصورة" className="text-left text-xs font-mono h-7" dir="ltr" />
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="ghost" className="h-6 text-success" onClick={saveEditType}><Check className="h-3 w-3" /></Button>
+                          <Button size="sm" variant="ghost" className="h-6 text-destructive" onClick={() => setEditingTypeId(null)}><X className="h-3 w-3" /></Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="flex-1 text-sm font-medium text-right">{type.name}</span>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => startEditType(type)}>
+                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteTaskType(type.id)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
             </TabsContent>
 
             <TabsContent value="whatsapp" className="space-y-6">
