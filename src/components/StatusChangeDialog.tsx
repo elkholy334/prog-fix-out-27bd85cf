@@ -173,13 +173,22 @@ export const StatusChangeDialog = ({ task, onClose, onComplete }: Props) => {
             <p className="text-sm text-muted-foreground">
               المهمة: <span className="font-bold text-foreground">{task.client_name}</span>
             </p>
-            <Button
-              className="w-full bg-success text-success-foreground font-bold"
-              onClick={handleTechStartTask}
-              disabled={updateTask.isPending || task.status === 'in_progress'}
-            >
-              {task.status === 'in_progress' ? 'المهمة قيد التنفيذ بالفعل' : '🚀 بدء المهمة'}
-            </Button>
+            {task.status === 'in_progress' ? (
+              <Button
+                className="w-full bg-success text-success-foreground font-bold"
+                onClick={() => { if (onComplete) onComplete(task); onClose(); }}
+              >
+                ✅ اتمام المهمة
+              </Button>
+            ) : (
+              <Button
+                className="w-full bg-success text-success-foreground font-bold"
+                onClick={handleTechStartTask}
+                disabled={updateTask.isPending}
+              >
+                🚀 بدء المهمة
+              </Button>
+            )}
           </div>
         )}
       </DialogContent>
