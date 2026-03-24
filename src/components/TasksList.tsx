@@ -163,7 +163,13 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
         {techName && (
           <div className="flex items-center gap-1.5">
             <User className="h-3.5 w-3.5" />
-            <span>{techName}</span>
+            <span>مطلوب: {techName}</span>
+          </div>
+        )}
+        {executingTechName && task.status !== 'in_progress' && (
+          <div className="flex items-center gap-1.5 text-primary font-bold">
+            <User className="h-3.5 w-3.5" />
+            <span>نفذ بواسطة: {executingTechName}</span>
           </div>
         )}
         {task.scheduled_time && (
