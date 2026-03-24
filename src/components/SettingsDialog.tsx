@@ -159,10 +159,20 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
               </div>
               <div className="space-y-2">
                 {technicians.map((tech) => (
-                  <div key={tech.id} className="flex items-center justify-between bg-muted rounded-lg px-3 py-2">
-                    <Button variant="ghost" size="sm" className="text-destructive text-xs" onClick={() => deleteTechnician(tech.id)}>
+                  <div key={tech.id} className="flex items-center justify-between bg-muted rounded-lg px-3 py-2 gap-2">
+                    <Button variant="ghost" size="sm" className="text-destructive text-xs shrink-0" onClick={() => deleteTechnician(tech.id)}>
                       حذف
                     </Button>
+                    <div className="flex items-center gap-2 flex-1">
+                      <Input
+                        type="number"
+                        defaultValue={(tech as any).commission_rate || 0}
+                        className="w-20 text-center text-sm h-8"
+                        placeholder="%"
+                        onBlur={(e) => updateCommissionRate(tech.id, Number(e.target.value))}
+                      />
+                      <span className="text-xs text-muted-foreground">%</span>
+                    </div>
                     <span className="font-medium text-sm">{tech.name}</span>
                   </div>
                 ))}
