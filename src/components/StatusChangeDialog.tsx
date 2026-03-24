@@ -22,6 +22,7 @@ const ALL_STATUSES = [
 interface Props {
   task: TaskRow | null;
   onClose: () => void;
+  onComplete?: (task: TaskRow) => void;
 }
 
 export const StatusChangeDialog = ({ task, onClose }: Props) => {
