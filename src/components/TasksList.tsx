@@ -346,6 +346,16 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
     );
   };
 
+  const handleArchive = (task: TaskRow) => {
+    const newVal = !task.is_archived;
+    updateTask.mutate(
+      { id: task.id, is_archived: newVal },
+      {
+        onSuccess: () => toast.success(newVal ? '📦 تم أرشفة المهمة' : '📋 تم إلغاء الأرشفة'),
+      }
+    );
+  };
+
   const getDaysAgo = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime();
     return Math.floor(diff / (1000 * 60 * 60 * 24));
