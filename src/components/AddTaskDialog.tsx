@@ -37,10 +37,25 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
   const [requiredTechnician, setRequiredTechnician] = useState('');
   const [assignedTechnicians, setAssignedTechnicians] = useState<string[]>([]);
 
-  // Select all technicians by default when dialog opens
+  // Set defaults when dialog opens
   useEffect(() => {
-    if (open && technicians.length > 0) {
-      setAssignedTechnicians(technicians.map(t => t.id));
+    if (open) {
+      // Default: today's date, 1 hour from now
+      const now = new Date();
+      const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+      setScheduledDate(now);
+
+      let hour = oneHourLater.getHours();
+      const minute = oneHourLater.getMinutes();
+      const amPm = hour >= 12 ? 'م' : 'ص';
+      hour = hour % 12 || 12;
+      setTimeHour(String(hour).padStart(2, '0'));
+      setTimeMinute(String(minute).padStart(2, '0'));
+      setTimeAmPm(amPm);
+
+      if (technicians.length > 0) {
+        setAssignedTechnicians(technicians.map(t => t.id));
+      }
     }
   }, [open, technicians]);
 
