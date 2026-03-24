@@ -92,6 +92,73 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     }
   }, [generalData]);
 
+  useEffect(() => {
+    if (taskTypesData) {
+      const types = taskTypesData as unknown as TaskType[];
+      if (Array.isArray(types) && types.length > 0) {
+        setTaskTypes(types.sort((a, b) => a.order - b.order));
+      }
+    }
+  }, [taskTypesData]);
+
+  const saveTaskTypes = (types: TaskType[]) => {
+    upsertSetting.mutate(
+      { key: 'task_types', value: types as any },
+      { onSuccess: () => toast.success('تم حفظ أنواع المهام') }
+    );
+  };
+
+  const addTaskType = () => {
+    if (!newTypeName.trim()) return;
+    const newType: TaskType = {
+      id: Date.now().toString(),
+      name: newTypeName.trim(),
+      imageUrl: newTypeImage.trim(),
+      order: taskTypes.length,
+    };
+    const updated = [...taskTypes, newType];
+    setTaskTypes(updated);
+    saveTaskTypes(updated);
+    setNewTypeName('');
+    setNewTypeImage('');
+  };
+
+  const deleteTaskType = (id: string) => {
+    const updated = taskTypes.filter(t => t.id !== id).map((t, i) => ({ ...t, order: i }));
+    setTaskTypes(updated);
+    saveTaskTypes(updated);
+  };
+
+  const startEditType = (type: TaskType) => {
+    setEditingTypeId(type.id);
+    setEditName(type.name);
+    setEditImage(type.imageUrl);
+  };
+
+  const saveEditType = () => {
+    if (!editingTypeId || !editName.trim()) return;
+    const updated = taskTypes.map(t => t.id === editingTypeId ? { ...t, name: editName.trim(), imageUrl: editImage.trim() } : t);
+    setTaskTypes(updated);
+    saveTaskTypes(updated);
+    setEditingTypeId(null);
+  };
+
+  const handleTypeDragStart = (id: string) => setDraggedTypeId(id);
+  const handleTypeDragOver = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!draggedTypeId || draggedTypeId === targetId) return;
+    const oldIdx = taskTypes.findIndex(t => t.id === draggedTypeId);
+    const newIdx = taskTypes.findIndex(t => t.id === targetId);
+    const reordered = [...taskTypes];
+    const [moved] = reordered.splice(oldIdx, 1);
+    reordered.splice(newIdx, 0, moved);
+    setTaskTypes(reordered.map((t, i) => ({ ...t, order: i })));
+  };
+  const handleTypeDragEnd = () => {
+    saveTaskTypes(taskTypes);
+    setDraggedTypeId(null);
+  };
+
   const saveWhatsAppConfig = () => {
     // Also save to localStorage for the send function
     localStorage.setItem('whatsapp_config', JSON.stringify(waConfig));
