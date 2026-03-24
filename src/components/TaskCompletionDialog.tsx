@@ -238,6 +238,110 @@ ${notes ? `\n📝 ملاحظات الفني: ${notes}` : ''}
             >
               {isSaving ? 'جاري الحفظ...' : '✅ اتمام المهمة وإرسال الرسائل'}
             </Button>
+
+            {/* Postpone / Back to waiting */}
+            {!showPostpone ? (
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  className="border-accent text-accent hover:bg-accent/10 font-bold"
+                  onClick={() => {
+                    updateTask.mutate(
+                      { id: task.id, status: 'waiting', start_time: null, technician_id: null } as any,
+                      {
+                        onSuccess: () => {
+                          toast.success('تم إرجاع المهمة للانتظار');
+                          onClose();
+                        },
+                      }
+                    );
+                  }}
+                  disabled={isSaving}
+                >
+                  <RotateCcw className="h-4 w-4 ml-1" />
+                  إرجاع للانتظار
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-warning text-warning hover:bg-warning/10 font-bold"
+                  onClick={() => setShowPostpone(true)}
+                  disabled={isSaving}
+                >
+                  <PauseCircle className="h-4 w-4 ml-1" />
+                  تأجيل
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3 border-2 border-warning/30 rounded-lg p-4 bg-warning/5">
+                <h4 className="font-bold text-sm text-warning flex items-center gap-2">
+                  <PauseCircle className="h-4 w-4" />
+                  تأجيل المهمة
+                </h4>
+                <div className="space-y-1.5">
+                  <Label className="text-right block text-sm">تاريخ التأجيل</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-right font-normal",
+                          !postponeDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="ml-2 h-4 w-4" />
+                        {postponeDate ? format(postponeDate, "yyyy-MM-dd") : "اختر التاريخ"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={postponeDate}
+                        onSelect={setPostponeDate}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-right block text-sm">وقت التأجيل</Label>
+                  <Input
+                    type="time"
+                    value={postponeTime}
+                    onChange={(e) => setPostponeTime(e.target.value)}
+                    className="text-right"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    className="bg-warning text-warning-foreground font-bold"
+                    onClick={() => {
+                      updateTask.mutate(
+                        {
+                          id: task.id,
+                          status: 'postponed',
+                          scheduled_date: postponeDate ? format(postponeDate, "yyyy-MM-dd") : null,
+                          scheduled_time: postponeTime || null,
+                        } as any,
+                        {
+                          onSuccess: () => {
+                            toast.success('تم تأجيل المهمة');
+                            onClose();
+                          },
+                        }
+                      );
+                    }}
+                    disabled={!postponeDate}
+                  >
+                    تأكيد التأجيل
+                  </Button>
+                  <Button variant="outline" onClick={() => setShowPostpone(false)}>
+                    رجوع
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <Button variant="outline" className="w-full" onClick={onClose}>
               إلغاء
             </Button>
