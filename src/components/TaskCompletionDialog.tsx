@@ -163,16 +163,6 @@ ${notes ? `\n📝 ملاحظات الفني: ${notes}` : ''}
             </h3>
 
             <div className="space-y-1.5">
-              <Label className="text-right block text-sm">المبلغ المتوقع</Label>
-              <Input
-                type="number"
-                value={expectedAmount}
-                onChange={(e) => setExpectedAmount(Number(e.target.value))}
-                className="text-right"
-              />
-            </div>
-
-            <div className="space-y-1.5">
               <Label className="text-right block text-sm">المبلغ المدفوع من العميل</Label>
               <Input
                 type="number"
