@@ -75,6 +75,12 @@ export const TaskCompletionDialog = ({ task, onClose }: Props) => {
         repair_date: new Date().toISOString().split('T')[0],
       } as any);
 
+      // Format start/end times
+      const startTimeFormatted = task.start_time
+        ? new Date(task.start_time).toLocaleString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true, year: 'numeric', month: '2-digit', day: '2-digit' })
+        : 'غير محدد';
+      const endTimeFormatted = new Date().toLocaleString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true, year: 'numeric', month: '2-digit', day: '2-digit' });
+
       // Build WhatsApp message for client
       const clientMsg = `✅ *تم اتمام المهمة بنجاح*
 
@@ -84,6 +90,8 @@ export const TaskCompletionDialog = ({ task, onClose }: Props) => {
 📋 *تفاصيل المهمة:*
 🔧 نوع العمل: ${task.type}
 👨‍🔧 الفني: ${techName}
+🕐 وقت بدء العمل: ${startTimeFormatted}
+🕑 وقت الانتهاء: ${endTimeFormatted}
 💰 المبلغ المدفوع: ${paidAmount} جنيه
 ${notes ? `📝 ملاحظات: ${notes}` : ''}
 
