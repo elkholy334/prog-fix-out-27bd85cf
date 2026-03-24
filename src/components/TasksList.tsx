@@ -108,6 +108,7 @@ interface SortableTaskCardProps {
   onDetails: (task: TaskRow) => void;
   onWhatsApp: (task: TaskRow) => void;
   onToggleFavorite: (task: TaskRow) => void;
+  onArchive: (task: TaskRow) => void;
 }
 
 const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin, onDelete, onStatusChange, onComplete, onDetails, onWhatsApp, onToggleFavorite }: SortableTaskCardProps) => {
