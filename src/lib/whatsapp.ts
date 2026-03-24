@@ -44,7 +44,7 @@ export const sendWhatsAppMessage = async (phone: string, message: string): Promi
         ? `20${cleanPhone}`
         : cleanPhone;
 
-  const jid = `${normalizedPhone}@s.whatsapp.net`;
+  
 
   try {
     const url = new URL(config.endpoints.sendText);
