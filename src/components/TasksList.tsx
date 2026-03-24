@@ -153,7 +153,7 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
         </div>
 
         {/* Center: Logo beside Name + Type */}
-        <div className="flex items-center justify-center gap-3 mb-3">
+        <div className="flex items-center justify-center gap-3 mb-3 flex-row-reverse">
           {taskTypeImage && (
             <img src={taskTypeImage} alt={task.type} className="h-14 w-14 rounded-xl object-contain shrink-0 drop-shadow-md" />
           )}
