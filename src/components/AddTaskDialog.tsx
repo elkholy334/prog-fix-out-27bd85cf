@@ -252,11 +252,11 @@ ${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
               </SelectContent>
             </Select>
             {type === 'أخرى' && (
-              <Input
+              <textarea
                 value={customType}
                 onChange={(e) => setCustomType(e.target.value)}
-                placeholder="اكتب نوع المهمة..."
-                className="text-right mt-2"
+                placeholder="مثال: تركيب شاشة، صيانة رسيفر، تمديد أسلاك..."
+                className="w-full rounded-lg border-2 border-accent/40 bg-accent/5 px-4 py-3 text-sm text-right min-h-[80px] resize-none focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent mt-2 placeholder:text-muted-foreground/60"
               />
             )}
           </FormField>
