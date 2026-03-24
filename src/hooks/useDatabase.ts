@@ -27,7 +27,7 @@ export const useTasks = (statusFilter?: string) =>
   useQuery({
     queryKey: ['tasks', statusFilter],
     queryFn: async () => {
-      let query = supabase.from('tasks').select('*').order('created_at', { ascending: false });
+      let query = supabase.from('tasks').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false });
       if (statusFilter && statusFilter !== 'all' && statusFilter !== 'assigned') {
         query = query.eq('status', statusFilter);
       }

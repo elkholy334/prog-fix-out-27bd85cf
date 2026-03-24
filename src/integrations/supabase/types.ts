@@ -87,6 +87,7 @@ export type Database = {
           scheduled_date: string | null
           scheduled_time: string | null
           shop_net: number | null
+          sort_order: number | null
           start_time: string | null
           status: string
           technician_commission: number | null
@@ -110,6 +111,7 @@ export type Database = {
           scheduled_date?: string | null
           scheduled_time?: string | null
           shop_net?: number | null
+          sort_order?: number | null
           start_time?: string | null
           status?: string
           technician_commission?: number | null
@@ -133,6 +135,7 @@ export type Database = {
           scheduled_date?: string | null
           scheduled_time?: string | null
           shop_net?: number | null
+          sort_order?: number | null
           start_time?: string | null
           status?: string
           technician_commission?: number | null
