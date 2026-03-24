@@ -137,24 +137,31 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
         </div>
       )}
 
-      <div className="p-4 pb-2">
-        <div className="flex items-start justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">#{task.id}</span>
-            <span className="flex items-center gap-1 text-xs bg-muted rounded-full px-2 py-0.5">
-              <Clock className="h-3 w-3" />
-              منذ {daysAgo} يوم
-            </span>
+      <div className="flex">
+        {/* Task Type Logo */}
+        {taskTypeImage && (
+          <div className="flex items-center justify-center p-3 border-l border-accent/20 bg-muted/30 min-w-[70px]">
+            <img src={taskTypeImage} alt={task.type} className="h-12 w-12 rounded-lg object-contain" />
           </div>
-          <button onClick={() => onToggleFavorite(task)} className="hover:scale-125 transition-transform">
-            <Star className={`h-5 w-5 ${task.is_favorite ? 'fill-accent text-accent drop-shadow-[0_0_6px_hsl(var(--accent))]' : 'text-muted-foreground hover:text-accent'}`} />
-          </button>
-        </div>
-        <h3 className="font-bold text-lg text-foreground">{task.client_name}</h3>
-        <div className="flex items-center gap-2">
-          {taskTypeImage && <img src={taskTypeImage} alt={task.type} className="h-6 w-6 rounded object-contain" />}
+        )}
+
+        <div className="flex-1 p-4 pb-2">
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">#{task.id}</span>
+              <span className="flex items-center gap-1 text-xs bg-muted rounded-full px-2 py-0.5">
+                <Clock className="h-3 w-3" />
+                منذ {daysAgo} يوم
+              </span>
+            </div>
+            <button onClick={() => onToggleFavorite(task)} className="hover:scale-125 transition-transform">
+              <Star className={`h-5 w-5 ${task.is_favorite ? 'fill-accent text-accent drop-shadow-[0_0_6px_hsl(var(--accent))]' : 'text-muted-foreground hover:text-accent'}`} />
+            </button>
+          </div>
+          <h3 className="font-bold text-lg text-foreground">{task.client_name}</h3>
           <p className="text-sm text-muted-foreground">{task.type}</p>
         </div>
+      </div>
       </div>
 
       <div className="px-4 pb-2 space-y-1.5 text-xs text-muted-foreground">
