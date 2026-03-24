@@ -25,7 +25,7 @@ interface Props {
   onComplete?: (task: TaskRow) => void;
 }
 
-export const StatusChangeDialog = ({ task, onClose }: Props) => {
+export const StatusChangeDialog = ({ task, onClose, onComplete }: Props) => {
   const { role, technicianId } = useAuth();
   const updateTask = useUpdateTask();
   const { data: technicians = [] } = useTechnicians();
