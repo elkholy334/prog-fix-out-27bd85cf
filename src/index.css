@@ -110,3 +110,12 @@
     box-shadow: var(--shadow-elevated);
   }
 }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px hsl(var(--success) / 0.3); }
+  50% { box-shadow: 0 0 20px hsl(var(--success) / 0.6); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
