@@ -126,6 +126,15 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                 <Input value={shopName} onChange={(e) => setShopName(e.target.value)} className="text-right" />
               </div>
               <div className="space-y-1.5">
+                <Label className="text-right block">رقم هاتف المدير (للإشعارات)</Label>
+                <Input
+                  value={adminPhone}
+                  onChange={(e) => setAdminPhone(e.target.value)}
+                  placeholder="بكود الدولة بدون + (مثال: 201234567890)"
+                  className="text-left font-mono text-sm" dir="ltr"
+                />
+              </div>
+              <div className="space-y-1.5">
                 <Label className="text-right block">حد التأخير (ساعات)</Label>
                 <Input type="number" value={delayHours} onChange={(e) => setDelayHours(Number(e.target.value))} className="text-right" />
               </div>
