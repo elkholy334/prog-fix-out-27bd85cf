@@ -150,11 +150,11 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
             <Star className={`h-5 w-5 ${task.is_favorite ? 'fill-accent text-accent drop-shadow-[0_0_6px_hsl(var(--accent))]' : 'text-muted-foreground hover:text-accent'}`} />
           </button>
         </div>
-        <div className="flex items-center gap-3 flex-row-reverse">
+        <div className="flex items-center justify-center gap-3 flex-row-reverse">
           {taskTypeImage && (
             <img src={taskTypeImage} alt={task.type} className="h-14 w-14 rounded-lg object-contain shrink-0" />
           )}
-          <div>
+          <div className="text-center">
             <h3 className="font-bold text-lg text-foreground">{task.client_name}</h3>
             <p className="text-sm text-muted-foreground">{task.type}</p>
           </div>
