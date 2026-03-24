@@ -197,11 +197,13 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
           onClick={() => onStatusChange(task)}
           className={`inline-block px-4 py-1.5 rounded-full text-sm font-medium w-full text-center cursor-pointer hover:opacity-80 transition-opacity ${STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
         >
-          {isAdmin
-            ? STATUS_LABELS[task.status] || task.status
-            : task.status === 'waiting'
-              ? '🚀 بدء المهمة'
-              : STATUS_LABELS[task.status] || task.status}
+          {isExecuting
+            ? '✅ اتمام المهمة'
+            : isAdmin
+              ? STATUS_LABELS[task.status] || task.status
+              : task.status === 'waiting'
+                ? '🚀 بدء المهمة'
+                : STATUS_LABELS[task.status] || task.status}
         </button>
       </div>
 
