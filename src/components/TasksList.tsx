@@ -165,32 +165,32 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
 
         {/* Info rows - aligned right */}
         <div className="space-y-1.5 text-xs text-muted-foreground mb-3">
-          <div className="flex items-center gap-1.5 justify-end">
-            <span>{new Date(task.created_at).toLocaleString('ar-EG')}</span>
+          <div className="flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5" />
+            <span>{new Date(task.created_at).toLocaleString('ar-EG')}</span>
           </div>
           {task.address && (
-            <div className="flex items-center gap-1.5 justify-end">
-              <span>{task.address}</span>
+            <div className="flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" />
+              <span>{task.address}</span>
             </div>
           )}
           {task.scheduled_time && (
-            <div className="flex items-center gap-1.5 justify-end">
-              <span>موعد التنفيذ: {task.scheduled_time}</span>
+            <div className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" />
+              <span>موعد التنفيذ: {task.scheduled_time}</span>
             </div>
           )}
           {techName && (
-            <div className="flex items-center gap-1.5 justify-end">
-              <span>مطلوب: {techName}</span>
+            <div className="flex items-center gap-1.5">
               <User className="h-3.5 w-3.5" />
+              <span>مطلوب: {techName}</span>
             </div>
           )}
           {executingTechName && task.status !== 'in_progress' && (
-            <div className="flex items-center gap-1.5 justify-end text-primary font-bold">
-              <span>نفذ بواسطة: {executingTechName}</span>
+            <div className="flex items-center gap-1.5 text-primary font-bold">
               <User className="h-3.5 w-3.5" />
+              <span>نفذ بواسطة: {executingTechName}</span>
             </div>
           )}
         </div>
@@ -207,9 +207,9 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
             {task.start_time && <ElapsedTimer startTime={task.start_time} />}
           </div>
           {executingTechName && (
-            <div className="flex items-center gap-1.5 mt-1.5 justify-end">
-              <span className="text-xs font-bold text-foreground">{executingTechName}</span>
+            <div className="flex items-center gap-1.5 mt-1.5">
               <User className="h-3.5 w-3.5 text-success" />
+              <span className="text-xs font-bold text-foreground">{executingTechName}</span>
             </div>
           )}
         </div>
