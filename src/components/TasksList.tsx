@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User, Plus, GripVertical } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Star, Clock, MapPin, Phone, Eye, MessageCircle, Trash2, User, Plus, GripVertical, Timer } from 'lucide-react';
 import { useTasks, useTechnicians, useDeleteTask, useUpdateTask } from '@/hooks/useDatabase';
 import { useAuth } from '@/hooks/useAuth';
 import { TaskDetailDialog } from '@/components/TaskDetailDialog';
@@ -69,10 +69,35 @@ const FILTER_TABS: { key: FilterTab; label: string }[] = [
   { key: 'unrated', label: 'بلا تقييم' },
 ];
 
+// ---- Elapsed Timer Component ----
+const ElapsedTimer = ({ startTime }: { startTime: string }) => {
+  const [elapsed, setElapsed] = useState('');
+
+  useEffect(() => {
+    const update = () => {
+      const diff = Date.now() - new Date(startTime).getTime();
+      const hours = Math.floor(diff / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
+      setElapsed(
+        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      );
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [startTime]);
+
+  return (
+    <span className="font-mono text-sm font-bold text-success tabular-nums">{elapsed}</span>
+  );
+};
+
 // ---- Sortable Task Card ----
 interface SortableTaskCardProps {
   task: TaskRow;
   techName: string;
+  executingTechName: string;
   daysAgo: number;
   isAdmin: boolean;
   onDelete: (id: number) => void;
@@ -82,7 +107,7 @@ interface SortableTaskCardProps {
   onToggleFavorite: (task: TaskRow) => void;
 }
 
-const SortableTaskCard = ({ task, techName, daysAgo, isAdmin, onDelete, onStatusChange, onDetails, onWhatsApp, onToggleFavorite }: SortableTaskCardProps) => {
+const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin, onDelete, onStatusChange, onDetails, onWhatsApp, onToggleFavorite }: SortableTaskCardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
 
   const style = {
@@ -92,8 +117,10 @@ const SortableTaskCard = ({ task, techName, daysAgo, isAdmin, onDelete, onStatus
     zIndex: isDragging ? 50 : undefined,
   };
 
+  const isExecuting = task.status === 'in_progress';
+
   return (
-    <div ref={setNodeRef} style={style} className={`bg-card rounded-xl border shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BORDER_COLORS[task.status] || ''} ${task.is_favorite ? 'border-accent ring-2 ring-accent/30 shadow-[0_0_15px_hsl(var(--accent)/0.2)]' : 'border-accent/20'}`}>
+    <div ref={setNodeRef} style={style} className={`bg-card rounded-xl border shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BORDER_COLORS[task.status] || ''} ${isExecuting ? 'animate-pulse-glow border-success ring-2 ring-success/40' : ''} ${task.is_favorite ? 'border-accent ring-2 ring-accent/30 shadow-[0_0_15px_hsl(var(--accent)/0.2)]' : !isExecuting ? 'border-accent/20' : ''}`}>
       {/* Drag Handle */}
       <div
         {...attributes}
@@ -144,6 +171,25 @@ const SortableTaskCard = ({ task, techName, daysAgo, isAdmin, onDelete, onStatus
           </div>
         )}
       </div>
+
+      {/* Execution Banner */}
+      {isExecuting && (
+        <div className="mx-4 mb-2 p-3 rounded-lg bg-success/10 border border-success/30">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Timer className="h-4 w-4 text-success animate-pulse" />
+              <span className="text-xs font-bold text-success">جاري التنفيذ</span>
+            </div>
+            {task.start_time && <ElapsedTimer startTime={task.start_time} />}
+          </div>
+          {executingTechName && (
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <User className="h-3.5 w-3.5 text-success" />
+              <span className="text-xs font-bold text-foreground">{executingTechName}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="px-4 py-2">
         <button
@@ -331,6 +377,9 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
                 const techName = task.required_technician
                   ? technicians.find((t) => t.id === task.required_technician)?.name || ''
                   : '';
+                const executingTechName = task.technician_id
+                  ? technicians.find((t) => t.id === task.technician_id)?.name || ''
+                  : '';
                 const daysAgo = getDaysAgo(task.created_at);
 
                 return (
@@ -338,6 +387,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
                     key={task.id}
                     task={task}
                     techName={techName}
+                    executingTechName={executingTechName}
                     daysAgo={daysAgo}
                     isAdmin={isAdmin}
                     onDelete={handleDelete}
