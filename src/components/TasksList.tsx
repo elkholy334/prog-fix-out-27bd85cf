@@ -443,6 +443,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
                       executingTechName={executingTechName}
                       daysAgo={daysAgo}
                       isAdmin={isAdmin}
+                      taskTypeImage={taskTypeImageMap[task.type] || ''}
                       onDelete={handleDelete}
                       onStatusChange={setStatusTask}
                       onComplete={(t) => setCompletionTask(t)}
