@@ -194,8 +194,8 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
 
       <div className="px-4 py-2">
         <button
-          onClick={() => onStatusChange(task)}
-          className={`inline-block px-4 py-1.5 rounded-full text-sm font-medium w-full text-center cursor-pointer hover:opacity-80 transition-opacity ${STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
+          onClick={() => isExecuting ? onStatusChange(task) : onStatusChange(task)}
+          className={`inline-block px-4 py-1.5 rounded-full text-sm font-medium w-full text-center cursor-pointer hover:opacity-80 transition-opacity ${isExecuting ? 'bg-success text-success-foreground' : STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
         >
           {isExecuting
             ? '✅ اتمام المهمة'
