@@ -44,8 +44,6 @@ export const StatusChangeDialog = ({ task, onClose, onComplete }: Props) => {
     let msg = '';
     if (newStatus === 'postponed') {
       msg = `⏳ *تم تأجيل مهمتك*\n\nمرحباً أ/ ${task.client_name}\nنعتذر عن التأخير، تم تأجيل مهمتك مؤقتاً.\n\n📋 *نوع المهمة:* ${task.type}\n📍 *العنوان:* ${task.address || 'غير محدد'}\n\nسيتم التواصل معك في أقرب وقت لتحديد موعد جديد.\nنشكرك على تفهمك 🙏\n\n${shopName}`;
-    } else if (newStatus === 'waiting') {
-      msg = `🔄 *تحديث حالة مهمتك*\n\nمرحباً أ/ ${task.client_name}\nتم إرجاع مهمتك لقائمة الانتظار وسيتم العمل عليها في أقرب وقت.\n\n📋 *نوع المهمة:* ${task.type}\n📍 *العنوان:* ${task.address || 'غير محدد'}\n\nسنتواصل معك قريباً لتأكيد الموعد ✨\n\n${shopName}`;
     }
 
     if (msg) {
