@@ -58,13 +58,17 @@ export const PWAInstallPrompt = () => {
       setShowIOSGuide(true);
       return;
     }
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setShowPrompt(false);
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setShowPrompt(false);
+      }
+      setDeferredPrompt(null);
+    } else {
+      // No native prompt available — show manual guide
+      setShowIOSGuide(true);
     }
-    setDeferredPrompt(null);
   };
 
   const handleDismiss = () => {
