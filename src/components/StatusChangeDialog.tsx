@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useUpdateTask, useTechnicians } from '@/hooks/useDatabase';
+import { useUpdateTask, useTechnicians, useSetting } from '@/hooks/useDatabase';
 import { toast } from 'sonner';
+import { sendWhatsAppMessage } from '@/lib/whatsapp';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -29,10 +30,33 @@ export const StatusChangeDialog = ({ task, onClose, onComplete }: Props) => {
   const { role, technicianId } = useAuth();
   const updateTask = useUpdateTask();
   const { data: technicians = [] } = useTechnicians();
+  const { data: generalSettings } = useSetting('general');
   const [showTechSelect, setShowTechSelect] = useState(false);
   const [selectedTechId, setSelectedTechId] = useState('');
 
   if (!task) return null;
+
+  const shopName = (generalSettings as any)?.shopName || 'المحل';
+
+  const sendStatusWhatsApp = async (newStatus: string) => {
+    if (!task.phone) return;
+
+    let msg = '';
+    if (newStatus === 'postponed') {
+      msg = `⏳ *تم تأجيل مهمتك*\n\nمرحباً أ/ ${task.client_name}\nنعتذر عن التأخير، تم تأجيل مهمتك مؤقتاً.\n\n📋 *نوع المهمة:* ${task.type}\n📍 *العنوان:* ${task.address || 'غير محدد'}\n\nسيتم التواصل معك في أقرب وقت لتحديد موعد جديد.\nنشكرك على تفهمك 🙏\n\n${shopName}`;
+    } else if (newStatus === 'waiting') {
+      msg = `🔄 *تحديث حالة مهمتك*\n\nمرحباً أ/ ${task.client_name}\nتم إرجاع مهمتك لقائمة الانتظار وسيتم العمل عليها في أقرب وقت.\n\n📋 *نوع المهمة:* ${task.type}\n📍 *العنوان:* ${task.address || 'غير محدد'}\n\nسنتواصل معك قريباً لتأكيد الموعد ✨\n\n${shopName}`;
+    }
+
+    if (msg) {
+      const result = await sendWhatsAppMessage(task.phone, msg);
+      if (result.success) {
+        toast.success('📱 تم إرسال إشعار للعميل');
+      } else {
+        toast.error(`فشل إرسال الإشعار: ${result.error}`);
+      }
+    }
+  };
 
   const handleChange = (newStatus: string) => {
     if (newStatus === 'completed' && onComplete && task) {
@@ -51,6 +75,9 @@ export const StatusChangeDialog = ({ task, onClose, onComplete }: Props) => {
       {
         onSuccess: () => {
           toast.success('تم تحديث الحالة');
+          if (newStatus === 'postponed' || newStatus === 'waiting') {
+            sendStatusWhatsApp(newStatus);
+          }
           onClose();
           setShowTechSelect(false);
         },
