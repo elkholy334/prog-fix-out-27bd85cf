@@ -22,9 +22,10 @@ const ALL_STATUSES = [
 interface Props {
   task: TaskRow | null;
   onClose: () => void;
+  onComplete?: (task: TaskRow) => void;
 }
 
-export const StatusChangeDialog = ({ task, onClose }: Props) => {
+export const StatusChangeDialog = ({ task, onClose, onComplete }: Props) => {
   const { role, technicianId } = useAuth();
   const updateTask = useUpdateTask();
   const { data: technicians = [] } = useTechnicians();
@@ -34,6 +35,12 @@ export const StatusChangeDialog = ({ task, onClose }: Props) => {
   if (!task) return null;
 
   const handleChange = (newStatus: string) => {
+    if (newStatus === 'completed' && onComplete && task) {
+      onComplete(task);
+      onClose();
+      return;
+    }
+
     if (newStatus === 'in_progress' && role === 'admin') {
       setShowTechSelect(true);
       return;
@@ -166,13 +173,22 @@ export const StatusChangeDialog = ({ task, onClose }: Props) => {
             <p className="text-sm text-muted-foreground">
               المهمة: <span className="font-bold text-foreground">{task.client_name}</span>
             </p>
-            <Button
-              className="w-full bg-success text-success-foreground font-bold"
-              onClick={handleTechStartTask}
-              disabled={updateTask.isPending || task.status === 'in_progress'}
-            >
-              {task.status === 'in_progress' ? 'المهمة قيد التنفيذ بالفعل' : '🚀 بدء المهمة'}
-            </Button>
+            {task.status === 'in_progress' ? (
+              <Button
+                className="w-full bg-success text-success-foreground font-bold"
+                onClick={() => { if (onComplete) onComplete(task); onClose(); }}
+              >
+                ✅ اتمام المهمة
+              </Button>
+            ) : (
+              <Button
+                className="w-full bg-success text-success-foreground font-bold"
+                onClick={handleTechStartTask}
+                disabled={updateTask.isPending}
+              >
+                🚀 بدء المهمة
+              </Button>
+            )}
           </div>
         )}
       </DialogContent>

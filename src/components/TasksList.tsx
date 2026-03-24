@@ -6,6 +6,7 @@ import { TaskDetailDialog } from '@/components/TaskDetailDialog';
 import { SendWhatsAppDialog } from '@/components/SendWhatsAppDialog';
 import { AddTaskDialog } from '@/components/AddTaskDialog';
 import { StatusChangeDialog } from '@/components/StatusChangeDialog';
+import { TaskCompletionDialog } from '@/components/TaskCompletionDialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
@@ -196,11 +197,13 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
           onClick={() => onStatusChange(task)}
           className={`inline-block px-4 py-1.5 rounded-full text-sm font-medium w-full text-center cursor-pointer hover:opacity-80 transition-opacity ${STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
         >
-          {isAdmin
-            ? STATUS_LABELS[task.status] || task.status
-            : task.status === 'waiting'
-              ? '🚀 بدء المهمة'
-              : STATUS_LABELS[task.status] || task.status}
+          {isExecuting
+            ? '✅ اتمام المهمة'
+            : isAdmin
+              ? STATUS_LABELS[task.status] || task.status
+              : task.status === 'waiting'
+                ? '🚀 بدء المهمة'
+                : STATUS_LABELS[task.status] || task.status}
         </button>
       </div>
 
@@ -245,6 +248,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
   const [whatsappTask, setWhatsappTask] = useState<TaskRow | null>(null);
   const [addTaskOpen, setAddTaskOpen] = useState(false);
   const [statusTask, setStatusTask] = useState<TaskRow | null>(null);
+  const [completionTask, setCompletionTask] = useState<TaskRow | null>(null);
   const [orderedIds, setOrderedIds] = useState<number[]>([]);
 
   useEffect(() => { setActiveFilter(initialFilter); }, [initialFilter]);
@@ -419,7 +423,12 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
       <TaskDetailDialog task={selectedTask} onClose={() => setSelectedTask(null)} />
       {isAdmin && <SendWhatsAppDialog task={whatsappTask} onClose={() => setWhatsappTask(null)} />}
       {isAdmin && <AddTaskDialog open={addTaskOpen} onOpenChange={setAddTaskOpen} />}
-      <StatusChangeDialog task={statusTask} onClose={() => setStatusTask(null)} />
+      <StatusChangeDialog
+        task={statusTask}
+        onClose={() => setStatusTask(null)}
+        onComplete={(t) => setCompletionTask(t)}
+      />
+      <TaskCompletionDialog task={completionTask} onClose={() => setCompletionTask(null)} />
     </div>
   );
 };

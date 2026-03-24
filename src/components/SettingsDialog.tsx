@@ -48,6 +48,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   });
   const [showToken, setShowToken] = useState(false);
   const [shopName, setShopName] = useState('شركة الفيروز للستالايت');
+  const [adminPhone, setAdminPhone] = useState('');
   const [delayHours, setDelayHours] = useState(24);
   const [newTechName, setNewTechName] = useState('');
 
@@ -59,6 +60,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     if (generalData) {
       const g = generalData as any;
       if (g.shopName) setShopName(g.shopName);
+      if (g.adminPhone) setAdminPhone(g.adminPhone);
       if (g.delayHours) setDelayHours(g.delayHours);
     }
   }, [generalData]);
@@ -74,9 +76,16 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
 
   const saveGeneral = () => {
     upsertSetting.mutate(
-      { key: 'general', value: { shopName, delayHours } as any },
+      { key: 'general', value: { shopName, adminPhone, delayHours } as any },
       { onSuccess: () => toast.success('تم حفظ الإعدادات العامة') }
     );
+  };
+
+  const updateCommissionRate = async (techId: string, rate: number) => {
+    const { error } = await supabase.from('technicians').update({ commission_rate: rate } as any).eq('id', techId);
+    if (error) { toast.error('فشل في تحديث النسبة'); return; }
+    toast.success('تم تحديث نسبة العمولة');
+    queryClient.invalidateQueries({ queryKey: ['technicians'] });
   };
 
   const addTechnician = async () => {
@@ -117,6 +126,15 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                 <Input value={shopName} onChange={(e) => setShopName(e.target.value)} className="text-right" />
               </div>
               <div className="space-y-1.5">
+                <Label className="text-right block">رقم هاتف المدير (للإشعارات)</Label>
+                <Input
+                  value={adminPhone}
+                  onChange={(e) => setAdminPhone(e.target.value)}
+                  placeholder="بكود الدولة بدون + (مثال: 201234567890)"
+                  className="text-left font-mono text-sm" dir="ltr"
+                />
+              </div>
+              <div className="space-y-1.5">
                 <Label className="text-right block">حد التأخير (ساعات)</Label>
                 <Input type="number" value={delayHours} onChange={(e) => setDelayHours(Number(e.target.value))} className="text-right" />
               </div>
@@ -141,10 +159,20 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
               </div>
               <div className="space-y-2">
                 {technicians.map((tech) => (
-                  <div key={tech.id} className="flex items-center justify-between bg-muted rounded-lg px-3 py-2">
-                    <Button variant="ghost" size="sm" className="text-destructive text-xs" onClick={() => deleteTechnician(tech.id)}>
+                  <div key={tech.id} className="flex items-center justify-between bg-muted rounded-lg px-3 py-2 gap-2">
+                    <Button variant="ghost" size="sm" className="text-destructive text-xs shrink-0" onClick={() => deleteTechnician(tech.id)}>
                       حذف
                     </Button>
+                    <div className="flex items-center gap-2 flex-1">
+                      <Input
+                        type="number"
+                        defaultValue={(tech as any).commission_rate || 0}
+                        className="w-20 text-center text-sm h-8"
+                        placeholder="%"
+                        onBlur={(e) => updateCommissionRate(tech.id, Number(e.target.value))}
+                      />
+                      <span className="text-xs text-muted-foreground">%</span>
+                    </div>
                     <span className="font-medium text-sm">{tech.name}</span>
                   </div>
                 ))}
