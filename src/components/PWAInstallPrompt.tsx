@@ -58,13 +58,17 @@ export const PWAInstallPrompt = () => {
       setShowIOSGuide(true);
       return;
     }
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setShowPrompt(false);
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setShowPrompt(false);
+      }
+      setDeferredPrompt(null);
+    } else {
+      // No native prompt available — show manual guide
+      setShowIOSGuide(true);
     }
-    setDeferredPrompt(null);
   };
 
   const handleDismiss = () => {
@@ -79,19 +83,26 @@ export const PWAInstallPrompt = () => {
     <div className="fixed bottom-4 left-4 right-4 z-50 animate-slide-up">
       <div className="bg-card border-2 border-accent/30 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] p-4 max-w-md mx-auto">
         {showIOSGuide ? (
-          // iOS installation guide
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <button onClick={handleDismiss} className="text-muted-foreground hover:text-foreground">
                 <X className="h-5 w-5" />
               </button>
-              <h3 className="font-bold text-foreground text-sm">📱 طريقة التثبيت على آيفون</h3>
+              <h3 className="font-bold text-foreground text-sm">📱 طريقة التثبيت</h3>
             </div>
-            <div className="space-y-2 text-sm text-muted-foreground text-right">
-              <p>1️⃣ اضغط على زر <strong>المشاركة</strong> ⬆️ في المتصفح</p>
-              <p>2️⃣ اختر <strong>"إضافة إلى الشاشة الرئيسية"</strong></p>
-              <p>3️⃣ اضغط <strong>"إضافة"</strong> ✅</p>
-            </div>
+            {isIOS ? (
+              <div className="space-y-2 text-sm text-muted-foreground text-right">
+                <p>1️⃣ اضغط على زر <strong>المشاركة</strong> ⬆️ في المتصفح</p>
+                <p>2️⃣ اختر <strong>"إضافة إلى الشاشة الرئيسية"</strong></p>
+                <p>3️⃣ اضغط <strong>"إضافة"</strong> ✅</p>
+              </div>
+            ) : (
+              <div className="space-y-2 text-sm text-muted-foreground text-right">
+                <p>1️⃣ اضغط على <strong>⋮ القائمة</strong> في أعلى المتصفح</p>
+                <p>2️⃣ اختر <strong>"تثبيت التطبيق"</strong> أو <strong>"إضافة إلى الشاشة الرئيسية"</strong></p>
+                <p>3️⃣ اضغط <strong>"تثبيت"</strong> ✅</p>
+              </div>
+            )}
             <Button variant="outline" size="sm" className="w-full" onClick={handleDismiss}>
               فهمت، شكراً
             </Button>
