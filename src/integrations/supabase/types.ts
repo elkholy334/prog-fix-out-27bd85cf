@@ -179,6 +179,7 @@ export type Database = {
           is_active: boolean
           is_admin: boolean | null
           name: string
+          phone: string | null
           tasks_count: number
           updated_at: string
         }
@@ -191,6 +192,7 @@ export type Database = {
           is_active?: boolean
           is_admin?: boolean | null
           name: string
+          phone?: string | null
           tasks_count?: number
           updated_at?: string
         }
@@ -203,6 +205,7 @@ export type Database = {
           is_active?: boolean
           is_admin?: boolean | null
           name?: string
+          phone?: string | null
           tasks_count?: number
           updated_at?: string
         }
