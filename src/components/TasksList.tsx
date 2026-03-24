@@ -294,7 +294,14 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
     setOrderedIds(prev => {
       const oldIndex = prev.indexOf(Number(active.id));
       const newIndex = prev.indexOf(Number(over.id));
-      return arrayMove(prev, oldIndex, newIndex);
+      const newOrder = arrayMove(prev, oldIndex, newIndex);
+
+      // Save sort order to DB
+      newOrder.forEach((taskId, index) => {
+        updateTask.mutate({ id: taskId, sort_order: index } as any);
+      });
+
+      return newOrder;
     });
 
     toast.success('تم إعادة ترتيب المهام');
