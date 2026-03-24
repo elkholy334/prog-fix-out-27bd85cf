@@ -93,6 +93,13 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     queryClient.invalidateQueries({ queryKey: ['technicians'] });
   };
 
+  const updateTechPhone = async (techId: string, phone: string) => {
+    const { error } = await supabase.from('technicians').update({ phone } as any).eq('id', techId);
+    if (error) { toast.error('فشل في تحديث رقم الهاتف'); return; }
+    toast.success('تم تحديث رقم الهاتف');
+    queryClient.invalidateQueries({ queryKey: ['technicians'] });
+  };
+
   const addTechnician = async () => {
     if (!newTechName.trim()) return;
     const { error } = await supabase.from('technicians').insert({ name: newTechName.trim() });
@@ -177,6 +184,13 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                         onBlur={(e) => updateCommissionRate(tech.id, Number(e.target.value))}
                       />
                       <span className="text-xs text-muted-foreground">%</span>
+                      <Input
+                        defaultValue={(tech as any).phone || ''}
+                        className="w-32 text-left font-mono text-xs h-8"
+                        placeholder="رقم الواتساب"
+                        dir="ltr"
+                        onBlur={(e) => updateTechPhone(tech.id, e.target.value)}
+                      />
                     </div>
                     <span className="font-medium text-sm">{tech.name}</span>
                   </div>

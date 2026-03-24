@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { useCreateTask, useTechnicians } from '@/hooks/useDatabase';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
+import { sendWhatsAppMessage } from '@/lib/whatsapp';
 
 interface AddTaskDialogProps {
   open: boolean;
@@ -85,6 +86,34 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
       {
         onSuccess: () => {
           toast.success('تم إضافة المهمة بنجاح ✅');
+          
+          // Send WhatsApp notification to assigned technicians
+          const taskDetails = [
+            `📋 *مهمة جديدة*`,
+            `👤 العميل: ${clientName.trim()}`,
+            `📍 العنوان: ${address.trim() || 'غير محدد'}`,
+            `🔧 النوع: ${type}`,
+            `📝 التفاصيل: ${problem.trim() || 'غير محدد'}`,
+            scheduledDate ? `📅 الموعد: ${format(scheduledDate, 'yyyy/MM/dd')}` : '',
+            timeHour ? `⏰ الوقت: ${timeHour}:${timeMinute} ${timeAmPm}` : '',
+          ].filter(Boolean).join('\n');
+
+          // Send to each assigned technician that has a phone number
+          const techsToNotify = technicians.filter(
+            t => assignedTechnicians.includes(t.id) && (t as any).phone
+          );
+          
+          techsToNotify.forEach(async (tech) => {
+            const result = await sendWhatsAppMessage((tech as any).phone, taskDetails);
+            if (result.success) {
+              toast.success(`تم إشعار ${tech.name} عبر الواتساب ✅`, { duration: 3000 });
+            }
+          });
+
+          if (techsToNotify.length === 0 && assignedTechnicians.length > 0) {
+            toast.info('لم يتم إرسال إشعارات واتساب - لا يوجد أرقام هواتف للفنيين المعينين');
+          }
+
           resetForm();
           onOpenChange(false);
         },
