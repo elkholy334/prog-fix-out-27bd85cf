@@ -280,6 +280,9 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
     : tasks;
 
   const baseFiltered = visibleTasks.filter((task) => {
+    if (activeFilter === 'archived') return task.is_archived === true;
+    // Hide archived from all other filters
+    if (task.is_archived) return false;
     if (activeFilter === 'all') return true;
     if (activeFilter === 'assigned') return task.required_technician != null;
     return task.status === activeFilter;
