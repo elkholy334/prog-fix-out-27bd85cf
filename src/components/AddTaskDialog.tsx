@@ -10,7 +10,7 @@ import { CalendarIcon, Loader2, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { useCreateTask, useTechnicians } from '@/hooks/useDatabase';
+import { useCreateTask, useTechnicians, useSetting } from '@/hooks/useDatabase';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { sendWhatsAppMessage } from '@/lib/whatsapp';
@@ -22,6 +22,7 @@ interface AddTaskDialogProps {
 
 export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
   const { data: technicians = [] } = useTechnicians();
+  const { data: generalData } = useSetting('general');
   const createTask = useCreateTask();
 
   const [clientName, setClientName] = useState('');
@@ -99,8 +100,35 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
         status: 'waiting',
       },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
           toast.success('تم إضافة المهمة بنجاح ✅');
+
+          const general = generalData as any;
+          const shopName = general?.shopName || 'المحل';
+
+          // Send WhatsApp confirmation to the client
+          const dateStr = scheduledDate ? format(scheduledDate, 'yyyy/MM/dd') : 'سيتم تحديده';
+          const timeDisplayStr = timeHour ? `${timeHour}:${timeMinute} ${timeAmPm}` : 'سيتم تحديده';
+
+          const clientMsg = `✅ *تم حجز مهمتك بنجاح*
+
+مرحباً أ/ ${clientName.trim()}
+تم استلام طلبك وجاري التنفيذ ✨
+
+📋 *تفاصيل الحجز:*
+🔧 نوع العمل: ${type}
+📍 العنوان: ${address.trim() || 'غير محدد'}
+📅 موعد التنفيذ: ${dateStr}
+⏰ الوقت المتوقع: ${timeDisplayStr}
+${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
+
+سيتواصل معك الفني قبل الموعد لتأكيد الحضور.
+شكراً لثقتكم في ${shopName} 🙏`;
+
+          const clientResult = await sendWhatsAppMessage(phone.trim(), clientMsg);
+          if (clientResult.success) {
+            toast.success('✅ تم إرسال تأكيد الحجز للعميل');
+          }
           
           // Send WhatsApp notification to assigned technicians
           const taskDetails = [
@@ -113,7 +141,6 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
             timeHour ? `⏰ الوقت: ${timeHour}:${timeMinute} ${timeAmPm}` : '',
           ].filter(Boolean).join('\n');
 
-          // Send to each assigned technician that has a phone number
           const techsToNotify = technicians.filter(
             t => assignedTechnicians.includes(t.id) && (t as any).phone
           );
