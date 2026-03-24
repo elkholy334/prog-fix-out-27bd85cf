@@ -93,6 +93,13 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     queryClient.invalidateQueries({ queryKey: ['technicians'] });
   };
 
+  const updateTechPhone = async (techId: string, phone: string) => {
+    const { error } = await supabase.from('technicians').update({ phone } as any).eq('id', techId);
+    if (error) { toast.error('فشل في تحديث رقم الهاتف'); return; }
+    toast.success('تم تحديث رقم الهاتف');
+    queryClient.invalidateQueries({ queryKey: ['technicians'] });
+  };
+
   const addTechnician = async () => {
     if (!newTechName.trim()) return;
     const { error } = await supabase.from('technicians').insert({ name: newTechName.trim() });
