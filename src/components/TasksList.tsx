@@ -423,7 +423,12 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
       <TaskDetailDialog task={selectedTask} onClose={() => setSelectedTask(null)} />
       {isAdmin && <SendWhatsAppDialog task={whatsappTask} onClose={() => setWhatsappTask(null)} />}
       {isAdmin && <AddTaskDialog open={addTaskOpen} onOpenChange={setAddTaskOpen} />}
-      <StatusChangeDialog task={statusTask} onClose={() => setStatusTask(null)} />
+      <StatusChangeDialog
+        task={statusTask}
+        onClose={() => setStatusTask(null)}
+        onComplete={(t) => setCompletionTask(t)}
+      />
+      <TaskCompletionDialog task={completionTask} onClose={() => setCompletionTask(null)} />
     </div>
   );
 };
