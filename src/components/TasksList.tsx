@@ -6,6 +6,7 @@ import { TaskDetailDialog } from '@/components/TaskDetailDialog';
 import { SendWhatsAppDialog } from '@/components/SendWhatsAppDialog';
 import { AddTaskDialog } from '@/components/AddTaskDialog';
 import { StatusChangeDialog } from '@/components/StatusChangeDialog';
+import { TaskCompletionDialog } from '@/components/TaskCompletionDialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
