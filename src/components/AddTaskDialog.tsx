@@ -29,6 +29,7 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [type, setType] = useState('تركيب كاميرات');
+  const [customType, setCustomType] = useState('');
   const [problem, setProblem] = useState('');
   const [scheduledDate, setScheduledDate] = useState<Date>();
   const [scheduledTime, setScheduledTime] = useState('');
