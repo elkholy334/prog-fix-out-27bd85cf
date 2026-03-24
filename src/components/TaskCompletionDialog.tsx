@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useUpdateTask, useTechnicians, useSetting } from '@/hooks/useDatabase';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle, DollarSign, User, FileText, Shield } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CheckCircle, DollarSign, User, FileText, Shield, CalendarIcon, Clock, RotateCcw, PauseCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { sendWhatsAppMessage } from '@/lib/whatsapp';
 import type { Database } from '@/integrations/supabase/types';
 
