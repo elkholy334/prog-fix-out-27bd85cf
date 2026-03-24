@@ -75,10 +75,12 @@ export type Database = {
           address: string | null
           assigned_technicians: string[] | null
           client_name: string
+          completion_time: string | null
           created_at: string
           expected_amount: number | null
           id: number
           is_favorite: boolean | null
+          money_delivered_to_shop: boolean | null
           paid_amount: number | null
           phone: string
           problem: string | null
@@ -92,6 +94,7 @@ export type Database = {
           status: string
           technician_commission: number | null
           technician_id: string | null
+          technician_notes: string | null
           type: string
           updated_at: string
         }
@@ -99,10 +102,12 @@ export type Database = {
           address?: string | null
           assigned_technicians?: string[] | null
           client_name: string
+          completion_time?: string | null
           created_at?: string
           expected_amount?: number | null
           id?: number
           is_favorite?: boolean | null
+          money_delivered_to_shop?: boolean | null
           paid_amount?: number | null
           phone: string
           problem?: string | null
@@ -116,6 +121,7 @@ export type Database = {
           status?: string
           technician_commission?: number | null
           technician_id?: string | null
+          technician_notes?: string | null
           type?: string
           updated_at?: string
         }
@@ -123,10 +129,12 @@ export type Database = {
           address?: string | null
           assigned_technicians?: string[] | null
           client_name?: string
+          completion_time?: string | null
           created_at?: string
           expected_amount?: number | null
           id?: number
           is_favorite?: boolean | null
+          money_delivered_to_shop?: boolean | null
           paid_amount?: number | null
           phone?: string
           problem?: string | null
@@ -140,6 +148,7 @@ export type Database = {
           status?: string
           technician_commission?: number | null
           technician_id?: string | null
+          technician_notes?: string | null
           type?: string
           updated_at?: string
         }
@@ -163,6 +172,7 @@ export type Database = {
       technicians: {
         Row: {
           color: string
+          commission_rate: number | null
           created_at: string
           email: string | null
           id: string
@@ -174,6 +184,7 @@ export type Database = {
         }
         Insert: {
           color?: string
+          commission_rate?: number | null
           created_at?: string
           email?: string | null
           id?: string
@@ -185,6 +196,7 @@ export type Database = {
         }
         Update: {
           color?: string
+          commission_rate?: number | null
           created_at?: string
           email?: string | null
           id?: string
