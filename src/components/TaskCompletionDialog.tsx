@@ -102,7 +102,6 @@ ${notes ? `📝 ملاحظات: ${notes}` : ''}
 👨‍🔧 الفني: ${techName}
 
 💰 *التفاصيل المالية:*
-المبلغ المتوقع: ${expectedAmount} جنيه
 المبلغ المدفوع: ${paidAmount} جنيه
 نسبة الفني (${commissionRate}%): ${commission.toFixed(0)} جنيه
 صافي المحل: ${shopNet.toFixed(0)} جنيه
