@@ -22,6 +22,7 @@ interface AddTaskDialogProps {
 
 export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
   const { data: technicians = [] } = useTechnicians();
+  const { data: generalData } = useSetting('general');
   const createTask = useCreateTask();
 
   const [clientName, setClientName] = useState('');
