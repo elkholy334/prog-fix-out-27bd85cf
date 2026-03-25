@@ -40,6 +40,10 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
   const [txTechId, setTxTechId] = useState('');
   const [txTaskId, setTxTaskId] = useState('');
 
+  // Date filter state
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
   const { data: technicians = [] } = useTechnicians();
   const { data: tasks = [] } = useTasks();
   const { data: transactions = [] } = useTransactions(selectedTech);
