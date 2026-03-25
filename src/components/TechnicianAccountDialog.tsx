@@ -456,6 +456,16 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
             })
           )}
         </div>
+
+        {/* WhatsApp Send */}
+        <Button
+          className="w-full bg-success text-success-foreground font-bold text-sm py-5"
+          onClick={handleSendWhatsAppStatement}
+          disabled={sendingWhatsApp}
+        >
+          <MessageCircle className="h-5 w-5 ml-2" />
+          {sendingWhatsApp ? 'جاري الإرسال...' : 'إرسال كشف الحساب على واتساب'}
+        </Button>
       </div>
     );
   };
