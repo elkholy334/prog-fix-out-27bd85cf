@@ -19,6 +19,7 @@ const Index = () => {
   const [backupOpen, setBackupOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [whatsAppLogsOpen, setWhatsAppLogsOpen] = useState(false);
   const [initialFilter, setInitialFilter] = useState<string>('all');
 
   const handleFilterFromDashboard = (status: string) => {
