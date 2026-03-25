@@ -46,6 +46,8 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
   // Date filter
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [activePeriod, setActivePeriod] = useState<string | null>(null);
+  const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
 
   const { data: technicians = [] } = useTechnicians();
   const { data: tasks = [] } = useTasks();
