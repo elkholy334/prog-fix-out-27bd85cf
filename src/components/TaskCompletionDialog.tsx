@@ -103,7 +103,7 @@ ${notes ? `📝 ملاحظات: ${notes}` : ''}
 شكراً لثقتكم في ${shopName}`;
 
       // Send to client
-      const clientResult = await sendWhatsAppMessage(task.phone, clientMsg);
+      const clientResult = await sendWhatsAppMessage(task.phone, clientMsg, { taskId: task.id, recipientName: task.client_name, messageType: 'task_completed_client' });
       if (clientResult.success) {
         toast.success('✅ تم إرسال رسالة للعميل');
       }
