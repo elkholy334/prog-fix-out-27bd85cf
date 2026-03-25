@@ -114,7 +114,7 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
         status: 'waiting',
       },
       {
-        onSuccess: async () => {
+        onSuccess: async (newTask) => {
           toast.success('تم إضافة المهمة بنجاح ✅');
 
           const general = generalData as any;
