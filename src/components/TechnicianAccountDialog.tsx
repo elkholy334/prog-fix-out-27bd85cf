@@ -378,18 +378,35 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
           </button>
         </div>
 
+        {/* Quick period filters */}
+        <div className="flex gap-2 justify-center flex-wrap">
+          {periods.map(p => (
+            <button
+              key={p.key}
+              onClick={() => setPeriod(p.key)}
+              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                activePeriod === p.key
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-accent/20'
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
         {/* Date filter */}
         <div className="flex gap-2 items-end">
           <div className="flex-1 space-y-1">
             <label className="text-[10px] text-muted-foreground">من</label>
-            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="h-8 text-xs" />
+            <Input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setActivePeriod(null); }} className="h-8 text-xs" />
           </div>
           <div className="flex-1 space-y-1">
             <label className="text-[10px] text-muted-foreground">إلى</label>
-            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-8 text-xs" />
+            <Input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setActivePeriod(null); }} className="h-8 text-xs" />
           </div>
           {(dateFrom || dateTo) && (
-            <Button variant="ghost" size="sm" className="h-8 text-xs px-2" onClick={() => { setDateFrom(''); setDateTo(''); }}>
+            <Button variant="ghost" size="sm" className="h-8 text-xs px-2" onClick={() => { setDateFrom(''); setDateTo(''); setActivePeriod(null); }}>
               مسح
             </Button>
           )}
