@@ -12,7 +12,7 @@ interface AppHeaderProps {
   onWhatsAppLogsOpen?: () => void;
 }
 
-export const AppHeader = ({ currentView, onViewChange, onSettingsOpen, onBackupOpen, onStatsOpen, onAccountOpen }: AppHeaderProps) => {
+export const AppHeader = ({ currentView, onViewChange, onSettingsOpen, onBackupOpen, onStatsOpen, onAccountOpen, onWhatsAppLogsOpen }: AppHeaderProps) => {
   const { role, fullName, signOut } = useAuth();
   const isAdmin = role === 'admin';
 
