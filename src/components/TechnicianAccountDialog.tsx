@@ -287,10 +287,10 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.length === 0 ? (
+                  {filteredTransactions.length === 0 ? (
                     <tr><td colSpan={6} className="p-4 text-center text-muted-foreground">لا يوجد عمليات</td></tr>
                   ) : (
-                    transactions.map(tx => (
+                    filteredTransactions.map(tx => (
                       <tr key={tx.id} className="border-t border-border">
                         <td className="p-2 text-xs">{new Date(tx.created_at).toLocaleDateString('ar-EG')}</td>
                         <td className="p-2 text-center text-xs">{getTechName(tx.technician_id)}</td>
