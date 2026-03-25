@@ -129,7 +129,7 @@ ${notes ? `\n📝 ملاحظات الفني: ${notes}` : ''}
 
 🛡️ ضمان شهر على نفس العطل`;
 
-        const adminResult = await sendWhatsAppMessage(adminPhone, adminMsg);
+        const adminResult = await sendWhatsAppMessage(adminPhone, adminMsg, { taskId: task.id, recipientName: 'المدير', messageType: 'task_completed_admin' });
         if (adminResult.success) {
           toast.success('✅ تم إرسال تقرير للإدارة');
         }
