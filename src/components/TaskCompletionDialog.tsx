@@ -135,6 +135,38 @@ ${notes ? `\n📝 ملاحظات الفني: ${notes}` : ''}
         }
       }
 
+      // Send WhatsApp to assigned team members (excluding the completing technician)
+      const assignedTechs = task.assigned_technicians || [];
+      const teamTechs = technicians.filter(
+        (t) => assignedTechs.includes(t.id) && t.id !== task.technician_id && t.phone
+      );
+
+      if (teamTechs.length > 0) {
+        const teamMsg = `📢 *تم إنجاز مهمة*
+
+🔖 مهمة #${task.id}
+👤 العميل: ${task.client_name}
+🔧 النوع: ${task.type}
+👨‍🔧 تم الإنجاز بواسطة: ${techName}
+🕐 وقت البدء: ${startTimeFormatted}
+🕑 وقت الانتهاء: ${endTimeFormatted}
+${task.address ? `📍 العنوان: ${task.address}` : ''}
+${notes ? `📝 ملاحظات: ${notes}` : ''}
+
+✅ تم اتمام المهمة بنجاح`;
+
+        let sentCount = 0;
+        for (const member of teamTechs) {
+          if (member.phone) {
+            const result = await sendWhatsAppMessage(member.phone, teamMsg);
+            if (result.success) sentCount++;
+          }
+        }
+        if (sentCount > 0) {
+          toast.success(`✅ تم إبلاغ ${sentCount} فني من الفريق`);
+        }
+      }
+
       toast.success('🎉 تم اتمام المهمة بنجاح');
       onClose();
     } catch (err) {
