@@ -36,6 +36,7 @@ const Index = () => {
         onBackupOpen={() => setBackupOpen(true)}
         onStatsOpen={() => setStatsOpen(true)}
         onAccountOpen={() => setAccountOpen(true)}
+        onWhatsAppLogsOpen={() => setWhatsAppLogsOpen(true)}
       />
       <main className="container py-4 animate-fade-in">
         {currentView === 'dashboard' && isAdmin && <Dashboard onFilterTasks={handleFilterFromDashboard} />}
