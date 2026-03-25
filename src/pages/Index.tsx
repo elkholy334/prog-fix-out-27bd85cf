@@ -49,6 +49,7 @@ const Index = () => {
           <BackupDialog open={backupOpen} onOpenChange={setBackupOpen} />
           <StatsDialog open={statsOpen} onOpenChange={setStatsOpen} />
           <AccountStatementDialog open={accountOpen} onOpenChange={setAccountOpen} />
+          <WhatsAppLogsDialog open={whatsAppLogsOpen} onOpenChange={setWhatsAppLogsOpen} />
         </>
       )}
     </div>
