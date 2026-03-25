@@ -1,5 +1,6 @@
+import { useMemo } from 'react';
 import { Trophy, Calendar, CalendarDays, Award, AlertTriangle, Clock, CheckCircle2, Pause, Wrench } from 'lucide-react';
-import { useDashboardStats, useTechnicians } from '@/hooks/useDatabase';
+import { useDashboardStats, useTechnicians, useTasks } from '@/hooks/useDatabase';
 
 interface DashboardProps {
   onFilterTasks?: (status: string) => void;
@@ -8,8 +9,72 @@ interface DashboardProps {
 export const Dashboard = ({ onFilterTasks }: DashboardProps) => {
   const { data: stats = { waiting: 0, in_progress: 0, completed: 0, postponed: 0, late: 0 } } = useDashboardStats();
   const { data: technicians = [] } = useTechnicians();
+  const { data: tasks = [] } = useTasks();
 
-  const topAllTime = [...technicians].sort((a, b) => b.tasks_count - a.tasks_count).slice(0, 3);
+  const { topAllTime, topMonth, topWeek, topToday } = useMemo(() => {
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay()).toISOString();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+    const completedTasks = tasks.filter(t => t.status === 'completed');
+
+    const countByTech = (filtered: typeof completedTasks) => {
+      const map: Record<string, number> = {};
+      filtered.forEach(t => {
+        if (t.technician_id) {
+          map[t.technician_id] = (map[t.technician_id] || 0) + 1;
+        }
+      });
+      return map;
+    };
+
+    const todayTasks = completedTasks.filter(t => t.completion_time && t.completion_time >= startOfDay);
+    const weekTasks = completedTasks.filter(t => t.completion_time && t.completion_time >= startOfWeek);
+    const monthTasks = completedTasks.filter(t => t.completion_time && t.completion_time >= startOfMonth);
+
+    const todayCounts = countByTech(todayTasks);
+    const weekCounts = countByTech(weekTasks);
+    const monthCounts = countByTech(monthTasks);
+
+    const toPerformers = (counts: Record<string, number>) =>
+      technicians
+        .map(t => ({ id: t.id, name: t.name, count: counts[t.id] || 0, color: t.color }))
+        .filter(t => t.count > 0)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 3);
+
+    // All-time uses tasks_count from technicians table as base + completed tasks from DB
+    const allTimeCounts: Record<string, number> = {};
+    technicians.forEach(t => {
+      allTimeCounts[t.id] = t.tasks_count;
+    });
+    completedTasks.forEach(t => {
+      if (t.technician_id) {
+        // Only add if tasks_count is 0 (new system), otherwise tasks_count already includes historical
+        // We use the higher of tasks_count or actual DB count
+      }
+    });
+    // Count from actual DB
+    const dbCounts = countByTech(completedTasks);
+    technicians.forEach(t => {
+      // Use the max of stored tasks_count and actual DB completed count
+      allTimeCounts[t.id] = Math.max(t.tasks_count, dbCounts[t.id] || 0);
+    });
+
+    const topAllTime = technicians
+      .map(t => ({ id: t.id, name: t.name, count: allTimeCounts[t.id] || 0, color: t.color }))
+      .filter(t => t.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3);
+
+    return {
+      topAllTime,
+      topMonth: toPerformers(monthCounts),
+      topWeek: toPerformers(weekCounts),
+      topToday: toPerformers(todayCounts),
+    };
+  }, [technicians, tasks]);
 
   return (
     <div className="space-y-6 animate-slide-up">
@@ -18,7 +83,7 @@ export const Dashboard = ({ onFilterTasks }: DashboardProps) => {
           title="نجم التركيبات"
           subtitle="إجمالي التركيبات (كل الوقت)"
           icon={<Trophy className="h-8 w-8" />}
-          performers={topAllTime.map(t => ({ id: t.id, name: t.name, count: t.tasks_count, color: t.color }))}
+          performers={topAllTime}
           gradient="gradient-gold"
           iconBg="bg-accent"
         />
@@ -26,7 +91,7 @@ export const Dashboard = ({ onFilterTasks }: DashboardProps) => {
           title="نجم الشهر"
           subtitle="أعلى 3 هذا الشهر"
           icon={<Calendar className="h-8 w-8" />}
-          performers={[]}
+          performers={topMonth}
           gradient="gradient-info"
           iconBg="bg-info"
         />
@@ -34,7 +99,7 @@ export const Dashboard = ({ onFilterTasks }: DashboardProps) => {
           title="نجم الأسبوع"
           subtitle="أعلى 3 هذا الأسبوع"
           icon={<CalendarDays className="h-8 w-8" />}
-          performers={[]}
+          performers={topWeek}
           gradient="gradient-info"
           iconBg="bg-primary"
         />
@@ -42,7 +107,7 @@ export const Dashboard = ({ onFilterTasks }: DashboardProps) => {
           title="نجم اليوم"
           subtitle="أعلى 3 اليوم"
           icon={<Award className="h-8 w-8" />}
-          performers={[]}
+          performers={topToday}
           gradient="gradient-info"
           iconBg="bg-primary"
         />
