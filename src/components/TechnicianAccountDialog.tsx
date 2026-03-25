@@ -157,7 +157,72 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
     setSelectedTechId(techId);
     setDateFrom('');
     setDateTo('');
+    setActivePeriod(null);
     setScreen('tech-detail');
+  };
+
+  const setPeriod = (p: string) => {
+    setActivePeriod(p);
+    const now = new Date();
+    const to = now.toISOString().slice(0, 10);
+    let from = to;
+    switch (p) {
+      case 'today': from = to; break;
+      case 'week': { const d = new Date(now); d.setDate(d.getDate() - 7); from = d.toISOString().slice(0, 10); break; }
+      case 'month': { const d = new Date(now); d.setMonth(d.getMonth() - 1); from = d.toISOString().slice(0, 10); break; }
+      case 'year': { const d = new Date(now); d.setFullYear(d.getFullYear() - 1); from = d.toISOString().slice(0, 10); break; }
+    }
+    setDateFrom(from);
+    setDateTo(to);
+  };
+
+  const periods = [
+    { key: 'today', label: 'اليوم' },
+    { key: 'week', label: 'الأسبوع' },
+    { key: 'month', label: 'الشهر' },
+    { key: 'year', label: 'السنة' },
+  ];
+
+  const handleSendWhatsAppStatement = async () => {
+    if (!selectedTech?.phone) {
+      toast({ title: 'لا يوجد رقم هاتف للفني', variant: 'destructive' });
+      return;
+    }
+    setSendingWhatsApp(true);
+    const balance = getBalance(selectedTechId);
+    const periodLabel = activePeriod ? periods.find(p => p.key === activePeriod)?.label || '' : 'كل الفترات';
+    const fromLabel = dateFrom || 'البداية';
+    const toLabel = dateTo || 'اليوم';
+
+    const filteredDeposits = techTransactions.filter(tx => tx.type === 'deposit').reduce((s, tx) => s + Number(tx.amount), 0);
+    const filteredDeductions = techTransactions.filter(tx => tx.type === 'deduction').reduce((s, tx) => s + Number(tx.amount), 0);
+    const filteredCommissions = techTransactions.filter(tx => tx.type === 'commission').reduce((s, tx) => s + Number(tx.amount), 0);
+    const filteredPayments = techTransactions.filter(tx => tx.type === 'payment' || tx.type === 'settlement').reduce((s, tx) => s + Number(tx.amount), 0);
+
+    const msg = `📊 كشف حساب - ${selectedTech.name}
+📅 الفترة: ${periodLabel} (${fromLabel} → ${toLabel})
+━━━━━━━━━━━━━━
+💰 إيداعات: ${filteredDeposits} ج.م
+📊 عمولات: ${filteredCommissions} ج.م
+➖ خصومات: ${filteredDeductions} ج.م
+💸 مدفوعات: ${filteredPayments} ج.م
+━━━━━━━━━━━━━━
+📌 عدد العمليات: ${techTransactions.length}
+💵 الرصيد الحالي: ${balance >= 0 ? '+' : ''}${balance} ج.م
+━━━━━━━━━━━━━━
+✅ صادر من نظام إدارة الصيانة`;
+
+    const result = await sendWhatsAppMessage(selectedTech.phone, msg, {
+      recipientName: selectedTech.name,
+      messageType: 'account_statement',
+    });
+
+    if (result.success) {
+      toast({ title: 'تم إرسال كشف الحساب ✅' });
+    } else {
+      toast({ title: result.error || 'فشل الإرسال', variant: 'destructive' });
+    }
+    setSendingWhatsApp(false);
   };
 
   const openAddTransaction = (type: 'deposit' | 'deduction' | 'payment') => {
