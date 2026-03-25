@@ -244,6 +244,23 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
               </SelectContent>
             </Select>
 
+            {/* Date range filter */}
+            <div className="flex gap-3 items-center">
+              <div className="flex-1 space-y-1">
+                <label className="text-xs text-muted-foreground">من</label>
+                <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+              </div>
+              <div className="flex-1 space-y-1">
+                <label className="text-xs text-muted-foreground">إلى</label>
+                <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} />
+              </div>
+              {(dateFrom || dateTo) && (
+                <Button variant="ghost" size="sm" className="mt-5 text-xs" onClick={() => { setDateFrom(''); setDateTo(''); }}>
+                  مسح
+                </Button>
+              )}
+            </div>
+
             {selectedTech !== 'all' && techBalances[selectedTech] && (
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-success/10 rounded-xl p-3 text-center">
