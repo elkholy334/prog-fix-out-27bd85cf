@@ -1,4 +1,4 @@
-import { Settings, LayoutDashboard, ListTodo, Database, LogOut, BarChart3, Receipt, Wrench, MessageSquare } from 'lucide-react';
+import { Settings, LayoutDashboard, ListTodo, Database, LogOut, BarChart3, Wallet, Wrench, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 
