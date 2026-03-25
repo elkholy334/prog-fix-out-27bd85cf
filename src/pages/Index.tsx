@@ -6,6 +6,7 @@ import { SettingsDialog } from '@/components/SettingsDialog';
 import { BackupDialog } from '@/components/BackupDialog';
 import { StatsDialog } from '@/components/StatsDialog';
 import { AccountStatementDialog } from '@/components/AccountStatementDialog';
+import { WhatsAppLogsDialog } from '@/components/WhatsAppLogsDialog';
 import { useAuth } from '@/hooks/useAuth';
 
 type View = 'dashboard' | 'tasks';
