@@ -160,7 +160,7 @@ ${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
           );
           
           techsToNotify.forEach(async (tech) => {
-            const result = await sendWhatsAppMessage((tech as any).phone, taskDetails);
+            const result = await sendWhatsAppMessage((tech as any).phone, taskDetails, { taskId: newTask.id, recipientName: tech.name, messageType: 'task_created_technician' });
             if (result.success) {
               toast.success(`تم إشعار ${tech.name} عبر الواتساب ✅`, { duration: 3000 });
             }

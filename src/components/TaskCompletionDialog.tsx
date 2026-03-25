@@ -158,7 +158,7 @@ ${notes ? `📝 ملاحظات: ${notes}` : ''}
         let sentCount = 0;
         for (const member of teamTechs) {
           if (member.phone) {
-            const result = await sendWhatsAppMessage(member.phone, teamMsg);
+            const result = await sendWhatsAppMessage(member.phone, teamMsg, { taskId: task.id, recipientName: member.name, messageType: 'task_completed_team' });
             if (result.success) sentCount++;
           }
         }

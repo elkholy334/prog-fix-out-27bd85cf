@@ -47,7 +47,7 @@ export const StatusChangeDialog = ({ task, onClose, onComplete }: Props) => {
     }
 
     if (msg) {
-      const result = await sendWhatsAppMessage(task.phone, msg);
+      const result = await sendWhatsAppMessage(task.phone, msg, { taskId: task.id, recipientName: task.client_name, messageType: 'task_postponed' });
       if (result.success) {
         toast.success('📱 تم إرسال إشعار للعميل');
       } else {
