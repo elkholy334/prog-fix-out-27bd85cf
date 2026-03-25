@@ -40,8 +40,8 @@ export const AppHeader = ({ currentView, onViewChange, onSettingsOpen, onBackupO
                 <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl" onClick={onStatsOpen} title="الإحصائيات">
                   <BarChart3 className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl" onClick={onAccountOpen} title="كشف الحساب">
-                  <Receipt className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl" onClick={onAccountOpen} title="حسابات الفنيين">
+                  <Wallet className="h-5 w-5" />
                 </Button>
                 <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl" onClick={onWhatsAppLogsOpen} title="تقارير الواتساب">
                   <MessageSquare className="h-5 w-5" />
