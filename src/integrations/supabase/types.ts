@@ -172,6 +172,54 @@ export type Database = {
           },
         ]
       }
+      technician_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          task_id: number | null
+          technician_id: string
+          type: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          task_id?: number | null
+          technician_id: string
+          type: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          task_id?: number | null
+          technician_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "technician_transactions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_transactions_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       technicians: {
         Row: {
           color: string
