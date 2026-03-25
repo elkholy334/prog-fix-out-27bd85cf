@@ -50,7 +50,17 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
   const createTx = useCreateTransaction();
   const deleteTx = useDeleteTransaction();
 
-  // Calculate balances per technician
+  // Filter transactions by date
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(tx => {
+      const d = tx.created_at.slice(0, 10);
+      if (dateFrom && d < dateFrom) return false;
+      if (dateTo && d > dateTo) return false;
+      return true;
+    });
+  }, [transactions, dateFrom, dateTo]);
+
+  // Calculate balances per technician (from filtered)
   const techBalances = useMemo(() => {
     const balances: Record<string, { deposits: number; deductions: number; commissions: number; settlements: number; net: number }> = {};
     technicians.forEach(t => {
