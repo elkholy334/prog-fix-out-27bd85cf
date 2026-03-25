@@ -40,19 +40,33 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
   const [txTechId, setTxTechId] = useState('');
   const [txTaskId, setTxTaskId] = useState('');
 
+  // Date filter state
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
   const { data: technicians = [] } = useTechnicians();
   const { data: tasks = [] } = useTasks();
   const { data: transactions = [] } = useTransactions(selectedTech);
   const createTx = useCreateTransaction();
   const deleteTx = useDeleteTransaction();
 
-  // Calculate balances per technician
+  // Filter transactions by date
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(tx => {
+      const d = tx.created_at.slice(0, 10);
+      if (dateFrom && d < dateFrom) return false;
+      if (dateTo && d > dateTo) return false;
+      return true;
+    });
+  }, [transactions, dateFrom, dateTo]);
+
+  // Calculate balances per technician (from filtered)
   const techBalances = useMemo(() => {
     const balances: Record<string, { deposits: number; deductions: number; commissions: number; settlements: number; net: number }> = {};
     technicians.forEach(t => {
       balances[t.id] = { deposits: 0, deductions: 0, commissions: 0, settlements: 0, net: 0 };
     });
-    transactions.forEach(tx => {
+    filteredTransactions.forEach(tx => {
       if (!balances[tx.technician_id]) {
         balances[tx.technician_id] = { deposits: 0, deductions: 0, commissions: 0, settlements: 0, net: 0 };
       }
@@ -66,7 +80,7 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
       }
     });
     return balances;
-  }, [transactions, technicians]);
+  }, [filteredTransactions, technicians]);
 
   // Commission settlement calculation
   const settlementData = useMemo(() => {
@@ -230,6 +244,23 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
               </SelectContent>
             </Select>
 
+            {/* Date range filter */}
+            <div className="flex gap-3 items-center">
+              <div className="flex-1 space-y-1">
+                <label className="text-xs text-muted-foreground">من</label>
+                <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+              </div>
+              <div className="flex-1 space-y-1">
+                <label className="text-xs text-muted-foreground">إلى</label>
+                <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} />
+              </div>
+              {(dateFrom || dateTo) && (
+                <Button variant="ghost" size="sm" className="mt-5 text-xs" onClick={() => { setDateFrom(''); setDateTo(''); }}>
+                  مسح
+                </Button>
+              )}
+            </div>
+
             {selectedTech !== 'all' && techBalances[selectedTech] && (
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-success/10 rounded-xl p-3 text-center">
@@ -256,10 +287,10 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.length === 0 ? (
+                  {filteredTransactions.length === 0 ? (
                     <tr><td colSpan={6} className="p-4 text-center text-muted-foreground">لا يوجد عمليات</td></tr>
                   ) : (
-                    transactions.map(tx => (
+                    filteredTransactions.map(tx => (
                       <tr key={tx.id} className="border-t border-border">
                         <td className="p-2 text-xs">{new Date(tx.created_at).toLocaleDateString('ar-EG')}</td>
                         <td className="p-2 text-center text-xs">{getTechName(tx.technician_id)}</td>
