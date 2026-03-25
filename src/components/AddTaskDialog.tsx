@@ -114,7 +114,7 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
         status: 'waiting',
       },
       {
-        onSuccess: async () => {
+        onSuccess: async (newTask) => {
           toast.success('تم إضافة المهمة بنجاح ✅');
 
           const general = generalData as any;
@@ -139,7 +139,7 @@ ${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
 سيتواصل معك الفني قبل الموعد لتأكيد الحضور.
 شكراً لثقتكم في ${shopName} 🙏`;
 
-          const clientResult = await sendWhatsAppMessage(phone.trim(), clientMsg);
+          const clientResult = await sendWhatsAppMessage(phone.trim(), clientMsg, { taskId: newTask.id, recipientName: clientName.trim(), messageType: 'task_created_client' });
           if (clientResult.success) {
             toast.success('✅ تم إرسال تأكيد الحجز للعميل');
           }
@@ -160,7 +160,7 @@ ${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
           );
           
           techsToNotify.forEach(async (tech) => {
-            const result = await sendWhatsAppMessage((tech as any).phone, taskDetails);
+            const result = await sendWhatsAppMessage((tech as any).phone, taskDetails, { taskId: newTask.id, recipientName: tech.name, messageType: 'task_created_technician' });
             if (result.success) {
               toast.success(`تم إشعار ${tech.name} عبر الواتساب ✅`, { duration: 3000 });
             }

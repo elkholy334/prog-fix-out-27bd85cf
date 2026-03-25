@@ -84,7 +84,7 @@ export const SendWhatsAppDialog = ({ task, onClose }: SendWhatsAppDialogProps) =
       return;
     }
     setSending(true);
-    const result = await sendWhatsAppMessage(phone, message);
+    const result = await sendWhatsAppMessage(phone, message, { taskId: task.id, recipientName: task.client_name, messageType: 'general' });
     setSending(false);
     if (result.success) {
       toast.success(`تم إرسال رسالة واتساب إلى ${task.client_name} بنجاح ✅`);

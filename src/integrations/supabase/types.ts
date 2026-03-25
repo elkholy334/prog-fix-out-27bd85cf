@@ -232,6 +232,50 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          message_text: string
+          message_type: string
+          recipient_name: string
+          recipient_phone: string
+          status: string
+          task_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_text: string
+          message_type?: string
+          recipient_name?: string
+          recipient_phone: string
+          status?: string
+          task_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_text?: string
+          message_type?: string
+          recipient_name?: string
+          recipient_phone?: string
+          status?: string
+          task_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_logs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

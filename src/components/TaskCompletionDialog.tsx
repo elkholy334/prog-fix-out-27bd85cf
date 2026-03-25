@@ -103,7 +103,7 @@ ${notes ? `📝 ملاحظات: ${notes}` : ''}
 شكراً لثقتكم في ${shopName}`;
 
       // Send to client
-      const clientResult = await sendWhatsAppMessage(task.phone, clientMsg);
+      const clientResult = await sendWhatsAppMessage(task.phone, clientMsg, { taskId: task.id, recipientName: task.client_name, messageType: 'task_completed_client' });
       if (clientResult.success) {
         toast.success('✅ تم إرسال رسالة للعميل');
       }
@@ -129,7 +129,7 @@ ${notes ? `\n📝 ملاحظات الفني: ${notes}` : ''}
 
 🛡️ ضمان شهر على نفس العطل`;
 
-        const adminResult = await sendWhatsAppMessage(adminPhone, adminMsg);
+        const adminResult = await sendWhatsAppMessage(adminPhone, adminMsg, { taskId: task.id, recipientName: 'المدير', messageType: 'task_completed_admin' });
         if (adminResult.success) {
           toast.success('✅ تم إرسال تقرير للإدارة');
         }
@@ -158,7 +158,7 @@ ${notes ? `📝 ملاحظات: ${notes}` : ''}
         let sentCount = 0;
         for (const member of teamTechs) {
           if (member.phone) {
-            const result = await sendWhatsAppMessage(member.phone, teamMsg);
+            const result = await sendWhatsAppMessage(member.phone, teamMsg, { taskId: task.id, recipientName: member.name, messageType: 'task_completed_team' });
             if (result.success) sentCount++;
           }
         }

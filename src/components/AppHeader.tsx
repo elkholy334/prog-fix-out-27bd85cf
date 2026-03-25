@@ -1,4 +1,4 @@
-import { Settings, LayoutDashboard, ListTodo, Database, LogOut, BarChart3, Receipt, Wrench } from 'lucide-react';
+import { Settings, LayoutDashboard, ListTodo, Database, LogOut, BarChart3, Receipt, Wrench, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -9,9 +9,10 @@ interface AppHeaderProps {
   onBackupOpen?: () => void;
   onStatsOpen?: () => void;
   onAccountOpen?: () => void;
+  onWhatsAppLogsOpen?: () => void;
 }
 
-export const AppHeader = ({ currentView, onViewChange, onSettingsOpen, onBackupOpen, onStatsOpen, onAccountOpen }: AppHeaderProps) => {
+export const AppHeader = ({ currentView, onViewChange, onSettingsOpen, onBackupOpen, onStatsOpen, onAccountOpen, onWhatsAppLogsOpen }: AppHeaderProps) => {
   const { role, fullName, signOut } = useAuth();
   const isAdmin = role === 'admin';
 
@@ -41,6 +42,9 @@ export const AppHeader = ({ currentView, onViewChange, onSettingsOpen, onBackupO
                 </Button>
                 <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl" onClick={onAccountOpen} title="كشف الحساب">
                   <Receipt className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl" onClick={onWhatsAppLogsOpen} title="تقارير الواتساب">
+                  <MessageSquare className="h-5 w-5" />
                 </Button>
               </>
             )}
