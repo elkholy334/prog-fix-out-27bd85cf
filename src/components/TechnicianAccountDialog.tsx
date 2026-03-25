@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Wallet, Plus, Minus, FileText, ArrowDownUp, Trash2, ChevronRight, ArrowLeft, DollarSign, TrendingUp, TrendingDown, Calendar, User } from 'lucide-react';
+import { Wallet, Plus, Minus, FileText, ArrowDownUp, Trash2, ChevronRight, ArrowLeft, DollarSign, TrendingUp, TrendingDown, Calendar, User, MessageCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
