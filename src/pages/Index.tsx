@@ -5,7 +5,7 @@ import { TasksList } from '@/components/TasksList';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { BackupDialog } from '@/components/BackupDialog';
 import { StatsDialog } from '@/components/StatsDialog';
-import { AccountStatementDialog } from '@/components/AccountStatementDialog';
+import { TechnicianAccountDialog } from '@/components/TechnicianAccountDialog';
 import { WhatsAppLogsDialog } from '@/components/WhatsAppLogsDialog';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -48,7 +48,7 @@ const Index = () => {
           <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
           <BackupDialog open={backupOpen} onOpenChange={setBackupOpen} />
           <StatsDialog open={statsOpen} onOpenChange={setStatsOpen} />
-          <AccountStatementDialog open={accountOpen} onOpenChange={setAccountOpen} />
+          <TechnicianAccountDialog open={accountOpen} onOpenChange={setAccountOpen} />
           <WhatsAppLogsDialog open={whatsAppLogsOpen} onOpenChange={setWhatsAppLogsOpen} />
         </>
       )}
