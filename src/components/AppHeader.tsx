@@ -9,6 +9,7 @@ interface AppHeaderProps {
   onBackupOpen?: () => void;
   onStatsOpen?: () => void;
   onAccountOpen?: () => void;
+  onWhatsAppLogsOpen?: () => void;
 }
 
 export const AppHeader = ({ currentView, onViewChange, onSettingsOpen, onBackupOpen, onStatsOpen, onAccountOpen }: AppHeaderProps) => {
