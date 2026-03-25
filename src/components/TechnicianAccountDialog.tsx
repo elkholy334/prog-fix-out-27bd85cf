@@ -66,7 +66,7 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
     technicians.forEach(t => {
       balances[t.id] = { deposits: 0, deductions: 0, commissions: 0, settlements: 0, net: 0 };
     });
-    transactions.forEach(tx => {
+    filteredTransactions.forEach(tx => {
       if (!balances[tx.technician_id]) {
         balances[tx.technician_id] = { deposits: 0, deductions: 0, commissions: 0, settlements: 0, net: 0 };
       }
@@ -80,7 +80,7 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
       }
     });
     return balances;
-  }, [transactions, technicians]);
+  }, [filteredTransactions, technicians]);
 
   // Commission settlement calculation
   const settlementData = useMemo(() => {
