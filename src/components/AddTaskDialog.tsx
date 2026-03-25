@@ -139,7 +139,7 @@ ${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
 سيتواصل معك الفني قبل الموعد لتأكيد الحضور.
 شكراً لثقتكم في ${shopName} 🙏`;
 
-          const clientResult = await sendWhatsAppMessage(phone.trim(), clientMsg);
+          const clientResult = await sendWhatsAppMessage(phone.trim(), clientMsg, { taskId: newTask.id, recipientName: clientName.trim(), messageType: 'task_created_client' });
           if (clientResult.success) {
             toast.success('✅ تم إرسال تأكيد الحجز للعميل');
           }
