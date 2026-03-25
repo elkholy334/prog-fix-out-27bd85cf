@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTechnicians, useTasks, useTransactions, useCreateTransaction, useDeleteTransaction } from '@/hooks/useDatabase';
 import { useToast } from '@/hooks/use-toast';
+import { sendWhatsAppMessage } from '@/lib/whatsapp';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 interface Props {
