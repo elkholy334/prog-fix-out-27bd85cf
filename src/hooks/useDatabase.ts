@@ -100,6 +100,47 @@ export const useUpsertSetting = () => {
   });
 };
 
+// ---- TECHNICIAN TRANSACTIONS ----
+type TransactionRow = Database['public']['Tables']['technician_transactions']['Row'];
+type TransactionInsert = Database['public']['Tables']['technician_transactions']['Insert'];
+
+export const useTransactions = (technicianId?: string) =>
+  useQuery({
+    queryKey: ['transactions', technicianId],
+    queryFn: async () => {
+      let query = supabase.from('technician_transactions').select('*').order('created_at', { ascending: false });
+      if (technicianId && technicianId !== 'all') {
+        query = query.eq('technician_id', technicianId);
+      }
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as TransactionRow[];
+    },
+  });
+
+export const useCreateTransaction = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (tx: TransactionInsert) => {
+      const { data, error } = await supabase.from('technician_transactions').insert(tx).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['transactions'] }),
+  });
+};
+
+export const useDeleteTransaction = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('technician_transactions').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['transactions'] }),
+  });
+};
+
 // ---- DASHBOARD STATS ----
 export const useDashboardStats = () =>
   useQuery({
