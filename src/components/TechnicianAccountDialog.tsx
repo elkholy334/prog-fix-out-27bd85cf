@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
-import { Wallet, Plus, Minus, FileText, ArrowDownUp, Trash2, ChevronRight, ArrowLeft, DollarSign, TrendingUp, TrendingDown, Calendar, User } from 'lucide-react';
+import { Wallet, Plus, Minus, FileText, ArrowDownUp, Trash2, ChevronRight, ArrowLeft, DollarSign, TrendingUp, TrendingDown, Calendar, User, MessageCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTechnicians, useTasks, useTransactions, useCreateTransaction, useDeleteTransaction } from '@/hooks/useDatabase';
 import { useToast } from '@/hooks/use-toast';
+import { sendWhatsAppMessage } from '@/lib/whatsapp';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 interface Props {
@@ -45,6 +46,8 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
   // Date filter
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [activePeriod, setActivePeriod] = useState<string | null>(null);
+  const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
 
   const { data: technicians = [] } = useTechnicians();
   const { data: tasks = [] } = useTasks();
@@ -154,7 +157,72 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
     setSelectedTechId(techId);
     setDateFrom('');
     setDateTo('');
+    setActivePeriod(null);
     setScreen('tech-detail');
+  };
+
+  const setPeriod = (p: string) => {
+    setActivePeriod(p);
+    const now = new Date();
+    const to = now.toISOString().slice(0, 10);
+    let from = to;
+    switch (p) {
+      case 'today': from = to; break;
+      case 'week': { const d = new Date(now); d.setDate(d.getDate() - 7); from = d.toISOString().slice(0, 10); break; }
+      case 'month': { const d = new Date(now); d.setMonth(d.getMonth() - 1); from = d.toISOString().slice(0, 10); break; }
+      case 'year': { const d = new Date(now); d.setFullYear(d.getFullYear() - 1); from = d.toISOString().slice(0, 10); break; }
+    }
+    setDateFrom(from);
+    setDateTo(to);
+  };
+
+  const periods = [
+    { key: 'today', label: 'اليوم' },
+    { key: 'week', label: 'الأسبوع' },
+    { key: 'month', label: 'الشهر' },
+    { key: 'year', label: 'السنة' },
+  ];
+
+  const handleSendWhatsAppStatement = async () => {
+    if (!selectedTech?.phone) {
+      toast({ title: 'لا يوجد رقم هاتف للفني', variant: 'destructive' });
+      return;
+    }
+    setSendingWhatsApp(true);
+    const balance = getBalance(selectedTechId);
+    const periodLabel = activePeriod ? periods.find(p => p.key === activePeriod)?.label || '' : 'كل الفترات';
+    const fromLabel = dateFrom || 'البداية';
+    const toLabel = dateTo || 'اليوم';
+
+    const filteredDeposits = techTransactions.filter(tx => tx.type === 'deposit').reduce((s, tx) => s + Number(tx.amount), 0);
+    const filteredDeductions = techTransactions.filter(tx => tx.type === 'deduction').reduce((s, tx) => s + Number(tx.amount), 0);
+    const filteredCommissions = techTransactions.filter(tx => tx.type === 'commission').reduce((s, tx) => s + Number(tx.amount), 0);
+    const filteredPayments = techTransactions.filter(tx => tx.type === 'payment' || tx.type === 'settlement').reduce((s, tx) => s + Number(tx.amount), 0);
+
+    const msg = `📊 كشف حساب - ${selectedTech.name}
+📅 الفترة: ${periodLabel} (${fromLabel} → ${toLabel})
+━━━━━━━━━━━━━━
+💰 إيداعات: ${filteredDeposits} ج.م
+📊 عمولات: ${filteredCommissions} ج.م
+➖ خصومات: ${filteredDeductions} ج.م
+💸 مدفوعات: ${filteredPayments} ج.م
+━━━━━━━━━━━━━━
+📌 عدد العمليات: ${techTransactions.length}
+💵 الرصيد الحالي: ${balance >= 0 ? '+' : ''}${balance} ج.م
+━━━━━━━━━━━━━━
+✅ صادر من نظام إدارة الصيانة`;
+
+    const result = await sendWhatsAppMessage(selectedTech.phone, msg, {
+      recipientName: selectedTech.name,
+      messageType: 'account_statement',
+    });
+
+    if (result.success) {
+      toast({ title: 'تم إرسال كشف الحساب ✅' });
+    } else {
+      toast({ title: result.error || 'فشل الإرسال', variant: 'destructive' });
+    }
+    setSendingWhatsApp(false);
   };
 
   const openAddTransaction = (type: 'deposit' | 'deduction' | 'payment') => {
@@ -310,18 +378,35 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
           </button>
         </div>
 
+        {/* Quick period filters */}
+        <div className="flex gap-2 justify-center flex-wrap">
+          {periods.map(p => (
+            <button
+              key={p.key}
+              onClick={() => setPeriod(p.key)}
+              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                activePeriod === p.key
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-accent/20'
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
         {/* Date filter */}
         <div className="flex gap-2 items-end">
           <div className="flex-1 space-y-1">
             <label className="text-[10px] text-muted-foreground">من</label>
-            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="h-8 text-xs" />
+            <Input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setActivePeriod(null); }} className="h-8 text-xs" />
           </div>
           <div className="flex-1 space-y-1">
             <label className="text-[10px] text-muted-foreground">إلى</label>
-            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-8 text-xs" />
+            <Input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setActivePeriod(null); }} className="h-8 text-xs" />
           </div>
           {(dateFrom || dateTo) && (
-            <Button variant="ghost" size="sm" className="h-8 text-xs px-2" onClick={() => { setDateFrom(''); setDateTo(''); }}>
+            <Button variant="ghost" size="sm" className="h-8 text-xs px-2" onClick={() => { setDateFrom(''); setDateTo(''); setActivePeriod(null); }}>
               مسح
             </Button>
           )}
@@ -371,6 +456,16 @@ export const TechnicianAccountDialog = ({ open, onOpenChange }: Props) => {
             })
           )}
         </div>
+
+        {/* WhatsApp Send */}
+        <Button
+          className="w-full bg-success text-success-foreground font-bold text-sm py-5"
+          onClick={handleSendWhatsAppStatement}
+          disabled={sendingWhatsApp}
+        >
+          <MessageCircle className="h-5 w-5 ml-2" />
+          {sendingWhatsApp ? 'جاري الإرسال...' : 'إرسال كشف الحساب على واتساب'}
+        </Button>
       </div>
     );
   };
