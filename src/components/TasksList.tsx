@@ -300,7 +300,11 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
   }, [taskTypesData]);
 
   const visibleTasks = isTechnician
-    ? tasks.filter((t) => t.required_technician === technicianId || t.technician_id === technicianId)
+    ? tasks.filter((t) =>
+        t.required_technician === technicianId ||
+        t.technician_id === technicianId ||
+        (Array.isArray(t.assigned_technicians) && t.assigned_technicians.includes(technicianId!))
+      )
     : tasks;
 
   const baseFiltered = visibleTasks.filter((task) => {
