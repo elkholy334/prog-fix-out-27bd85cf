@@ -194,6 +194,32 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
             </div>
           )}
         </div>
+
+        {/* Completed task timing info */}
+        {task.status === 'completed' && task.start_time && task.completion_time && (() => {
+          const start = new Date(task.start_time!);
+          const end = new Date(task.completion_time!);
+          const diffMs = end.getTime() - start.getTime();
+          const diffH = Math.floor(diffMs / 3600000);
+          const diffM = Math.floor((diffMs % 3600000) / 60000);
+          const durationText = diffH > 0 ? `${diffH} ساعة و ${diffM} دقيقة` : `${diffM} دقيقة`;
+          return (
+            <div className="mx-0 mb-3 p-2.5 rounded-xl bg-primary/5 border border-primary/20 space-y-1 text-xs">
+              <div className="flex items-center gap-1.5 text-success">
+                <Timer className="h-3.5 w-3.5" />
+                <span>بدء التنفيذ: {start.toLocaleString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true })} - {start.toLocaleDateString('ar-EG')}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-primary">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                <span>انتهاء التنفيذ: {end.toLocaleString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true })} - {end.toLocaleDateString('ar-EG')}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-foreground font-bold">
+                <Clock className="h-3.5 w-3.5" />
+                <span>المدة: {durationText}</span>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Execution Banner */}
