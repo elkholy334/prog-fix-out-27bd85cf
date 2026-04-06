@@ -44,22 +44,11 @@ export const Dashboard = ({ onFilterTasks }: DashboardProps) => {
         .sort((a, b) => b.count - a.count)
         .slice(0, 3);
 
-    // All-time uses tasks_count from technicians table as base + completed tasks from DB
+    // All-time = historical tasks_count (baseline before system) + completed tasks in DB (new)
+    const dbCounts = countByTech(completedTasks);
     const allTimeCounts: Record<string, number> = {};
     technicians.forEach(t => {
-      allTimeCounts[t.id] = t.tasks_count;
-    });
-    completedTasks.forEach(t => {
-      if (t.technician_id) {
-        // Only add if tasks_count is 0 (new system), otherwise tasks_count already includes historical
-        // We use the higher of tasks_count or actual DB count
-      }
-    });
-    // Count from actual DB
-    const dbCounts = countByTech(completedTasks);
-    technicians.forEach(t => {
-      // Use the max of stored tasks_count and actual DB completed count
-      allTimeCounts[t.id] = Math.max(t.tasks_count, dbCounts[t.id] || 0);
+      allTimeCounts[t.id] = t.tasks_count + (dbCounts[t.id] || 0);
     });
 
     const topAllTime = technicians
