@@ -304,6 +304,13 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
   const [statusTask, setStatusTask] = useState<TaskRow | null>(null);
   const [completionTask, setCompletionTask] = useState<TaskRow | null>(null);
   const [orderedIds, setOrderedIds] = useState<number[]>([]);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    return (localStorage.getItem('tasksViewMode') as 'grid' | 'list') || 'grid';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('tasksViewMode', viewMode);
+  }, [viewMode]);
 
   useEffect(() => { setActiveFilter(initialFilter); }, [initialFilter]);
 
