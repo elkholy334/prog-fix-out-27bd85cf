@@ -121,8 +121,16 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
           const shopName = general?.shopName || 'المحل';
 
           // Send WhatsApp confirmation to the client
-          const dateStr = scheduledDate ? format(scheduledDate, 'yyyy/MM/dd') : 'سيتم تحديده';
-          const timeDisplayStr = timeHour ? `${timeHour}:${timeMinute} ${timeAmPm}` : 'سيتم تحديده';
+          const timeDisplayStr = timeHour ? `${timeHour}:${timeMinute} ${timeAmPm}` : '';
+          let dateStr = 'سيتم تحديده';
+          if (scheduledDate) {
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+            const target = new Date(scheduledDate); target.setHours(0, 0, 0, 0);
+            if (target.getTime() === today.getTime()) dateStr = 'خلال اليوم';
+            else if (target.getTime() === tomorrow.getTime()) dateStr = 'غدا خلال اليوم';
+            else dateStr = target.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' });
+          }
 
           const clientMsg = `✅ *تم حجز مهمتك بنجاح*
 
