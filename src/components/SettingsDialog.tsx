@@ -208,11 +208,21 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     queryClient.invalidateQueries({ queryKey: ['technicians'] });
   };
 
-  const deleteTechnician = async (id: string) => {
-    const { error } = await supabase.from('technicians').update({ is_active: false }).eq('id', id);
-    if (error) { toast.error('فشل في حذف الفني'); return; }
-    toast.success('تم حذف الفني');
+  const toggleTechnicianActive = async (id: string, currentActive: boolean) => {
+    const { error } = await supabase.from('technicians').update({ is_active: !currentActive }).eq('id', id);
+    if (error) { toast.error('فشلت العملية'); return; }
+    toast.success(!currentActive ? 'تم تفعيل الفني ✅' : 'تم إيقاف الفني ⛔');
     queryClient.invalidateQueries({ queryKey: ['technicians'] });
+    loadAllTechnicians();
+  };
+
+  const deleteTechnicianPermanent = async (id: string) => {
+    if (!confirm('حذف نهائي للفني؟ لا يمكن التراجع.')) return;
+    const { error } = await supabase.from('technicians').delete().eq('id', id);
+    if (error) { toast.error('فشل الحذف (قد يكون له معاملات مرتبطة)'); return; }
+    toast.success('تم الحذف نهائياً');
+    queryClient.invalidateQueries({ queryKey: ['technicians'] });
+    loadAllTechnicians();
   };
 
   const updateTechPassword = async (techId: string, email: string | undefined, password: string) => {
