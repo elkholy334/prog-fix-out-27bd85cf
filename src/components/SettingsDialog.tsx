@@ -213,6 +213,9 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     if (error || (data as any)?.error) { toast.error((data as any)?.error || 'فشل تحديث كلمة المرور'); return; }
     toast.success('تم تحديث كلمة المرور ✅');
   };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-0">
         <DialogHeader className="gradient-hero p-4 text-primary-foreground rounded-t-lg">
           <DialogTitle className="text-center text-lg">الإعدادات</DialogTitle>
