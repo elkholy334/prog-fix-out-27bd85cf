@@ -583,6 +583,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
                       daysAgo={daysAgo}
                       isAdmin={isAdmin}
                       taskTypeImage={taskTypeImageMap[task.type] || ''}
+                      viewMode={viewMode}
                       onDelete={handleDelete}
                       onStatusChange={setStatusTask}
                       onComplete={(t) => setCompletionTask(t)}
