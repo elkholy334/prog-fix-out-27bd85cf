@@ -117,22 +117,28 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
         onSuccess: async (newTask) => {
           toast.success('تم إضافة المهمة بنجاح ✅');
 
-          const general = generalData as any;
-          const shopName = general?.shopName || 'المحل';
+          try {
+            const general = generalData as any;
+            const shopName = general?.shopName || 'المحل';
 
-          // Send WhatsApp confirmation to the client
-          const timeDisplayStr = timeHour ? `${timeHour}:${timeMinute} ${timeAmPm}` : '';
-          let dateStr = 'سيتم تحديده';
-          if (scheduledDate) {
-            const today = new Date(); today.setHours(0, 0, 0, 0);
-            const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
-            const target = new Date(scheduledDate); target.setHours(0, 0, 0, 0);
-            if (target.getTime() === today.getTime()) dateStr = 'خلال اليوم';
-            else if (target.getTime() === tomorrow.getTime()) dateStr = 'غدا خلال اليوم';
-            else dateStr = target.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' });
-          }
+            // Send WhatsApp confirmation to the client
+            const timeDisplayStr = timeHour ? `${timeHour}:${timeMinute} ${timeAmPm}` : '';
+            let dateStr = 'سيتم تحديده';
+            if (scheduledDate) {
+              try {
+                const today = new Date(); today.setHours(0, 0, 0, 0);
+                const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+                const target = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate());
+                if (target.getTime() === today.getTime()) dateStr = 'خلال اليوم';
+                else if (target.getTime() === tomorrow.getTime()) dateStr = 'غدا خلال اليوم';
+                else dateStr = target.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' });
+              } catch (e) {
+                console.error('Date format error:', e);
+                dateStr = format(scheduledDate, 'yyyy/MM/dd');
+              }
+            }
 
-          const clientMsg = `✅ *تم حجز مهمتك بنجاح*
+            const clientMsg = `✅ *تم حجز مهمتك بنجاح*
 
 مرحباً أ/ ${clientName.trim()}
 تم استلام طلبك وجاري التنفيذ ✨
@@ -141,41 +147,51 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
 🔧 نوع العمل: ${finalType}
 📍 العنوان: ${address.trim() || 'غير محدد'}
 📅 موعد التنفيذ: ${dateStr}
-⏰ الوقت المتوقع: ${timeDisplayStr}
+${timeDisplayStr ? `⏰ الوقت المتوقع: ${timeDisplayStr}` : ''}
 ${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
 
 سيتواصل معك الفني قبل الموعد لتأكيد الحضور.
 شكراً لثقتكم في ${shopName} 🙏`;
 
-          const clientResult = await sendWhatsAppMessage(phone.trim(), clientMsg, { taskId: newTask.id, recipientName: clientName.trim(), messageType: 'task_created_client' });
-          if (clientResult.success) {
-            toast.success('✅ تم إرسال تأكيد الحجز للعميل');
-          }
-          
-          // Send WhatsApp notification to assigned technicians
-          const taskDetails = [
-            `📋 *مهمة جديدة*`,
-            `👤 العميل: ${clientName.trim()}`,
-            `📍 العنوان: ${address.trim() || 'غير محدد'}`,
-            `🔧 النوع: ${finalType}`,
-            `📝 التفاصيل: ${problem.trim() || 'غير محدد'}`,
-            scheduledDate ? `📅 الموعد: ${format(scheduledDate, 'yyyy/MM/dd')}` : '',
-            timeHour ? `⏰ الوقت: ${timeHour}:${timeMinute} ${timeAmPm}` : '',
-          ].filter(Boolean).join('\n');
-
-          const techsToNotify = technicians.filter(
-            t => assignedTechnicians.includes(t.id) && (t as any).phone
-          );
-          
-          techsToNotify.forEach(async (tech) => {
-            const result = await sendWhatsAppMessage((tech as any).phone, taskDetails, { taskId: newTask.id, recipientName: tech.name, messageType: 'task_created_technician' });
-            if (result.success) {
-              toast.success(`تم إشعار ${tech.name} عبر الواتساب ✅`, { duration: 3000 });
+            console.log('Sending WhatsApp to client:', phone.trim());
+            const clientResult = await sendWhatsAppMessage(phone.trim(), clientMsg, { taskId: newTask.id, recipientName: clientName.trim(), messageType: 'task_created_client' });
+            console.log('Client WhatsApp result:', clientResult);
+            if (clientResult.success) {
+              toast.success('✅ تم إرسال تأكيد الحجز للعميل');
+            } else {
+              toast.error('فشل إرسال رسالة العميل: ' + (clientResult.error || ''));
             }
-          });
 
-          if (techsToNotify.length === 0 && assignedTechnicians.length > 0) {
-            toast.info('لم يتم إرسال إشعارات واتساب - لا يوجد أرقام هواتف للفنيين المعينين');
+            // Send WhatsApp notification to assigned technicians
+            const taskDetails = [
+              `📋 *مهمة جديدة*`,
+              `👤 العميل: ${clientName.trim()}`,
+              `📍 العنوان: ${address.trim() || 'غير محدد'}`,
+              `🔧 النوع: ${finalType}`,
+              `📝 التفاصيل: ${problem.trim() || 'غير محدد'}`,
+              dateStr !== 'سيتم تحديده' ? `📅 الموعد: ${dateStr}` : '',
+              timeDisplayStr ? `⏰ الوقت: ${timeDisplayStr}` : '',
+            ].filter(Boolean).join('\n');
+
+            const techsToNotify = technicians.filter(
+              t => assignedTechnicians.includes(t.id) && (t as any).phone
+            );
+            console.log('Notifying technicians:', techsToNotify.length);
+
+            for (const tech of techsToNotify) {
+              const result = await sendWhatsAppMessage((tech as any).phone, taskDetails, { taskId: newTask.id, recipientName: tech.name, messageType: 'task_created_technician' });
+              console.log(`Tech ${tech.name} result:`, result);
+              if (result.success) {
+                toast.success(`تم إشعار ${tech.name} ✅`, { duration: 2000 });
+              }
+            }
+
+            if (techsToNotify.length === 0 && assignedTechnicians.length > 0) {
+              toast.info('لم يتم إرسال إشعارات واتساب - لا يوجد أرقام هواتف للفنيين المعينين');
+            }
+          } catch (err: any) {
+            console.error('WhatsApp send error:', err);
+            toast.error('خطأ في إرسال الواتساب: ' + (err?.message || ''));
           }
 
           resetForm();
