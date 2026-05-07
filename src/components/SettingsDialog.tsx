@@ -205,8 +205,14 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     queryClient.invalidateQueries({ queryKey: ['technicians'] });
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+  const updateTechPassword = async (techId: string, email: string | undefined, password: string) => {
+    if (!password || password.length < 4) { toast.error('كلمة المرور قصيرة جداً (4 أحرف على الأقل)'); return; }
+    const { data, error } = await supabase.functions.invoke('update-tech-password', {
+      body: { technician_id: techId, email, new_password: password },
+    });
+    if (error || (data as any)?.error) { toast.error((data as any)?.error || 'فشل تحديث كلمة المرور'); return; }
+    toast.success('تم تحديث كلمة المرور ✅');
+  };
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-0">
         <DialogHeader className="gradient-hero p-4 text-primary-foreground rounded-t-lg">
           <DialogTitle className="text-center text-lg">الإعدادات</DialogTitle>
