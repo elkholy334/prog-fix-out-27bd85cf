@@ -40,6 +40,18 @@ export const SendWhatsAppDialog = ({ task, onClose }: SendWhatsAppDialogProps) =
   const [sending, setSending] = useState(false);
   const [initialized, setInitialized] = useState<number | null>(null);
 
+  const formatScheduled = (dateStr: string | null, timeStr: string | null) => {
+    if (!dateStr) return timeStr ? `خلال اليوم ${timeStr}` : 'خلال اليوم';
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+    const target = new Date(dateStr + 'T00:00:00');
+    const timePart = timeStr ? ` في تمام ${timeStr}` : '';
+    if (target.getTime() === today.getTime()) return `خلال اليوم${timePart}`;
+    if (target.getTime() === tomorrow.getTime()) return `غدا خلال اليوم${timePart}`;
+    const formatted = target.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' });
+    return `${formatted}${timePart}`;
+  };
+
   // Re-init when task changes
   if (task && initialized !== task.id) {
     setPhone(task.phone);
@@ -47,7 +59,7 @@ export const SendWhatsAppDialog = ({ task, onClose }: SendWhatsAppDialogProps) =
     setMessage(
       buildMessageFromTemplate(tpl.template, {
         'العميل': task.client_name,
-        'الموعد': task.scheduled_date || '',
+        'الموعد': formatScheduled(task.scheduled_date, task.scheduled_time),
         'المشكلة': task.problem || '',
         'الوقت': task.scheduled_time || '',
         'الفني': '',
@@ -67,7 +79,7 @@ export const SendWhatsAppDialog = ({ task, onClose }: SendWhatsAppDialogProps) =
       setMessage(
         buildMessageFromTemplate(tpl.template, {
           'العميل': task.client_name,
-          'الموعد': task.scheduled_date || '',
+          'الموعد': formatScheduled(task.scheduled_date, task.scheduled_time),
           'المشكلة': task.problem || '',
           'الوقت': task.scheduled_time || '',
           'الفني': '',
