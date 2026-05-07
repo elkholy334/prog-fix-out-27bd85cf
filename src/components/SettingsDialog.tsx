@@ -47,6 +47,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   const { data: waConfigData } = useSetting('whatsapp_config');
   const { data: generalData } = useSetting('general');
   const { data: taskTypesData } = useSetting('task_types');
+  const [allTechnicians, setAllTechnicians] = useState<any[]>([]);
   const { data: technicians = [] } = useTechnicians();
   const upsertSetting = useUpsertSetting();
   const queryClient = useQueryClient();
