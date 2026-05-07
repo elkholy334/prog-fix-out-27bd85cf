@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Star, Clock, MapPin, Phone, Archive, MessageCircle, Trash2, User, Plus, GripVertical, Timer, CheckCircle2, Wrench, Pause, AlertTriangle } from 'lucide-react';
+import { Star, Clock, MapPin, Phone, Archive, MessageCircle, Trash2, User, Plus, GripVertical, Timer, CheckCircle2, Wrench, Pause, AlertTriangle, LayoutGrid, List } from 'lucide-react';
 import { useTasks, useTechnicians, useDeleteTask, useUpdateTask, useSetting, useDashboardStats } from '@/hooks/useDatabase';
 import { useAuth } from '@/hooks/useAuth';
 import { TaskDetailDialog } from '@/components/TaskDetailDialog';
