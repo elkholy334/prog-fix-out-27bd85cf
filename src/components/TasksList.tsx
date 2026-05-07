@@ -470,24 +470,51 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
         </button>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {FILTER_TABS
-          .filter(tab => isAdmin || (tab.key !== 'archived'))
-          .map((tab) => (
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide flex-1 min-w-0">
+          {FILTER_TABS
+            .filter(tab => isAdmin || (tab.key !== 'archived'))
+            .map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveFilter(tab.key)}
+              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                activeFilter === tab.key
+                  ? 'bg-secondary text-secondary-foreground shadow-card'
+                  : 'bg-card text-muted-foreground hover:bg-muted border border-border'
+              }`}
+            >
+              {tab.key === 'assigned' && <User className="inline h-3.5 w-3.5 ml-1" />}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-1 bg-card border border-border rounded-full p-1 shrink-0">
           <button
-            key={tab.key}
-            onClick={() => setActiveFilter(tab.key)}
-            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              activeFilter === tab.key
-                ? 'bg-secondary text-secondary-foreground shadow-card'
-                : 'bg-card text-muted-foreground hover:bg-muted border border-border'
-            }`}
+            onClick={() => setViewMode('grid')}
+            title="عرض المربعات"
+            className={`p-2 rounded-full transition-all ${viewMode === 'grid' ? 'bg-secondary text-secondary-foreground shadow-card' : 'text-muted-foreground hover:bg-muted'}`}
           >
-            {tab.key === 'assigned' && <User className="inline h-3.5 w-3.5 ml-1" />}
-            {tab.label}
+            <LayoutGrid className="h-4 w-4" />
           </button>
-        ))}
+          <button
+            onClick={() => setViewMode('list')}
+            title="عرض القائمة"
+            className={`p-2 rounded-full transition-all ${viewMode === 'list' ? 'bg-secondary text-secondary-foreground shadow-card' : 'text-muted-foreground hover:bg-muted'}`}
+          >
+            <List className="h-4 w-4" />
+          </button>
+        </div>
       </div>
+
+      {isLoading ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <p className="text-lg">جاري التحميل...</p>
+        </div>
+      ) : (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={filteredTasks.map(t => t.id)} strategy={rectSortingStrategy}>
+            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3' : 'flex flex-col gap-2'}>
 
       {isLoading ? (
         <div className="text-center py-12 text-muted-foreground">
