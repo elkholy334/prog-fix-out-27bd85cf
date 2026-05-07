@@ -142,7 +142,7 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
         )}
         <div className="flex-1 min-w-0 text-right">
           <div className="flex items-baseline gap-2 mb-1">
-            <h3 className="font-bold text-base text-foreground flex-1 break-words">{task.client_name}</h3>
+            <h3 title={task.client_name} className="font-bold text-base text-foreground flex-1 break-words whitespace-normal leading-tight">{task.client_name}</h3>
             <span className="text-xs font-bold text-muted-foreground shrink-0">#{task.id}</span>
           </div>
           <p className="text-xs text-muted-foreground truncate">{task.type}</p>
