@@ -32,17 +32,18 @@ Deno.serve(async (req) => {
       });
     }
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData } = await admin.auth.getUser(token);
-    if (!userData?.user) {
+    const { data: claimsData, error: claimsError } = await admin.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const callerId = claimsData.claims.sub;
     const { data: roles } = await admin
       .from("user_roles")
       .select("role")
-      .eq("user_id", userData.user.id);
+      .eq("user_id", callerId);
     const isAdmin = roles?.some((r: any) => r.role === "admin");
     if (!isAdmin) {
       return new Response(JSON.stringify({ error: "صلاحيات غير كافية" }), {
