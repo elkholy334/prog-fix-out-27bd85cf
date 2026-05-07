@@ -103,6 +103,7 @@ interface SortableTaskCardProps {
   daysAgo: number;
   isAdmin: boolean;
   taskTypeImage?: string;
+  viewMode?: 'grid' | 'list';
   onDelete: (id: number) => void;
   onStatusChange: (task: TaskRow) => void;
   onComplete: (task: TaskRow) => void;
@@ -112,7 +113,7 @@ interface SortableTaskCardProps {
   onArchive: (task: TaskRow) => void;
 }
 
-const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin, taskTypeImage, onDelete, onStatusChange, onComplete, onDetails, onWhatsApp, onToggleFavorite, onArchive }: SortableTaskCardProps) => {
+const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin, taskTypeImage, viewMode = 'grid', onDelete, onStatusChange, onComplete, onDetails, onWhatsApp, onToggleFavorite, onArchive }: SortableTaskCardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
 
   const style = {
