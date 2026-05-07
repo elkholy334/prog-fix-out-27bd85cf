@@ -102,6 +102,15 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     }
   }, [taskTypesData]);
 
+  const loadAllTechnicians = async () => {
+    const { data } = await supabase.from('technicians').select('*').order('name');
+    setAllTechnicians(data || []);
+  };
+
+  useEffect(() => {
+    if (open) loadAllTechnicians();
+  }, [open, technicians]);
+
   const saveTaskTypes = (types: TaskType[]) => {
     upsertSetting.mutate(
       { key: 'task_types', value: types as any },
