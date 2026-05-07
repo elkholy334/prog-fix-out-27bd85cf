@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Star, Clock, MapPin, Phone, Archive, MessageCircle, Trash2, User, Plus, GripVertical, Timer, CheckCircle2, Wrench, Pause, AlertTriangle } from 'lucide-react';
+import { Star, Clock, MapPin, Phone, Archive, MessageCircle, Trash2, User, Plus, GripVertical, Timer, CheckCircle2, Wrench, Pause, AlertTriangle, LayoutGrid, List } from 'lucide-react';
 import { useTasks, useTechnicians, useDeleteTask, useUpdateTask, useSetting, useDashboardStats } from '@/hooks/useDatabase';
 import { useAuth } from '@/hooks/useAuth';
 import { TaskDetailDialog } from '@/components/TaskDetailDialog';
@@ -103,6 +103,7 @@ interface SortableTaskCardProps {
   daysAgo: number;
   isAdmin: boolean;
   taskTypeImage?: string;
+  viewMode?: 'grid' | 'list';
   onDelete: (id: number) => void;
   onStatusChange: (task: TaskRow) => void;
   onComplete: (task: TaskRow) => void;
@@ -112,7 +113,7 @@ interface SortableTaskCardProps {
   onArchive: (task: TaskRow) => void;
 }
 
-const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin, taskTypeImage, onDelete, onStatusChange, onComplete, onDetails, onWhatsApp, onToggleFavorite, onArchive }: SortableTaskCardProps) => {
+const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin, taskTypeImage, viewMode = 'grid', onDelete, onStatusChange, onComplete, onDetails, onWhatsApp, onToggleFavorite, onArchive }: SortableTaskCardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
 
   const style = {
@@ -123,6 +124,55 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
   };
 
   const isExecuting = task.status === 'in_progress';
+
+  // Compact list-mode row
+  if (viewMode === 'list') {
+    return (
+      <div ref={setNodeRef} style={style} className={`rounded-xl border-2 shadow-card hover:shadow-card-hover transition-all p-2 flex items-center gap-2 ${CARD_BG_COLORS[task.status] || 'bg-card border-accent/20'} ${isExecuting ? 'ring-2 ring-success/40' : ''} ${task.is_favorite ? 'ring-2 ring-accent/30' : ''}`}>
+        {isAdmin && (
+          <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-1 shrink-0">
+            <GripVertical className="h-4 w-4 text-muted-foreground/50" />
+          </div>
+        )}
+        <button onClick={() => onToggleFavorite(task)} className="shrink-0 hover:scale-110 transition-transform">
+          <Star className={`h-5 w-5 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground/40'}`} />
+        </button>
+        {taskTypeImage && (
+          <img src={taskTypeImage} alt={task.type} className="h-10 w-10 rounded-lg object-contain shrink-0" />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-bold text-muted-foreground">#{task.id}</span>
+            <h3 className="font-bold text-sm text-foreground truncate">{task.client_name}</h3>
+            <span className="text-xs text-muted-foreground">- {task.type}</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap mt-0.5">
+            {task.address && (
+              <span className="flex items-center gap-1 truncate"><MapPin className="h-3 w-3" />{task.address}</span>
+            )}
+            {techName && (
+              <span className="flex items-center gap-1"><User className="h-3 w-3" />{techName}</span>
+            )}
+            <span className="flex items-center gap-1"><Clock className="h-3 w-3" />منذ {daysAgo} يوم</span>
+          </div>
+        </div>
+        <button
+          onClick={() => isExecuting ? onComplete(task) : onStatusChange(task)}
+          className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold ${isExecuting ? 'bg-success text-success-foreground' : STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
+        >
+          {isExecuting ? '✅ اتمام' : (isAdmin ? STATUS_LABELS[task.status] || task.status : (task.status === 'waiting' ? '🚀 بدء' : STATUS_LABELS[task.status] || task.status))}
+        </button>
+        <Button variant="outline" size="sm" className="text-xs rounded-lg shrink-0" onClick={() => onDetails(task)}>
+          التفاصيل
+        </Button>
+        {isAdmin && (
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-success/70 hover:text-success hover:bg-success/10 rounded-lg shrink-0" onClick={() => onWhatsApp(task)}>
+            <MessageCircle className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div ref={setNodeRef} style={style} className={`rounded-2xl border-2 shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BG_COLORS[task.status] || 'bg-card border-accent/20'} ${isExecuting ? 'animate-pulse-glow ring-2 ring-success/40' : ''} ${task.is_favorite ? 'ring-2 ring-accent/30 shadow-[0_0_15px_hsl(var(--accent)/0.2)]' : ''}`}>
@@ -304,6 +354,13 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
   const [statusTask, setStatusTask] = useState<TaskRow | null>(null);
   const [completionTask, setCompletionTask] = useState<TaskRow | null>(null);
   const [orderedIds, setOrderedIds] = useState<number[]>([]);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    return (localStorage.getItem('tasksViewMode') as 'grid' | 'list') || 'grid';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('tasksViewMode', viewMode);
+  }, [viewMode]);
 
   useEffect(() => { setActiveFilter(initialFilter); }, [initialFilter]);
 
@@ -463,23 +520,41 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
         </button>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {FILTER_TABS
-          .filter(tab => isAdmin || (tab.key !== 'archived'))
-          .map((tab) => (
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide flex-1 min-w-0">
+          {FILTER_TABS
+            .filter(tab => isAdmin || (tab.key !== 'archived'))
+            .map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveFilter(tab.key)}
+              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                activeFilter === tab.key
+                  ? 'bg-secondary text-secondary-foreground shadow-card'
+                  : 'bg-card text-muted-foreground hover:bg-muted border border-border'
+              }`}
+            >
+              {tab.key === 'assigned' && <User className="inline h-3.5 w-3.5 ml-1" />}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-1 bg-card border border-border rounded-full p-1 shrink-0">
           <button
-            key={tab.key}
-            onClick={() => setActiveFilter(tab.key)}
-            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              activeFilter === tab.key
-                ? 'bg-secondary text-secondary-foreground shadow-card'
-                : 'bg-card text-muted-foreground hover:bg-muted border border-border'
-            }`}
+            onClick={() => setViewMode('grid')}
+            title="عرض المربعات"
+            className={`p-2 rounded-full transition-all ${viewMode === 'grid' ? 'bg-secondary text-secondary-foreground shadow-card' : 'text-muted-foreground hover:bg-muted'}`}
           >
-            {tab.key === 'assigned' && <User className="inline h-3.5 w-3.5 ml-1" />}
-            {tab.label}
+            <LayoutGrid className="h-4 w-4" />
           </button>
-        ))}
+          <button
+            onClick={() => setViewMode('list')}
+            title="عرض القائمة"
+            className={`p-2 rounded-full transition-all ${viewMode === 'list' ? 'bg-secondary text-secondary-foreground shadow-card' : 'text-muted-foreground hover:bg-muted'}`}
+          >
+            <List className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -489,7 +564,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={filteredTasks.map(t => t.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3' : 'flex flex-col gap-2'}>
               {filteredTasks.map((task) => {
                 const techName = task.required_technician
                   ? technicians.find((t) => t.id === task.required_technician)?.name || ''
@@ -508,6 +583,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
                       daysAgo={daysAgo}
                       isAdmin={isAdmin}
                       taskTypeImage={taskTypeImageMap[task.type] || ''}
+                      viewMode={viewMode}
                       onDelete={handleDelete}
                       onStatusChange={setStatusTask}
                       onComplete={(t) => setCompletionTask(t)}
