@@ -11,8 +11,8 @@ Deno.serve(async (req) => {
   try {
     const { email, technician_id, new_password } = await req.json();
 
-    if (!new_password || new_password.length < 4) {
-      return new Response(JSON.stringify({ error: "كلمة المرور قصيرة جداً" }), {
+    if (!new_password || new_password.length < 6) {
+      return new Response(JSON.stringify({ error: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
