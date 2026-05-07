@@ -141,9 +141,9 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
           <img src={taskTypeImage} alt={task.type} className="h-12 w-12 rounded-lg object-contain shrink-0" />
         )}
         <div className="flex-1 min-w-0 text-right">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold text-muted-foreground">#{task.id}</span>
-            <h3 className="font-bold text-sm text-foreground truncate flex-1">{task.client_name}</h3>
+          <div className="flex items-baseline gap-2 mb-1">
+            <h3 className="font-bold text-base text-foreground flex-1 break-words">{task.client_name}</h3>
+            <span className="text-xs font-bold text-muted-foreground shrink-0">#{task.id}</span>
           </div>
           <p className="text-xs text-muted-foreground truncate">{task.type}</p>
           {task.address && (
