@@ -125,6 +125,55 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
 
   const isExecuting = task.status === 'in_progress';
 
+  // Compact list-mode row
+  if (viewMode === 'list') {
+    return (
+      <div ref={setNodeRef} style={style} className={`rounded-xl border-2 shadow-card hover:shadow-card-hover transition-all p-2 flex items-center gap-2 ${CARD_BG_COLORS[task.status] || 'bg-card border-accent/20'} ${isExecuting ? 'ring-2 ring-success/40' : ''} ${task.is_favorite ? 'ring-2 ring-accent/30' : ''}`}>
+        {isAdmin && (
+          <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-1 shrink-0">
+            <GripVertical className="h-4 w-4 text-muted-foreground/50" />
+          </div>
+        )}
+        <button onClick={() => onToggleFavorite(task)} className="shrink-0 hover:scale-110 transition-transform">
+          <Star className={`h-5 w-5 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground/40'}`} />
+        </button>
+        {taskTypeImage && (
+          <img src={taskTypeImage} alt={task.type} className="h-10 w-10 rounded-lg object-contain shrink-0" />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-bold text-muted-foreground">#{task.id}</span>
+            <h3 className="font-bold text-sm text-foreground truncate">{task.client_name}</h3>
+            <span className="text-xs text-muted-foreground">- {task.type}</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap mt-0.5">
+            {task.address && (
+              <span className="flex items-center gap-1 truncate"><MapPin className="h-3 w-3" />{task.address}</span>
+            )}
+            {techName && (
+              <span className="flex items-center gap-1"><User className="h-3 w-3" />{techName}</span>
+            )}
+            <span className="flex items-center gap-1"><Clock className="h-3 w-3" />منذ {daysAgo} يوم</span>
+          </div>
+        </div>
+        <button
+          onClick={() => isExecuting ? onComplete(task) : onStatusChange(task)}
+          className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold ${isExecuting ? 'bg-success text-success-foreground' : STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
+        >
+          {isExecuting ? '✅ اتمام' : (isAdmin ? STATUS_LABELS[task.status] || task.status : (task.status === 'waiting' ? '🚀 بدء' : STATUS_LABELS[task.status] || task.status))}
+        </button>
+        <Button variant="outline" size="sm" className="text-xs rounded-lg shrink-0" onClick={() => onDetails(task)}>
+          التفاصيل
+        </Button>
+        {isAdmin && (
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-success/70 hover:text-success hover:bg-success/10 rounded-lg shrink-0" onClick={() => onWhatsApp(task)}>
+            <MessageCircle className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div ref={setNodeRef} style={style} className={`rounded-2xl border-2 shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BG_COLORS[task.status] || 'bg-card border-accent/20'} ${isExecuting ? 'animate-pulse-glow ring-2 ring-success/40' : ''} ${task.is_favorite ? 'ring-2 ring-accent/30 shadow-[0_0_15px_hsl(var(--accent)/0.2)]' : ''}`}>
       {/* Drag Handle */}
