@@ -47,6 +47,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   const { data: waConfigData } = useSetting('whatsapp_config');
   const { data: generalData } = useSetting('general');
   const { data: taskTypesData } = useSetting('task_types');
+  const [allTechnicians, setAllTechnicians] = useState<any[]>([]);
   const { data: technicians = [] } = useTechnicians();
   const upsertSetting = useUpsertSetting();
   const queryClient = useQueryClient();
@@ -100,6 +101,15 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
       }
     }
   }, [taskTypesData]);
+
+  const loadAllTechnicians = async () => {
+    const { data } = await supabase.from('technicians').select('*').order('name');
+    setAllTechnicians(data || []);
+  };
+
+  useEffect(() => {
+    if (open) loadAllTechnicians();
+  }, [open, technicians]);
 
   const saveTaskTypes = (types: TaskType[]) => {
     upsertSetting.mutate(
@@ -198,11 +208,21 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     queryClient.invalidateQueries({ queryKey: ['technicians'] });
   };
 
-  const deleteTechnician = async (id: string) => {
-    const { error } = await supabase.from('technicians').update({ is_active: false }).eq('id', id);
-    if (error) { toast.error('فشل في حذف الفني'); return; }
-    toast.success('تم حذف الفني');
+  const toggleTechnicianActive = async (id: string, currentActive: boolean) => {
+    const { error } = await supabase.from('technicians').update({ is_active: !currentActive }).eq('id', id);
+    if (error) { toast.error('فشلت العملية'); return; }
+    toast.success(!currentActive ? 'تم تفعيل الفني ✅' : 'تم إيقاف الفني ⛔');
     queryClient.invalidateQueries({ queryKey: ['technicians'] });
+    loadAllTechnicians();
+  };
+
+  const deleteTechnicianPermanent = async (id: string) => {
+    if (!confirm('حذف نهائي للفني؟ لا يمكن التراجع.')) return;
+    const { error } = await supabase.from('technicians').delete().eq('id', id);
+    if (error) { toast.error('فشل الحذف (قد يكون له معاملات مرتبطة)'); return; }
+    toast.success('تم الحذف نهائياً');
+    queryClient.invalidateQueries({ queryKey: ['technicians'] });
+    loadAllTechnicians();
   };
 
   const updateTechPassword = async (techId: string, email: string | undefined, password: string) => {
@@ -268,12 +288,24 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                 />
               </div>
               <div className="space-y-2">
-                {technicians.map((tech) => (
-                  <div key={tech.id} className="bg-muted rounded-lg px-3 py-2 space-y-2">
+                {allTechnicians.map((tech) => {
+                  const isActive = tech.is_active !== false;
+                  return (
+                  <div key={tech.id} className={`rounded-lg px-3 py-2 space-y-2 ${isActive ? 'bg-muted' : 'bg-destructive/5 border border-destructive/20 opacity-75'}`}>
                     <div className="flex items-center justify-between gap-2">
-                      <Button variant="ghost" size="sm" className="text-destructive text-xs shrink-0" onClick={() => deleteTechnician(tech.id)}>
-                        حذف
-                      </Button>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          variant={isActive ? 'ghost' : 'default'}
+                          size="sm"
+                          className={`text-xs h-8 ${isActive ? 'text-warning hover:text-warning' : 'bg-success hover:bg-success/90 text-success-foreground'}`}
+                          onClick={() => toggleTechnicianActive(tech.id, isActive)}
+                        >
+                          {isActive ? 'إيقاف' : 'تفعيل'}
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-destructive text-xs h-8" onClick={() => deleteTechnicianPermanent(tech.id)}>
+                          حذف
+                        </Button>
+                      </div>
                       <div className="flex items-center gap-2 flex-1">
                         <Input
                           type="number"
@@ -291,7 +323,10 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                           onBlur={(e) => updateTechPhone(tech.id, e.target.value)}
                         />
                       </div>
-                      <span className="font-medium text-sm">{tech.name}</span>
+                      <div className="flex flex-col items-end">
+                        <span className="font-medium text-sm">{tech.name}</span>
+                        {!isActive && <span className="text-[10px] text-destructive font-bold">موقوف</span>}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
@@ -318,8 +353,9 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                       <span className="text-xs text-muted-foreground shrink-0">باسورد:</span>
                     </div>
                   </div>
-                ))}
-                {technicians.length === 0 && (
+                  );
+                })}
+                {allTechnicians.length === 0 && (
                   <p className="text-center text-muted-foreground text-sm py-4">لا يوجد فنيين. أضف فني جديد أعلاه.</p>
                 )}
               </div>
