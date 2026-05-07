@@ -353,8 +353,9 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                       <span className="text-xs text-muted-foreground shrink-0">باسورد:</span>
                     </div>
                   </div>
-                ))}
-                {technicians.length === 0 && (
+                  );
+                })}
+                {allTechnicians.length === 0 && (
                   <p className="text-center text-muted-foreground text-sm py-4">لا يوجد فنيين. أضف فني جديد أعلاه.</p>
                 )}
               </div>
