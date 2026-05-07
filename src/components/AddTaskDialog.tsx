@@ -147,7 +147,6 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
 🔧 نوع العمل: ${finalType}
 📍 العنوان: ${address.trim() || 'غير محدد'}
 📅 موعد التنفيذ: ${dateStr}
-${timeDisplayStr ? `⏰ الوقت المتوقع: ${timeDisplayStr}` : ''}
 ${problem.trim() ? `📝 التفاصيل: ${problem.trim()}` : ''}
 
 سيتواصل معك الفني قبل الموعد لتأكيد الحضور.
