@@ -69,6 +69,61 @@ Deno.serve(async (req) => {
       if (found) userId = found.id;
     }
 
+    // Auto-create auth user if technician has no linked account
+    if (!userId && technician_id) {
+      const { data: tech } = await admin
+        .from("technicians")
+        .select("id, name, email, phone")
+        .eq("id", technician_id)
+        .maybeSingle();
+
+      if (!tech) {
+        return new Response(JSON.stringify({ error: "الفني غير موجود" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const newEmail = tech.email || `tech_${tech.phone || tech.id.slice(0, 8)}@app.com`;
+
+      // Check if email already exists
+      const { data: list } = await admin.auth.admin.listUsers();
+      const existing = list?.users?.find((x: any) => x.email === newEmail);
+
+      if (existing) {
+        userId = existing.id;
+      } else {
+        const { data: created, error: createErr } = await admin.auth.admin.createUser({
+          email: newEmail,
+          password: new_password,
+          email_confirm: true,
+          user_metadata: { full_name: tech.name },
+        });
+        if (createErr || !created?.user) {
+          return new Response(JSON.stringify({ error: createErr?.message || "فشل إنشاء الحساب" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        userId = created.user.id;
+      }
+
+      // Link profile to technician + ensure email saved on technician
+      await admin.from("profiles").upsert({
+        id: userId,
+        full_name: tech.name,
+        technician_id: technician_id,
+      });
+      if (!tech.email) {
+        await admin.from("technicians").update({ email: newEmail }).eq("id", technician_id);
+      }
+      // Assign technician role
+      await admin.from("user_roles").upsert(
+        { user_id: userId, role: "technician" },
+        { onConflict: "user_id,role" }
+      );
+    }
+
     if (!userId) {
       return new Response(JSON.stringify({ error: "المستخدم غير موجود" }), {
         status: 404,
