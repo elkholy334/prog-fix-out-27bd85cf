@@ -309,18 +309,18 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                       <div className="flex items-center gap-2 flex-1">
                         <Input
                           type="number"
+                          data-rate
                           defaultValue={(tech as any).commission_rate || 0}
                           className="w-20 text-center text-sm h-8"
                           placeholder="%"
-                          onBlur={(e) => updateCommissionRate(tech.id, Number(e.target.value))}
                         />
                         <span className="text-xs text-muted-foreground">%</span>
                         <Input
+                          data-phone
                           defaultValue={(tech as any).phone || ''}
                           className="w-32 text-left font-mono text-xs h-8"
                           placeholder="رقم الواتساب"
                           dir="ltr"
-                          onBlur={(e) => updateTechPhone(tech.id, e.target.value)}
                         />
                       </div>
                       <div className="flex flex-col items-end">
@@ -329,29 +329,47 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-xs h-8 shrink-0"
-                        onClick={(e) => {
-                          const input = (e.currentTarget.parentElement?.querySelector('input[data-pw]') as HTMLInputElement);
-                          if (input) {
-                            updateTechPassword(tech.id, (tech as any).email, input.value);
-                            input.value = '';
-                          }
-                        }}
-                      >
-                        تغيير
-                      </Button>
                       <Input
                         data-pw
                         type="text"
                         className="flex-1 text-left font-mono text-xs h-8"
-                        placeholder="كلمة المرور الجديدة"
+                        placeholder="كلمة المرور الجديدة (اتركه فارغ لو مش هتغيرها)"
                         dir="ltr"
                       />
                       <span className="text-xs text-muted-foreground shrink-0">باسورد:</span>
                     </div>
+                    <Button
+                      size="sm"
+                      className="w-full gradient-hero text-primary-foreground font-bold h-9"
+                      onClick={async (e) => {
+                        const card = e.currentTarget.closest('div.rounded-lg') as HTMLElement;
+                        const rateInput = card?.querySelector('input[data-rate]') as HTMLInputElement;
+                        const phoneInput = card?.querySelector('input[data-phone]') as HTMLInputElement;
+                        const pwInput = card?.querySelector('input[data-pw]') as HTMLInputElement;
+                        const newRate = Number(rateInput?.value || 0);
+                        const newPhone = phoneInput?.value || '';
+                        const newPw = pwInput?.value || '';
+                        let ok = true;
+                        if (newRate !== ((tech as any).commission_rate || 0)) {
+                          const { error } = await supabase.from('technicians').update({ commission_rate: newRate } as any).eq('id', tech.id);
+                          if (error) ok = false;
+                        }
+                        if (newPhone !== ((tech as any).phone || '')) {
+                          const { error } = await supabase.from('technicians').update({ phone: newPhone } as any).eq('id', tech.id);
+                          if (error) ok = false;
+                        }
+                        if (newPw) {
+                          await updateTechPassword(tech.id, (tech as any).email, newPw);
+                          if (pwInput) pwInput.value = '';
+                        }
+                        queryClient.invalidateQueries({ queryKey: ['technicians'] });
+                        loadAllTechnicians();
+                        if (ok) toast.success('تم حفظ تعديلات ' + tech.name + ' ✅');
+                        else toast.error('فشل حفظ بعض التعديلات');
+                      }}
+                    >
+                      💾 حفظ التعديلات
+                    </Button>
                   </div>
                   );
                 })}
