@@ -269,28 +269,54 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
               </div>
               <div className="space-y-2">
                 {technicians.map((tech) => (
-                  <div key={tech.id} className="flex items-center justify-between bg-muted rounded-lg px-3 py-2 gap-2">
-                    <Button variant="ghost" size="sm" className="text-destructive text-xs shrink-0" onClick={() => deleteTechnician(tech.id)}>
-                      حذف
-                    </Button>
-                    <div className="flex items-center gap-2 flex-1">
-                      <Input
-                        type="number"
-                        defaultValue={(tech as any).commission_rate || 0}
-                        className="w-20 text-center text-sm h-8"
-                        placeholder="%"
-                        onBlur={(e) => updateCommissionRate(tech.id, Number(e.target.value))}
-                      />
-                      <span className="text-xs text-muted-foreground">%</span>
-                      <Input
-                        defaultValue={(tech as any).phone || ''}
-                        className="w-32 text-left font-mono text-xs h-8"
-                        placeholder="رقم الواتساب"
-                        dir="ltr"
-                        onBlur={(e) => updateTechPhone(tech.id, e.target.value)}
-                      />
+                  <div key={tech.id} className="bg-muted rounded-lg px-3 py-2 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <Button variant="ghost" size="sm" className="text-destructive text-xs shrink-0" onClick={() => deleteTechnician(tech.id)}>
+                        حذف
+                      </Button>
+                      <div className="flex items-center gap-2 flex-1">
+                        <Input
+                          type="number"
+                          defaultValue={(tech as any).commission_rate || 0}
+                          className="w-20 text-center text-sm h-8"
+                          placeholder="%"
+                          onBlur={(e) => updateCommissionRate(tech.id, Number(e.target.value))}
+                        />
+                        <span className="text-xs text-muted-foreground">%</span>
+                        <Input
+                          defaultValue={(tech as any).phone || ''}
+                          className="w-32 text-left font-mono text-xs h-8"
+                          placeholder="رقم الواتساب"
+                          dir="ltr"
+                          onBlur={(e) => updateTechPhone(tech.id, e.target.value)}
+                        />
+                      </div>
+                      <span className="font-medium text-sm">{tech.name}</span>
                     </div>
-                    <span className="font-medium text-sm">{tech.name}</span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs h-8 shrink-0"
+                        onClick={(e) => {
+                          const input = (e.currentTarget.parentElement?.querySelector('input[data-pw]') as HTMLInputElement);
+                          if (input) {
+                            updateTechPassword(tech.id, (tech as any).email, input.value);
+                            input.value = '';
+                          }
+                        }}
+                      >
+                        تغيير
+                      </Button>
+                      <Input
+                        data-pw
+                        type="text"
+                        className="flex-1 text-left font-mono text-xs h-8"
+                        placeholder="كلمة المرور الجديدة"
+                        dir="ltr"
+                      />
+                      <span className="text-xs text-muted-foreground shrink-0">باسورد:</span>
+                    </div>
                   </div>
                 ))}
                 {technicians.length === 0 && (
