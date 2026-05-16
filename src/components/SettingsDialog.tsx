@@ -588,13 +588,24 @@ const WhatsAppAccountsManager = ({ accounts, defaultAccountId, endpoints, showTo
 
   const checkStatus = async (acc: WhatsAppAccount) => {
     if (!acc.apiToken || !acc.instanceId) {
-      toast.error('أدخل API Token و Instance ID أولاً');
+      setStatuses(s => ({ ...s, [acc.id]: { connected: false, checking: false, error: 'أدخل API Token و Instance ID' } }));
       return;
     }
-    setStatuses(s => ({ ...s, [acc.id]: { connected: false, checking: true } }));
+    setStatuses(s => ({ ...s, [acc.id]: { ...(s[acc.id] || { connected: false }), checking: true } }));
     const result = await testWhatsAppConnection(acc, endpoints);
     setStatuses(s => ({ ...s, [acc.id]: { connected: result.connected, checking: false, error: result.error } }));
   };
+
+  // Auto-check status on mount / when credentials change
+  useEffect(() => {
+    accounts.forEach((acc) => {
+      if (acc.apiToken && acc.instanceId && !statuses[acc.id]) {
+        checkStatus(acc);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accounts.map(a => `${a.id}:${a.apiToken}:${a.instanceId}`).join('|')]);
+
 
   const sendTest = async (acc: WhatsAppAccount) => {
     if (!acc.phone) { toast.error('أدخل رقم الهاتف الخاص بالحساب لإرسال رسالة تجربة'); return; }
@@ -633,6 +644,45 @@ const WhatsAppAccountsManager = ({ accounts, defaultAccountId, endpoints, showTo
         const status = statuses[acc.id];
         return (
           <div key={acc.id} className={`rounded-lg border p-3 space-y-2 ${isDefault ? 'border-success bg-success/5' : 'border-border bg-muted/30'}`}>
+            {/* Status banner */}
+            <div
+              className={`rounded-md px-3 py-2 flex items-center gap-2 text-xs font-bold border ${
+                status?.checking
+                  ? 'bg-muted text-muted-foreground border-border'
+                  : status?.connected
+                    ? 'bg-success/15 text-success border-success/40'
+                    : status
+                      ? 'bg-destructive/15 text-destructive border-destructive/40'
+                      : 'bg-muted text-muted-foreground border-border'
+              }`}
+            >
+              {status?.checking ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> جاري فحص الاتصال…</>
+              ) : status?.connected ? (
+                <><Wifi className="h-4 w-4" /> متصل وجاهز للإرسال</>
+              ) : status ? (
+                <>
+                  <WifiOff className="h-4 w-4 shrink-0" />
+                  <span className="shrink-0">غير متصل:</span>
+                  <span className="truncate font-medium opacity-90" title={status.error}>
+                    {status.error || 'سبب غير معروف'}
+                  </span>
+                </>
+              ) : (
+                <><WifiOff className="h-4 w-4" /> لم يتم الفحص بعد</>
+              )}
+              <div className="flex-1" />
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 px-2 text-[11px] hover:bg-background/50"
+                disabled={status?.checking}
+                onClick={() => checkStatus(acc)}
+              >
+                إعادة الفحص
+              </Button>
+            </div>
+
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1">
                 <Button
@@ -695,28 +745,6 @@ const WhatsAppAccountsManager = ({ accounts, defaultAccountId, endpoints, showTo
                 {testing[acc.id] ? <Loader2 className="h-3.5 w-3.5 ml-1 animate-spin" /> : <Send className="h-3.5 w-3.5 ml-1" />}
                 إرسال تجربة
               </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-8 text-xs"
-                disabled={status?.checking}
-                onClick={() => checkStatus(acc)}
-              >
-                {status?.checking ? <Loader2 className="h-3.5 w-3.5 ml-1 animate-spin" /> : null}
-                فحص الاتصال
-              </Button>
-              <div className="flex-1" />
-              {status && !status.checking && (
-                status.connected ? (
-                  <span className="flex items-center gap-1 text-xs text-success font-bold">
-                    <Wifi className="h-3.5 w-3.5" /> متصل
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1 text-xs text-destructive font-bold" title={status.error}>
-                    <WifiOff className="h-3.5 w-3.5" /> غير متصل
-                  </span>
-                )
-              )}
             </div>
           </div>
         );
