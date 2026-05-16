@@ -56,30 +56,25 @@ export const resolveActiveAccount = (config: WhatsAppConfig): WhatsAppAccount | 
   return null;
 };
 
-/** Probes Whats360 send-text endpoint to verify the instance is connected.
- *  Whats360 has no public status endpoint, so we send a probe with no jid:
- *  - If the instance is offline, the API returns: {"error":"instance not connected","success":false}
- *  - Otherwise (e.g. missing/invalid jid error, or success), the instance is online. */
+const getBaseUrl = (endpoints: WhatsAppEndpoints) => endpoints.sendText.replace(/\/send-text.*$/, '');
+
+/** Probes the WhatsApp instance via the edge function proxy (bypasses browser CORS). */
 export const testWhatsAppConnection = async (
   account: { apiToken: string; instanceId: string },
   endpoints: WhatsAppEndpoints
 ): Promise<{ connected: boolean; error?: string }> => {
   try {
-    const url = new URL(endpoints.sendText);
-    url.searchParams.set('token', account.apiToken);
-    url.searchParams.set('instance_id', account.instanceId);
-    url.searchParams.set('jid', '');
-    url.searchParams.set('msg', 'ping');
-    const res = await fetch(url.toString(), { method: 'POST' });
-    const data = await res.json().catch(() => ({} as any));
-    const errMsg = String(data?.error || data?.message || '').toLowerCase();
-    if (errMsg.includes('not connected') || errMsg.includes('disconnected') || errMsg.includes('logout') || errMsg.includes('instance not found')) {
-      return { connected: false, error: data?.error || data?.message || 'غير متصل' };
-    }
-    if (errMsg.includes('token') || errMsg.includes('unauthorized') || errMsg.includes('invalid')) {
-      return { connected: false, error: data?.error || data?.message || 'بيانات الحساب غير صحيحة' };
-    }
-    return { connected: true };
+    const { data, error } = await supabase.functions.invoke('whatsapp-proxy', {
+      body: {
+        action: 'probe',
+        token: account.apiToken,
+        instance_id: account.instanceId,
+        baseUrl: getBaseUrl(endpoints),
+      },
+    });
+    if (error) return { connected: false, error: error.message || 'فشل الاتصال بخادم الفحص' };
+    if (!data?.success) return { connected: false, error: data?.error || 'فشل الفحص' };
+    return { connected: !!data.connected, error: data.reason };
   } catch (e: any) {
     return { connected: false, error: e?.message || 'فشل الاتصال' };
   }
@@ -127,36 +122,44 @@ export const sendWhatsAppMessage = async (
         : cleanPhone;
 
   try {
-    const url = new URL(config.endpoints.sendText);
-    url.searchParams.set('token', config.apiToken);
-    url.searchParams.set('instance_id', config.instanceId);
-    url.searchParams.set('jid', normalizedPhone);
-    url.searchParams.set('msg', message);
-    
-    const response = await fetch(url.toString(), { method: 'POST' });
-    const data = await response.json();
+    const { data, error: invokeErr } = await supabase.functions.invoke('whatsapp-proxy', {
+      body: {
+        action: 'send-text',
+        token: config.apiToken,
+        instance_id: config.instanceId,
+        baseUrl: getBaseUrl(config.endpoints),
+        jid: normalizedPhone,
+        msg: message,
+      },
+    });
 
-    if (response.ok && (data.success || data.status === true || data.status === 'success')) {
+    if (invokeErr) {
+      const errorMsg = invokeErr.message || 'فشل الاتصال بخادم الإرسال';
       await logWhatsAppMessage({
-        recipientPhone: normalizedPhone,
-        recipientName: logInfo?.recipientName || '',
-        messageType: logInfo?.messageType || 'general',
-        messageText: message,
-        taskId: logInfo?.taskId,
-        status: 'success',
+        recipientPhone: normalizedPhone, recipientName: logInfo?.recipientName || '',
+        messageType: logInfo?.messageType || 'general', messageText: message,
+        taskId: logInfo?.taskId, status: 'failed', errorMessage: errorMsg,
+      });
+      return { success: false, error: errorMsg };
+    }
+
+    const upstream = data?.data || {};
+    const ok = data?.success && (upstream.success || upstream.status === true || upstream.status === 'success');
+
+    if (ok) {
+      await logWhatsAppMessage({
+        recipientPhone: normalizedPhone, recipientName: logInfo?.recipientName || '',
+        messageType: logInfo?.messageType || 'general', messageText: message,
+        taskId: logInfo?.taskId, status: 'success',
       });
       return { success: true };
     }
 
-    const errorMsg = data.message || data.error || 'فشل في إرسال الرسالة';
+    const errorMsg = upstream.message || upstream.error || data?.error || 'فشل في إرسال الرسالة';
     await logWhatsAppMessage({
-      recipientPhone: normalizedPhone,
-      recipientName: logInfo?.recipientName || '',
-      messageType: logInfo?.messageType || 'general',
-      messageText: message,
-      taskId: logInfo?.taskId,
-      status: 'failed',
-      errorMessage: errorMsg,
+      recipientPhone: normalizedPhone, recipientName: logInfo?.recipientName || '',
+      messageType: logInfo?.messageType || 'general', messageText: message,
+      taskId: logInfo?.taskId, status: 'failed', errorMessage: errorMsg,
     });
     return { success: false, error: errorMsg };
   } catch (err: any) {
