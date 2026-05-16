@@ -588,13 +588,24 @@ const WhatsAppAccountsManager = ({ accounts, defaultAccountId, endpoints, showTo
 
   const checkStatus = async (acc: WhatsAppAccount) => {
     if (!acc.apiToken || !acc.instanceId) {
-      toast.error('أدخل API Token و Instance ID أولاً');
+      setStatuses(s => ({ ...s, [acc.id]: { connected: false, checking: false, error: 'أدخل API Token و Instance ID' } }));
       return;
     }
-    setStatuses(s => ({ ...s, [acc.id]: { connected: false, checking: true } }));
+    setStatuses(s => ({ ...s, [acc.id]: { ...(s[acc.id] || { connected: false }), checking: true } }));
     const result = await testWhatsAppConnection(acc, endpoints);
     setStatuses(s => ({ ...s, [acc.id]: { connected: result.connected, checking: false, error: result.error } }));
   };
+
+  // Auto-check status on mount / when credentials change
+  useEffect(() => {
+    accounts.forEach((acc) => {
+      if (acc.apiToken && acc.instanceId && !statuses[acc.id]) {
+        checkStatus(acc);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accounts.map(a => `${a.id}:${a.apiToken}:${a.instanceId}`).join('|')]);
+
 
   const sendTest = async (acc: WhatsAppAccount) => {
     if (!acc.phone) { toast.error('أدخل رقم الهاتف الخاص بالحساب لإرسال رسالة تجربة'); return; }
