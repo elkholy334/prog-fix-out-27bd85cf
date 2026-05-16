@@ -29,6 +29,8 @@ interface WhatsAppConfig {
     sendAudio: string;
     sendDoc: string;
   };
+  accounts?: WhatsAppAccount[];
+  defaultAccountId?: string;
 }
 
 const DEFAULT_ENDPOINTS = {
