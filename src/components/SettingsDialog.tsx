@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, Save, Link2, Plus, Loader2, Trash2, GripVertical, Pencil, Check, X, ImageIcon } from 'lucide-react';
+import { Eye, EyeOff, Save, Link2, Plus, Loader2, Trash2, GripVertical, Pencil, Check, X, ImageIcon, Send, Wifi, WifiOff, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSetting, useUpsertSetting, useTechnicians } from '@/hooks/useDatabase';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { testWhatsAppConnection, sendWhatsAppMessage, type WhatsAppAccount } from '@/lib/whatsapp';
 
 interface TaskType {
   id: string;
@@ -28,6 +29,8 @@ interface WhatsAppConfig {
     sendAudio: string;
     sendDoc: string;
   };
+  accounts?: WhatsAppAccount[];
+  defaultAccountId?: string;
 }
 
 const DEFAULT_ENDPOINTS = {
@@ -62,6 +65,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
 
   const [waConfig, setWaConfig] = useState<WhatsAppConfig>({
     apiToken: '', instanceId: '', defaultPhone: '', endpoints: { ...DEFAULT_ENDPOINTS },
+    accounts: [], defaultAccountId: undefined,
   });
   const [showToken, setShowToken] = useState(false);
   const [shopName, setShopName] = useState('شركة الفيروز للستالايت');
@@ -77,9 +81,30 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   const [draggedTypeId, setDraggedTypeId] = useState<string | null>(null);
   useEffect(() => {
     if (waConfigData) {
-      const config = waConfigData as unknown as WhatsAppConfig;
+      const raw = waConfigData as unknown as WhatsAppConfig;
+      let accounts = Array.isArray(raw.accounts) ? [...raw.accounts] : [];
+      // Migrate legacy single config into accounts list
+      if (accounts.length === 0 && raw.apiToken && raw.instanceId) {
+        accounts = [{
+          id: 'legacy-' + Date.now(),
+          name: 'الحساب الرئيسي',
+          apiToken: raw.apiToken,
+          instanceId: raw.instanceId,
+          phone: raw.defaultPhone || '',
+        }];
+      }
+      const defaultAccountId = raw.defaultAccountId && accounts.some(a => a.id === raw.defaultAccountId)
+        ? raw.defaultAccountId
+        : accounts[0]?.id;
+      const config: WhatsAppConfig = {
+        apiToken: raw.apiToken || '',
+        instanceId: raw.instanceId || '',
+        defaultPhone: raw.defaultPhone || '',
+        endpoints: raw.endpoints || { ...DEFAULT_ENDPOINTS },
+        accounts,
+        defaultAccountId,
+      };
       setWaConfig(config);
-      // Sync to localStorage so sendWhatsAppMessage can read it
       localStorage.setItem('whatsapp_config', JSON.stringify(config));
     }
   }, [waConfigData]);
@@ -454,41 +479,18 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                   <h3 className="font-bold">ربط حساب Whats360</h3>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-right block text-sm font-medium">API Token</Label>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="icon" className="shrink-0" onClick={() => setShowToken(!showToken)}>
-                      {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
-                    <Input
-                      type={showToken ? 'text' : 'password'}
-                      value={waConfig.apiToken}
-                      onChange={(e) => setWaConfig({ ...waConfig, apiToken: e.target.value })}
-                      placeholder="أدخل API Token الخاص بك"
-                      className="text-left font-mono text-sm" dir="ltr"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-right block text-sm font-medium">Instance ID</Label>
-                  <Input
-                    value={waConfig.instanceId}
-                    onChange={(e) => setWaConfig({ ...waConfig, instanceId: e.target.value })}
-                    placeholder="مثال: device_mn3g1rl8"
-                    className="text-left font-mono text-sm" dir="ltr"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-right block text-sm font-medium">رقم الهاتف الافتراضي</Label>
-                  <Input
-                    value={waConfig.defaultPhone}
-                    onChange={(e) => setWaConfig({ ...waConfig, defaultPhone: e.target.value })}
-                    placeholder="بكود الدولة بدون + (مثال: 201234567890)"
-                    className="text-left font-mono text-sm" dir="ltr"
-                  />
-                </div>
+                <WhatsAppAccountsManager
+                  accounts={waConfig.accounts || []}
+                  defaultAccountId={waConfig.defaultAccountId}
+                  endpoints={waConfig.endpoints}
+                  showToken={showToken}
+                  onToggleShowToken={() => setShowToken(!showToken)}
+                  onChange={(accounts, defaultAccountId) => {
+                    const updated = { ...waConfig, accounts, defaultAccountId };
+                    setWaConfig(updated);
+                    localStorage.setItem('whatsapp_config', JSON.stringify(updated));
+                  }}
+                />
 
                 <div className="space-y-3 border border-border rounded-lg p-3">
                   <div className="flex items-center justify-between">
@@ -545,3 +547,181 @@ const WhatsAppMessage = ({ title, message }: { title: string; message: string })
     />
   </div>
 );
+
+interface WhatsAppAccountsManagerProps {
+  accounts: WhatsAppAccount[];
+  defaultAccountId?: string;
+  endpoints: { sendText: string; sendImage: string; sendVideo: string; sendAudio: string; sendDoc: string };
+  showToken: boolean;
+  onToggleShowToken: () => void;
+  onChange: (accounts: WhatsAppAccount[], defaultAccountId?: string) => void;
+}
+
+const WhatsAppAccountsManager = ({ accounts, defaultAccountId, endpoints, showToken, onToggleShowToken, onChange }: WhatsAppAccountsManagerProps) => {
+  const [statuses, setStatuses] = useState<Record<string, { connected: boolean; checking: boolean; error?: string }>>({});
+  const [testing, setTesting] = useState<Record<string, boolean>>({});
+
+  const updateAccount = (id: string, patch: Partial<WhatsAppAccount>) => {
+    onChange(accounts.map(a => a.id === id ? { ...a, ...patch } : a), defaultAccountId);
+  };
+
+  const deleteAccount = (id: string) => {
+    if (!confirm('حذف هذا الحساب؟')) return;
+    const next = accounts.filter(a => a.id !== id);
+    const nextDefault = defaultAccountId === id ? next[0]?.id : defaultAccountId;
+    onChange(next, nextDefault);
+  };
+
+  const addAccount = () => {
+    const newAcc: WhatsAppAccount = {
+      id: 'acc-' + Date.now(),
+      name: `حساب ${accounts.length + 1}`,
+      apiToken: '',
+      instanceId: '',
+      phone: '',
+    };
+    const next = [...accounts, newAcc];
+    onChange(next, defaultAccountId || newAcc.id);
+  };
+
+  const setDefault = (id: string) => onChange(accounts, id);
+
+  const checkStatus = async (acc: WhatsAppAccount) => {
+    if (!acc.apiToken || !acc.instanceId) {
+      toast.error('أدخل API Token و Instance ID أولاً');
+      return;
+    }
+    setStatuses(s => ({ ...s, [acc.id]: { connected: false, checking: true } }));
+    const result = await testWhatsAppConnection(acc, endpoints);
+    setStatuses(s => ({ ...s, [acc.id]: { connected: result.connected, checking: false, error: result.error } }));
+  };
+
+  const sendTest = async (acc: WhatsAppAccount) => {
+    if (!acc.phone) { toast.error('أدخل رقم الهاتف الخاص بالحساب لإرسال رسالة تجربة'); return; }
+    setTesting(t => ({ ...t, [acc.id]: true }));
+    // Temporarily set this account as the source for sending
+    const saved = localStorage.getItem('whatsapp_config');
+    const tmpConfig = { endpoints, apiToken: acc.apiToken, instanceId: acc.instanceId, defaultPhone: acc.phone };
+    localStorage.setItem('whatsapp_config', JSON.stringify(tmpConfig));
+    const result = await sendWhatsAppMessage(acc.phone, `رسالة تجربة من ${acc.name} ✅`, { recipientName: acc.name, messageType: 'test' });
+    if (saved) localStorage.setItem('whatsapp_config', saved);
+    setTesting(t => ({ ...t, [acc.id]: false }));
+    if (result.success) {
+      toast.success('تم إرسال رسالة تجربة بنجاح ✅');
+      setStatuses(s => ({ ...s, [acc.id]: { connected: true, checking: false } }));
+    } else {
+      toast.error(result.error || 'فشل إرسال رسالة التجربة');
+      setStatuses(s => ({ ...s, [acc.id]: { connected: false, checking: false, error: result.error } }));
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <Button size="sm" onClick={addAccount} className="gradient-hero text-primary-foreground h-8">
+          <Plus className="h-4 w-4 ml-1" /> إضافة حساب
+        </Button>
+        <h4 className="text-sm font-bold">حسابات Whats Pilot ({accounts.length})</h4>
+      </div>
+
+      {accounts.length === 0 && (
+        <p className="text-center text-muted-foreground text-sm py-4">لا يوجد حسابات. اضغط "إضافة حساب" للبدء.</p>
+      )}
+
+      {accounts.map((acc) => {
+        const isDefault = defaultAccountId === acc.id;
+        const status = statuses[acc.id];
+        return (
+          <div key={acc.id} className={`rounded-lg border p-3 space-y-2 ${isDefault ? 'border-success bg-success/5' : 'border-border bg-muted/30'}`}>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant={isDefault ? 'default' : 'ghost'}
+                  className={`h-7 text-xs ${isDefault ? 'bg-success hover:bg-success/90 text-success-foreground' : ''}`}
+                  onClick={() => setDefault(acc.id)}
+                  title="تعيين كافتراضي"
+                >
+                  <Star className={`h-3.5 w-3.5 ${isDefault ? 'fill-current' : ''}`} />
+                  {isDefault ? ' افتراضي' : ''}
+                </Button>
+                <Button size="sm" variant="ghost" className="h-7 text-destructive" onClick={() => deleteAccount(acc.id)}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <Input
+                value={acc.name}
+                onChange={(e) => updateAccount(acc.id, { name: e.target.value })}
+                placeholder="اسم الحساب"
+                className="text-right h-8 text-sm font-medium flex-1"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-2">
+              <div className="flex gap-2">
+                <Button variant="outline" size="icon" className="shrink-0 h-9 w-9" onClick={onToggleShowToken}>
+                  {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+                <Input
+                  type={showToken ? 'text' : 'password'}
+                  value={acc.apiToken}
+                  onChange={(e) => updateAccount(acc.id, { apiToken: e.target.value })}
+                  placeholder="API Token"
+                  className="text-left font-mono text-xs h-9" dir="ltr"
+                />
+              </div>
+              <Input
+                value={acc.instanceId}
+                onChange={(e) => updateAccount(acc.id, { instanceId: e.target.value })}
+                placeholder="Instance ID"
+                className="text-left font-mono text-xs h-9" dir="ltr"
+              />
+              <Input
+                value={acc.phone}
+                onChange={(e) => updateAccount(acc.id, { phone: e.target.value })}
+                placeholder="رقم الواتساب (بكود الدولة، مثال: 201234567890)"
+                className="text-left font-mono text-xs h-9" dir="ltr"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 text-xs"
+                disabled={testing[acc.id]}
+                onClick={() => sendTest(acc)}
+              >
+                {testing[acc.id] ? <Loader2 className="h-3.5 w-3.5 ml-1 animate-spin" /> : <Send className="h-3.5 w-3.5 ml-1" />}
+                إرسال تجربة
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 text-xs"
+                disabled={status?.checking}
+                onClick={() => checkStatus(acc)}
+              >
+                {status?.checking ? <Loader2 className="h-3.5 w-3.5 ml-1 animate-spin" /> : null}
+                فحص الاتصال
+              </Button>
+              <div className="flex-1" />
+              {status && !status.checking && (
+                status.connected ? (
+                  <span className="flex items-center gap-1 text-xs text-success font-bold">
+                    <Wifi className="h-3.5 w-3.5" /> متصل
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-xs text-destructive font-bold" title={status.error}>
+                    <WifiOff className="h-3.5 w-3.5" /> غير متصل
+                  </span>
+                )
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
