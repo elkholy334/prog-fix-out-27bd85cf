@@ -479,41 +479,18 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                   <h3 className="font-bold">ربط حساب Whats360</h3>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-right block text-sm font-medium">API Token</Label>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="icon" className="shrink-0" onClick={() => setShowToken(!showToken)}>
-                      {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
-                    <Input
-                      type={showToken ? 'text' : 'password'}
-                      value={waConfig.apiToken}
-                      onChange={(e) => setWaConfig({ ...waConfig, apiToken: e.target.value })}
-                      placeholder="أدخل API Token الخاص بك"
-                      className="text-left font-mono text-sm" dir="ltr"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-right block text-sm font-medium">Instance ID</Label>
-                  <Input
-                    value={waConfig.instanceId}
-                    onChange={(e) => setWaConfig({ ...waConfig, instanceId: e.target.value })}
-                    placeholder="مثال: device_mn3g1rl8"
-                    className="text-left font-mono text-sm" dir="ltr"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-right block text-sm font-medium">رقم الهاتف الافتراضي</Label>
-                  <Input
-                    value={waConfig.defaultPhone}
-                    onChange={(e) => setWaConfig({ ...waConfig, defaultPhone: e.target.value })}
-                    placeholder="بكود الدولة بدون + (مثال: 201234567890)"
-                    className="text-left font-mono text-sm" dir="ltr"
-                  />
-                </div>
+                <WhatsAppAccountsManager
+                  accounts={waConfig.accounts || []}
+                  defaultAccountId={waConfig.defaultAccountId}
+                  endpoints={waConfig.endpoints}
+                  showToken={showToken}
+                  onToggleShowToken={() => setShowToken(!showToken)}
+                  onChange={(accounts, defaultAccountId) => {
+                    const updated = { ...waConfig, accounts, defaultAccountId };
+                    setWaConfig(updated);
+                    localStorage.setItem('whatsapp_config', JSON.stringify(updated));
+                  }}
+                />
 
                 <div className="space-y-3 border border-border rounded-lg p-3">
                   <div className="flex items-center justify-between">
