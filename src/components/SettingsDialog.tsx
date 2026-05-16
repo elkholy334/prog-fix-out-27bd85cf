@@ -745,28 +745,6 @@ const WhatsAppAccountsManager = ({ accounts, defaultAccountId, endpoints, showTo
                 {testing[acc.id] ? <Loader2 className="h-3.5 w-3.5 ml-1 animate-spin" /> : <Send className="h-3.5 w-3.5 ml-1" />}
                 إرسال تجربة
               </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-8 text-xs"
-                disabled={status?.checking}
-                onClick={() => checkStatus(acc)}
-              >
-                {status?.checking ? <Loader2 className="h-3.5 w-3.5 ml-1 animate-spin" /> : null}
-                فحص الاتصال
-              </Button>
-              <div className="flex-1" />
-              {status && !status.checking && (
-                status.connected ? (
-                  <span className="flex items-center gap-1 text-xs text-success font-bold">
-                    <Wifi className="h-3.5 w-3.5" /> متصل
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1 text-xs text-destructive font-bold" title={status.error}>
-                    <WifiOff className="h-3.5 w-3.5" /> غير متصل
-                  </span>
-                )
-              )}
             </div>
           </div>
         );
