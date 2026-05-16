@@ -644,7 +644,45 @@ const WhatsAppAccountsManager = ({ accounts, defaultAccountId, endpoints, showTo
         const status = statuses[acc.id];
         return (
           <div key={acc.id} className={`rounded-lg border p-3 space-y-2 ${isDefault ? 'border-success bg-success/5' : 'border-border bg-muted/30'}`}>
-            <div className="flex items-center justify-between gap-2">
+            {/* Status banner */}
+            <div
+              className={`rounded-md px-3 py-2 flex items-center gap-2 text-xs font-bold border ${
+                status?.checking
+                  ? 'bg-muted text-muted-foreground border-border'
+                  : status?.connected
+                    ? 'bg-success/15 text-success border-success/40'
+                    : status
+                      ? 'bg-destructive/15 text-destructive border-destructive/40'
+                      : 'bg-muted text-muted-foreground border-border'
+              }`}
+            >
+              {status?.checking ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> جاري فحص الاتصال…</>
+              ) : status?.connected ? (
+                <><Wifi className="h-4 w-4" /> متصل وجاهز للإرسال</>
+              ) : status ? (
+                <>
+                  <WifiOff className="h-4 w-4 shrink-0" />
+                  <span className="shrink-0">غير متصل:</span>
+                  <span className="truncate font-medium opacity-90" title={status.error}>
+                    {status.error || 'سبب غير معروف'}
+                  </span>
+                </>
+              ) : (
+                <><WifiOff className="h-4 w-4" /> لم يتم الفحص بعد</>
+              )}
+              <div className="flex-1" />
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 px-2 text-[11px] hover:bg-background/50"
+                disabled={status?.checking}
+                onClick={() => checkStatus(acc)}
+              >
+                إعادة الفحص
+              </Button>
+            </div>
+
               <div className="flex items-center gap-1">
                 <Button
                   size="sm"
