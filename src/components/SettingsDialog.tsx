@@ -81,9 +81,30 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   const [draggedTypeId, setDraggedTypeId] = useState<string | null>(null);
   useEffect(() => {
     if (waConfigData) {
-      const config = waConfigData as unknown as WhatsAppConfig;
+      const raw = waConfigData as unknown as WhatsAppConfig;
+      let accounts = Array.isArray(raw.accounts) ? [...raw.accounts] : [];
+      // Migrate legacy single config into accounts list
+      if (accounts.length === 0 && raw.apiToken && raw.instanceId) {
+        accounts = [{
+          id: 'legacy-' + Date.now(),
+          name: 'الحساب الرئيسي',
+          apiToken: raw.apiToken,
+          instanceId: raw.instanceId,
+          phone: raw.defaultPhone || '',
+        }];
+      }
+      const defaultAccountId = raw.defaultAccountId && accounts.some(a => a.id === raw.defaultAccountId)
+        ? raw.defaultAccountId
+        : accounts[0]?.id;
+      const config: WhatsAppConfig = {
+        apiToken: raw.apiToken || '',
+        instanceId: raw.instanceId || '',
+        defaultPhone: raw.defaultPhone || '',
+        endpoints: raw.endpoints || { ...DEFAULT_ENDPOINTS },
+        accounts,
+        defaultAccountId,
+      };
       setWaConfig(config);
-      // Sync to localStorage so sendWhatsAppMessage can read it
       localStorage.setItem('whatsapp_config', JSON.stringify(config));
     }
   }, [waConfigData]);
