@@ -1,27 +1,79 @@
 import { supabase } from '@/integrations/supabase/client';
 
-interface WhatsAppConfig {
+export interface WhatsAppAccount {
+  id: string;
+  name: string;
+  apiToken: string;
+  instanceId: string;
+  phone: string;
+}
+
+export interface WhatsAppEndpoints {
+  sendText: string;
+  sendImage: string;
+  sendVideo: string;
+  sendAudio: string;
+  sendDoc: string;
+}
+
+export interface WhatsAppConfig {
   apiToken: string;
   instanceId: string;
   defaultPhone: string;
-  endpoints: {
-    sendText: string;
-    sendImage: string;
-    sendVideo: string;
-    sendAudio: string;
-    sendDoc: string;
-  };
+  endpoints: WhatsAppEndpoints;
+  accounts?: WhatsAppAccount[];
+  defaultAccountId?: string;
 }
 
+/** Returns the effective single-account config (resolved from default account if present). */
 export const getWhatsAppConfig = (): WhatsAppConfig | null => {
   try {
     const saved = localStorage.getItem('whatsapp_config');
     if (!saved) return null;
     const config = JSON.parse(saved) as WhatsAppConfig;
-    if (!config.apiToken || !config.instanceId) return null;
-    return config;
+    const active = resolveActiveAccount(config);
+    if (!active) return null;
+    return {
+      ...config,
+      apiToken: active.apiToken,
+      instanceId: active.instanceId,
+      defaultPhone: active.phone || config.defaultPhone,
+    };
   } catch {
     return null;
+  }
+};
+
+export const resolveActiveAccount = (config: WhatsAppConfig): WhatsAppAccount | null => {
+  if (config.accounts && config.accounts.length > 0) {
+    const def = config.accounts.find((a) => a.id === config.defaultAccountId) || config.accounts[0];
+    if (def && def.apiToken && def.instanceId) return def;
+    return null;
+  }
+  if (config.apiToken && config.instanceId) {
+    return { id: 'legacy', name: 'الحساب الافتراضي', apiToken: config.apiToken, instanceId: config.instanceId, phone: config.defaultPhone || '' };
+  }
+  return null;
+};
+
+/** Calls Whats360 get-status to verify the instance is connected. */
+export const testWhatsAppConnection = async (
+  account: { apiToken: string; instanceId: string },
+  endpoints: WhatsAppEndpoints
+): Promise<{ connected: boolean; error?: string }> => {
+  try {
+    const base = endpoints.sendText.replace(/\/send-text.*$/, '');
+    const url = new URL(`${base}/get-status`);
+    url.searchParams.set('token', account.apiToken);
+    url.searchParams.set('instance_id', account.instanceId);
+    const res = await fetch(url.toString(), { method: 'POST' });
+    const data = await res.json().catch(() => ({}));
+    const status = String(data?.status || data?.data?.status || '').toLowerCase();
+    const connected = res.ok && (data?.success === true || status.includes('connect') || status === 'authenticated' || status === 'ready');
+    if (connected) return { connected: true };
+    return { connected: false, error: data?.message || data?.error || 'غير متصل' };
+  } catch (e: any) {
+    return { connected: false, error: e?.message || 'فشل الاتصال' };
   }
 };
 
