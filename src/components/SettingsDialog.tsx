@@ -547,3 +547,181 @@ const WhatsAppMessage = ({ title, message }: { title: string; message: string })
     />
   </div>
 );
+
+interface WhatsAppAccountsManagerProps {
+  accounts: WhatsAppAccount[];
+  defaultAccountId?: string;
+  endpoints: { sendText: string; sendImage: string; sendVideo: string; sendAudio: string; sendDoc: string };
+  showToken: boolean;
+  onToggleShowToken: () => void;
+  onChange: (accounts: WhatsAppAccount[], defaultAccountId?: string) => void;
+}
+
+const WhatsAppAccountsManager = ({ accounts, defaultAccountId, endpoints, showToken, onToggleShowToken, onChange }: WhatsAppAccountsManagerProps) => {
+  const [statuses, setStatuses] = useState<Record<string, { connected: boolean; checking: boolean; error?: string }>>({});
+  const [testing, setTesting] = useState<Record<string, boolean>>({});
+
+  const updateAccount = (id: string, patch: Partial<WhatsAppAccount>) => {
+    onChange(accounts.map(a => a.id === id ? { ...a, ...patch } : a), defaultAccountId);
+  };
+
+  const deleteAccount = (id: string) => {
+    if (!confirm('حذف هذا الحساب؟')) return;
+    const next = accounts.filter(a => a.id !== id);
+    const nextDefault = defaultAccountId === id ? next[0]?.id : defaultAccountId;
+    onChange(next, nextDefault);
+  };
+
+  const addAccount = () => {
+    const newAcc: WhatsAppAccount = {
+      id: 'acc-' + Date.now(),
+      name: `حساب ${accounts.length + 1}`,
+      apiToken: '',
+      instanceId: '',
+      phone: '',
+    };
+    const next = [...accounts, newAcc];
+    onChange(next, defaultAccountId || newAcc.id);
+  };
+
+  const setDefault = (id: string) => onChange(accounts, id);
+
+  const checkStatus = async (acc: WhatsAppAccount) => {
+    if (!acc.apiToken || !acc.instanceId) {
+      toast.error('أدخل API Token و Instance ID أولاً');
+      return;
+    }
+    setStatuses(s => ({ ...s, [acc.id]: { connected: false, checking: true } }));
+    const result = await testWhatsAppConnection(acc, endpoints);
+    setStatuses(s => ({ ...s, [acc.id]: { connected: result.connected, checking: false, error: result.error } }));
+  };
+
+  const sendTest = async (acc: WhatsAppAccount) => {
+    if (!acc.phone) { toast.error('أدخل رقم الهاتف الخاص بالحساب لإرسال رسالة تجربة'); return; }
+    setTesting(t => ({ ...t, [acc.id]: true }));
+    // Temporarily set this account as the source for sending
+    const saved = localStorage.getItem('whatsapp_config');
+    const tmpConfig = { endpoints, apiToken: acc.apiToken, instanceId: acc.instanceId, defaultPhone: acc.phone };
+    localStorage.setItem('whatsapp_config', JSON.stringify(tmpConfig));
+    const result = await sendWhatsAppMessage(acc.phone, `رسالة تجربة من ${acc.name} ✅`, { recipientName: acc.name, messageType: 'test' });
+    if (saved) localStorage.setItem('whatsapp_config', saved);
+    setTesting(t => ({ ...t, [acc.id]: false }));
+    if (result.success) {
+      toast.success('تم إرسال رسالة تجربة بنجاح ✅');
+      setStatuses(s => ({ ...s, [acc.id]: { connected: true, checking: false } }));
+    } else {
+      toast.error(result.error || 'فشل إرسال رسالة التجربة');
+      setStatuses(s => ({ ...s, [acc.id]: { connected: false, checking: false, error: result.error } }));
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <Button size="sm" onClick={addAccount} className="gradient-hero text-primary-foreground h-8">
+          <Plus className="h-4 w-4 ml-1" /> إضافة حساب
+        </Button>
+        <h4 className="text-sm font-bold">حسابات Whats Pilot ({accounts.length})</h4>
+      </div>
+
+      {accounts.length === 0 && (
+        <p className="text-center text-muted-foreground text-sm py-4">لا يوجد حسابات. اضغط "إضافة حساب" للبدء.</p>
+      )}
+
+      {accounts.map((acc) => {
+        const isDefault = defaultAccountId === acc.id;
+        const status = statuses[acc.id];
+        return (
+          <div key={acc.id} className={`rounded-lg border p-3 space-y-2 ${isDefault ? 'border-success bg-success/5' : 'border-border bg-muted/30'}`}>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant={isDefault ? 'default' : 'ghost'}
+                  className={`h-7 text-xs ${isDefault ? 'bg-success hover:bg-success/90 text-success-foreground' : ''}`}
+                  onClick={() => setDefault(acc.id)}
+                  title="تعيين كافتراضي"
+                >
+                  <Star className={`h-3.5 w-3.5 ${isDefault ? 'fill-current' : ''}`} />
+                  {isDefault ? ' افتراضي' : ''}
+                </Button>
+                <Button size="sm" variant="ghost" className="h-7 text-destructive" onClick={() => deleteAccount(acc.id)}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <Input
+                value={acc.name}
+                onChange={(e) => updateAccount(acc.id, { name: e.target.value })}
+                placeholder="اسم الحساب"
+                className="text-right h-8 text-sm font-medium flex-1"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-2">
+              <div className="flex gap-2">
+                <Button variant="outline" size="icon" className="shrink-0 h-9 w-9" onClick={onToggleShowToken}>
+                  {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+                <Input
+                  type={showToken ? 'text' : 'password'}
+                  value={acc.apiToken}
+                  onChange={(e) => updateAccount(acc.id, { apiToken: e.target.value })}
+                  placeholder="API Token"
+                  className="text-left font-mono text-xs h-9" dir="ltr"
+                />
+              </div>
+              <Input
+                value={acc.instanceId}
+                onChange={(e) => updateAccount(acc.id, { instanceId: e.target.value })}
+                placeholder="Instance ID"
+                className="text-left font-mono text-xs h-9" dir="ltr"
+              />
+              <Input
+                value={acc.phone}
+                onChange={(e) => updateAccount(acc.id, { phone: e.target.value })}
+                placeholder="رقم الواتساب (بكود الدولة، مثال: 201234567890)"
+                className="text-left font-mono text-xs h-9" dir="ltr"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 text-xs"
+                disabled={testing[acc.id]}
+                onClick={() => sendTest(acc)}
+              >
+                {testing[acc.id] ? <Loader2 className="h-3.5 w-3.5 ml-1 animate-spin" /> : <Send className="h-3.5 w-3.5 ml-1" />}
+                إرسال تجربة
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 text-xs"
+                disabled={status?.checking}
+                onClick={() => checkStatus(acc)}
+              >
+                {status?.checking ? <Loader2 className="h-3.5 w-3.5 ml-1 animate-spin" /> : null}
+                فحص الاتصال
+              </Button>
+              <div className="flex-1" />
+              {status && !status.checking && (
+                status.connected ? (
+                  <span className="flex items-center gap-1 text-xs text-success font-bold">
+                    <Wifi className="h-3.5 w-3.5" /> متصل
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-xs text-destructive font-bold" title={status.error}>
+                    <WifiOff className="h-3.5 w-3.5" /> غير متصل
+                  </span>
+                )
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
