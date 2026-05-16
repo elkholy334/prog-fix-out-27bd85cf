@@ -56,22 +56,30 @@ export const resolveActiveAccount = (config: WhatsAppConfig): WhatsAppAccount | 
   return null;
 };
 
-/** Calls Whats360 get-status to verify the instance is connected. */
+/** Probes Whats360 send-text endpoint to verify the instance is connected.
+ *  Whats360 has no public status endpoint, so we send a probe with no jid:
+ *  - If the instance is offline, the API returns: {"error":"instance not connected","success":false}
+ *  - Otherwise (e.g. missing/invalid jid error, or success), the instance is online. */
 export const testWhatsAppConnection = async (
   account: { apiToken: string; instanceId: string },
   endpoints: WhatsAppEndpoints
 ): Promise<{ connected: boolean; error?: string }> => {
   try {
-    const base = endpoints.sendText.replace(/\/send-text.*$/, '');
-    const url = new URL(`${base}/get-status`);
+    const url = new URL(endpoints.sendText);
     url.searchParams.set('token', account.apiToken);
     url.searchParams.set('instance_id', account.instanceId);
+    url.searchParams.set('jid', '');
+    url.searchParams.set('msg', 'ping');
     const res = await fetch(url.toString(), { method: 'POST' });
-    const data = await res.json().catch(() => ({}));
-    const status = String(data?.status || data?.data?.status || '').toLowerCase();
-    const connected = res.ok && (data?.success === true || status.includes('connect') || status === 'authenticated' || status === 'ready');
-    if (connected) return { connected: true };
-    return { connected: false, error: data?.message || data?.error || 'غير متصل' };
+    const data = await res.json().catch(() => ({} as any));
+    const errMsg = String(data?.error || data?.message || '').toLowerCase();
+    if (errMsg.includes('not connected') || errMsg.includes('disconnected') || errMsg.includes('logout') || errMsg.includes('instance not found')) {
+      return { connected: false, error: data?.error || data?.message || 'غير متصل' };
+    }
+    if (errMsg.includes('token') || errMsg.includes('unauthorized') || errMsg.includes('invalid')) {
+      return { connected: false, error: data?.error || data?.message || 'بيانات الحساب غير صحيحة' };
+    }
+    return { connected: true };
   } catch (e: any) {
     return { connected: false, error: e?.message || 'فشل الاتصال' };
   }
