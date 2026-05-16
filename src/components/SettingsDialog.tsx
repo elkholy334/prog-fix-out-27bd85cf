@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, Save, Link2, Plus, Loader2, Trash2, GripVertical, Pencil, Check, X, ImageIcon } from 'lucide-react';
+import { Eye, EyeOff, Save, Link2, Plus, Loader2, Trash2, GripVertical, Pencil, Check, X, ImageIcon, Send, Wifi, WifiOff, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSetting, useUpsertSetting, useTechnicians } from '@/hooks/useDatabase';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { testWhatsAppConnection, sendWhatsAppMessage, type WhatsAppAccount } from '@/lib/whatsapp';
 
 interface TaskType {
   id: string;
