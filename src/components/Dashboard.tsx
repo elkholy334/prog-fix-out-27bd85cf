@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Trophy, Calendar, CalendarDays, Award, AlertTriangle, Clock, CheckCircle2, Pause, Wrench } from 'lucide-react';
+import { Trophy, Calendar, CalendarDays, Award, TriangleAlert as AlertTriangle, Clock, CircleCheck as CheckCircle2, Pause, Wrench } from 'lucide-react';
 import { useDashboardStats, useTechnicians, useTasks } from '@/hooks/useDatabase';
 
 interface DashboardProps {
@@ -66,48 +66,52 @@ export const Dashboard = ({ onFilterTasks }: DashboardProps) => {
   }, [technicians, tasks]);
 
   return (
-    <div className="space-y-6 animate-slide-up">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="space-y-4 animate-slide-up">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         <PerformerCard
           title="نجم التركيبات"
-          subtitle="إجمالي التركيبات (كل الوقت)"
-          icon={<Trophy className="h-8 w-8" />}
+          subtitle="إجمالي"
+          icon={<Trophy className="h-6 w-6" />}
           performers={topAllTime}
           gradient="gradient-gold"
           iconBg="bg-accent"
+          compact
         />
         <PerformerCard
           title="نجم الشهر"
-          subtitle="أعلى 3 هذا الشهر"
-          icon={<Calendar className="h-8 w-8" />}
+          subtitle="شهري"
+          icon={<Calendar className="h-6 w-6" />}
           performers={topMonth}
           gradient="gradient-info"
           iconBg="bg-info"
+          compact
         />
         <PerformerCard
           title="نجم الأسبوع"
-          subtitle="أعلى 3 هذا الأسبوع"
-          icon={<CalendarDays className="h-8 w-8" />}
+          subtitle="أسبوعي"
+          icon={<CalendarDays className="h-6 w-6" />}
           performers={topWeek}
           gradient="gradient-info"
           iconBg="bg-primary"
+          compact
         />
         <PerformerCard
           title="نجم اليوم"
-          subtitle="أعلى 3 اليوم"
-          icon={<Award className="h-8 w-8" />}
+          subtitle="يومي"
+          icon={<Award className="h-6 w-6" />}
           performers={topToday}
           gradient="gradient-info"
           iconBg="bg-primary"
+          compact
         />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <StatCard label="قيد الانتظار" value={stats.waiting} gradient="gradient-gold" icon={<Clock className="h-6 w-6" />} onClick={() => onFilterTasks?.('waiting')} />
-        <StatCard label="قيد التنفيذ" value={stats.in_progress} gradient="gradient-success" icon={<Wrench className="h-6 w-6" />} onClick={() => onFilterTasks?.('in_progress')} />
-        <StatCard label="مكتملة" value={stats.completed} gradient="gradient-info" icon={<CheckCircle2 className="h-6 w-6" />} onClick={() => onFilterTasks?.('completed')} />
-        <StatCard label="مؤجلة" value={stats.postponed} gradient="gradient-gold" icon={<Pause className="h-6 w-6" />} onClick={() => onFilterTasks?.('postponed')} />
-        <StatCard label="متأخرة" value={stats.late} gradient="gradient-danger" icon={<AlertTriangle className="h-6 w-6" />} onClick={() => onFilterTasks?.('late')} />
+      <div className="grid grid-cols-5 gap-1.5">
+        <StatCard label="انتظار" value={stats.waiting} gradient="gradient-gold" icon={<Clock className="h-5 w-5" />} onClick={() => onFilterTasks?.('waiting')} compact />
+        <StatCard label="تنفيذ" value={stats.in_progress} gradient="gradient-success" icon={<Wrench className="h-5 w-5" />} onClick={() => onFilterTasks?.('in_progress')} compact />
+        <StatCard label="مكتمل" value={stats.completed} gradient="gradient-info" icon={<CheckCircle2 className="h-5 w-5" />} onClick={() => onFilterTasks?.('completed')} compact />
+        <StatCard label="مؤجل" value={stats.postponed} gradient="gradient-gold" icon={<Pause className="h-5 w-5" />} onClick={() => onFilterTasks?.('postponed')} compact />
+        <StatCard label="متأخر" value={stats.late} gradient="gradient-danger" icon={<AlertTriangle className="h-5 w-5" />} onClick={() => onFilterTasks?.('late')} compact />
       </div>
     </div>
   );
@@ -120,28 +124,29 @@ interface PerformerCardProps {
   performers: { id: string; name: string; count: number; color: string }[];
   gradient: string;
   iconBg: string;
+  compact?: boolean;
 }
 
-const PerformerCard = ({ title, subtitle, icon, performers, gradient, iconBg }: PerformerCardProps) => (
+const PerformerCard = ({ title, subtitle, icon, performers, gradient, iconBg, compact }: PerformerCardProps) => (
   <div className="rounded-xl overflow-hidden shadow-card hover:shadow-card-hover transition-shadow">
-    <div className={`${gradient} p-4 text-center`}>
-      <div className={`${iconBg} text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2`}>
+    <div className={`${gradient} ${compact ? 'p-3' : 'p-4'} text-center`}>
+      <div className={`${iconBg} text-primary-foreground ${compact ? 'w-10 h-10' : 'w-12 h-12'} rounded-full flex items-center justify-center mx-auto ${compact ? 'mb-1' : 'mb-2'}`}>
         {icon}
       </div>
-      <h3 className="font-bold text-primary-foreground">{title}</h3>
-      <p className="text-xs text-primary-foreground/75">{subtitle}</p>
+      <h3 className={`font-bold text-primary-foreground ${compact ? 'text-sm' : ''}`}>{title}</h3>
+      <p className={`text-primary-foreground/75 ${compact ? 'text-[10px]' : 'text-xs'}`}>{subtitle}</p>
     </div>
-    <div className="bg-card p-3 space-y-2">
+    <div className={`bg-card ${compact ? 'p-2' : 'p-3'} space-y-1`}>
       {performers.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground py-2">لا يوجد بيانات</p>
       ) : (
         performers.map((p) => (
-          <div key={p.id} className="flex items-center justify-between bg-card-warm rounded-lg px-3 py-2 border border-accent/30">
-            <span className="text-sm text-muted-foreground">{p.count} عملية</span>
+          <div key={p.id} className={`flex items-center justify-between bg-card-warm rounded-lg ${compact ? 'px-2 py-1' : 'px-3 py-2'} border border-accent/30`}>
+            <span className={`text-muted-foreground ${compact ? 'text-xs' : 'text-sm'}`}>{p.count} عملية</span>
             <div className="flex items-center gap-2">
-              <span className="font-medium text-sm">{p.name}</span>
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-primary-foreground" style={{ backgroundColor: p.color }}>
-                <Wrench className="h-3.5 w-3.5" />
+              <span className={`font-medium ${compact ? 'text-xs' : 'text-sm'}`}>{p.name}</span>
+              <div className={`${compact ? 'w-5 h-5' : 'w-7 h-7'} rounded-full flex items-center justify-center text-primary-foreground`} style={{ backgroundColor: p.color }}>
+                <Wrench className={`${compact ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5'}`} />
               </div>
             </div>
           </div>
