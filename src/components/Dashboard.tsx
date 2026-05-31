@@ -128,25 +128,25 @@ interface PerformerCardProps {
 }
 
 const PerformerCard = ({ title, subtitle, icon, performers, gradient, iconBg, compact }: PerformerCardProps) => (
-  <div className="rounded-xl overflow-hidden shadow-card hover:shadow-card-hover transition-shadow">
-    <div className={`${gradient} ${compact ? 'p-3' : 'p-4'} text-center`}>
-      <div className={`${iconBg} text-primary-foreground ${compact ? 'w-10 h-10' : 'w-12 h-12'} rounded-full flex items-center justify-center mx-auto ${compact ? 'mb-1' : 'mb-2'}`}>
-        {icon}
+  <div className="rounded-lg overflow-hidden shadow-card hover:shadow-card-hover transition-shadow">
+    <div className={`${gradient} ${compact ? 'p-2' : 'p-4'} text-center`}>
+      <div className={`${iconBg} text-primary-foreground ${compact ? 'w-8 h-8' : 'w-12 h-12'} rounded-full flex items-center justify-center mx-auto ${compact ? 'mb-0.5' : 'mb-2'}`}>
+        {compact ? <div className="scale-75">{icon}</div> : icon}
       </div>
-      <h3 className={`font-bold text-primary-foreground ${compact ? 'text-sm' : ''}`}>{title}</h3>
-      <p className={`text-primary-foreground/75 ${compact ? 'text-[10px]' : 'text-xs'}`}>{subtitle}</p>
+      <h3 className={`font-bold text-primary-foreground leading-tight ${compact ? 'text-[11px]' : ''}`}>{title}</h3>
+      <p className={`text-primary-foreground/75 ${compact ? 'text-[9px]' : 'text-xs'}`}>{subtitle}</p>
     </div>
-    <div className={`bg-card ${compact ? 'p-2' : 'p-3'} space-y-1`}>
+    <div className={`bg-card ${compact ? 'p-1.5' : 'p-3'} ${compact ? 'space-y-0.5' : 'space-y-1'}`}>
       {performers.length === 0 ? (
-        <p className="text-center text-sm text-muted-foreground py-2">لا يوجد بيانات</p>
+        <p className="text-center text-muted-foreground ${compact ? 'text-[9px] py-1' : 'text-sm py-2'}">لا يوجد</p>
       ) : (
         performers.map((p) => (
-          <div key={p.id} className={`flex items-center justify-between bg-card-warm rounded-lg ${compact ? 'px-2 py-1' : 'px-3 py-2'} border border-accent/30`}>
-            <span className={`text-muted-foreground ${compact ? 'text-xs' : 'text-sm'}`}>{p.count} عملية</span>
-            <div className="flex items-center gap-2">
-              <span className={`font-medium ${compact ? 'text-xs' : 'text-sm'}`}>{p.name}</span>
-              <div className={`${compact ? 'w-5 h-5' : 'w-7 h-7'} rounded-full flex items-center justify-center text-primary-foreground`} style={{ backgroundColor: p.color }}>
-                <Wrench className={`${compact ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5'}`} />
+          <div key={p.id} className={`flex items-center justify-between bg-card-warm rounded ${compact ? 'px-1.5 py-0.5' : 'px-3 py-2'} border border-accent/30 ${compact ? 'gap-1' : ''}`}>
+            <span className={`text-muted-foreground ${compact ? 'text-[8px]' : 'text-sm'}`}>{p.count}</span>
+            <div className={`flex items-center ${compact ? 'gap-1' : 'gap-2'} min-w-0`}>
+              <span className={`font-medium ${compact ? 'text-[8px] truncate' : 'text-sm'}`}>{p.name}</span>
+              <div className={`${compact ? 'w-4 h-4' : 'w-7 h-7'} rounded-full flex items-center justify-center text-primary-foreground shrink-0`} style={{ backgroundColor: p.color }}>
+                <Wrench className={`${compact ? 'h-2 w-2' : 'h-3.5 w-3.5'}`} />
               </div>
             </div>
           </div>
