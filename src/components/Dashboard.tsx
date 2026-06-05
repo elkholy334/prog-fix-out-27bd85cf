@@ -1,13 +1,8 @@
 import { useMemo } from 'react';
-import { Trophy, Calendar, CalendarDays, Award, TriangleAlert as AlertTriangle, Clock, CircleCheck as CheckCircle2, Pause, Wrench } from 'lucide-react';
-import { useDashboardStats, useTechnicians, useTasks } from '@/hooks/useDatabase';
+import { Trophy, Calendar, CalendarDays, Award, Wrench } from 'lucide-react';
+import { useTechnicians, useTasks } from '@/hooks/useDatabase';
 
-interface DashboardProps {
-  onFilterTasks?: (status: string) => void;
-}
-
-export const Dashboard = ({ onFilterTasks }: DashboardProps) => {
-  const { data: stats = { waiting: 0, in_progress: 0, completed: 0, postponed: 0, late: 0 } } = useDashboardStats();
+export const Dashboard = () => {
   const { data: technicians = [] } = useTechnicians();
   const { data: tasks = [] } = useTasks();
 
@@ -44,7 +39,6 @@ export const Dashboard = ({ onFilterTasks }: DashboardProps) => {
         .sort((a, b) => b.count - a.count)
         .slice(0, 3);
 
-    // All-time = historical tasks_count (baseline before system) + completed tasks in DB (new)
     const dbCounts = countByTech(completedTasks);
     const allTimeCounts: Record<string, number> = {};
     technicians.forEach(t => {
@@ -66,53 +60,11 @@ export const Dashboard = ({ onFilterTasks }: DashboardProps) => {
   }, [technicians, tasks]);
 
   return (
-    <div className="space-y-4 animate-slide-up">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-        <PerformerCard
-          title="نجم التركيبات"
-          subtitle="إجمالي"
-          icon={<Trophy className="h-6 w-6" />}
-          performers={topAllTime}
-          gradient="gradient-gold"
-          iconBg="bg-accent"
-          compact
-        />
-        <PerformerCard
-          title="نجم الشهر"
-          subtitle="شهري"
-          icon={<Calendar className="h-6 w-6" />}
-          performers={topMonth}
-          gradient="gradient-info"
-          iconBg="bg-info"
-          compact
-        />
-        <PerformerCard
-          title="نجم الأسبوع"
-          subtitle="أسبوعي"
-          icon={<CalendarDays className="h-6 w-6" />}
-          performers={topWeek}
-          gradient="gradient-info"
-          iconBg="bg-primary"
-          compact
-        />
-        <PerformerCard
-          title="نجم اليوم"
-          subtitle="يومي"
-          icon={<Award className="h-6 w-6" />}
-          performers={topToday}
-          gradient="gradient-info"
-          iconBg="bg-primary"
-          compact
-        />
-      </div>
-
-      <div className="grid grid-cols-5 gap-1.5">
-        <StatCard label="انتظار" value={stats.waiting} gradient="gradient-gold" icon={<Clock className="h-5 w-5" />} onClick={() => onFilterTasks?.('waiting')} compact />
-        <StatCard label="تنفيذ" value={stats.in_progress} gradient="gradient-success" icon={<Wrench className="h-5 w-5" />} onClick={() => onFilterTasks?.('in_progress')} compact />
-        <StatCard label="مكتمل" value={stats.completed} gradient="gradient-info" icon={<CheckCircle2 className="h-5 w-5" />} onClick={() => onFilterTasks?.('completed')} compact />
-        <StatCard label="مؤجل" value={stats.postponed} gradient="gradient-gold" icon={<Pause className="h-5 w-5" />} onClick={() => onFilterTasks?.('postponed')} compact />
-        <StatCard label="متأخر" value={stats.late} gradient="gradient-danger" icon={<AlertTriangle className="h-5 w-5" />} onClick={() => onFilterTasks?.('late')} compact />
-      </div>
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 animate-slide-up">
+      <PerformerCard title="نجم التركيبات" subtitle="إجمالي" icon={<Trophy className="h-6 w-6" />} performers={topAllTime} gradient="gradient-gold" iconBg="bg-accent" />
+      <PerformerCard title="نجم الشهر" subtitle="شهري" icon={<Calendar className="h-6 w-6" />} performers={topMonth} gradient="gradient-info" iconBg="bg-info" />
+      <PerformerCard title="نجم الأسبوع" subtitle="أسبوعي" icon={<CalendarDays className="h-6 w-6" />} performers={topWeek} gradient="gradient-info" iconBg="bg-primary" />
+      <PerformerCard title="نجم اليوم" subtitle="يومي" icon={<Award className="h-6 w-6" />} performers={topToday} gradient="gradient-info" iconBg="bg-primary" />
     </div>
   );
 };
@@ -124,29 +76,28 @@ interface PerformerCardProps {
   performers: { id: string; name: string; count: number; color: string }[];
   gradient: string;
   iconBg: string;
-  compact?: boolean;
 }
 
-const PerformerCard = ({ title, subtitle, icon, performers, gradient, iconBg, compact }: PerformerCardProps) => (
+const PerformerCard = ({ title, subtitle, icon, performers, gradient, iconBg }: PerformerCardProps) => (
   <div className="rounded-lg overflow-hidden shadow-card hover:shadow-card-hover transition-shadow">
-    <div className={`${gradient} ${compact ? 'p-2' : 'p-4'} text-center`}>
-      <div className={`${iconBg} text-primary-foreground ${compact ? 'w-8 h-8' : 'w-12 h-12'} rounded-full flex items-center justify-center mx-auto ${compact ? 'mb-0.5' : 'mb-2'}`}>
-        {compact ? <div className="scale-75">{icon}</div> : icon}
+    <div className={`${gradient} p-2 text-center`}>
+      <div className={`${iconBg} text-primary-foreground w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-0.5`}>
+        <div className="scale-75">{icon}</div>
       </div>
-      <h3 className={`font-bold text-primary-foreground leading-tight ${compact ? 'text-[11px]' : ''}`}>{title}</h3>
-      <p className={`text-primary-foreground/75 ${compact ? 'text-[9px]' : 'text-xs'}`}>{subtitle}</p>
+      <h3 className="font-bold text-primary-foreground leading-tight text-[11px]">{title}</h3>
+      <p className="text-primary-foreground/75 text-[9px]">{subtitle}</p>
     </div>
-    <div className={`bg-card ${compact ? 'p-1.5' : 'p-3'} ${compact ? 'space-y-0.5' : 'space-y-1'}`}>
+    <div className="bg-card p-1.5 space-y-0.5">
       {performers.length === 0 ? (
-        <p className="text-center text-muted-foreground ${compact ? 'text-[9px] py-1' : 'text-sm py-2'}">لا يوجد</p>
+        <p className="text-center text-muted-foreground text-[9px] py-1">لا يوجد</p>
       ) : (
         performers.map((p) => (
-          <div key={p.id} className={`flex items-center justify-between bg-card-warm rounded ${compact ? 'px-1.5 py-0.5' : 'px-3 py-2'} border border-accent/30 ${compact ? 'gap-1' : ''}`}>
-            <span className={`text-muted-foreground ${compact ? 'text-[8px]' : 'text-sm'}`}>{p.count}</span>
-            <div className={`flex items-center ${compact ? 'gap-1' : 'gap-2'} min-w-0`}>
-              <span className={`font-medium ${compact ? 'text-[8px] truncate' : 'text-sm'}`}>{p.name}</span>
-              <div className={`${compact ? 'w-4 h-4' : 'w-7 h-7'} rounded-full flex items-center justify-center text-primary-foreground shrink-0`} style={{ backgroundColor: p.color }}>
-                <Wrench className={`${compact ? 'h-2 w-2' : 'h-3.5 w-3.5'}`} />
+          <div key={p.id} className="flex items-center justify-between bg-card-warm rounded px-1.5 py-0.5 border border-accent/30 gap-1">
+            <span className="text-muted-foreground text-[8px]">{p.count}</span>
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-[8px] truncate">{p.name}</span>
+              <div className="w-4 h-4 rounded-full flex items-center justify-center text-primary-foreground shrink-0" style={{ backgroundColor: p.color }}>
+                <Wrench className="h-2 w-2" />
               </div>
             </div>
           </div>
@@ -154,17 +105,4 @@ const PerformerCard = ({ title, subtitle, icon, performers, gradient, iconBg, co
       )}
     </div>
   </div>
-);
-
-const StatCard = ({ label, value, gradient, icon, onClick, compact }: { label: string; value: number; gradient: string; icon: React.ReactNode; onClick?: () => void; compact?: boolean }) => (
-  <button
-    onClick={onClick}
-    className={`${gradient} rounded-xl p-4 text-center text-primary-foreground shadow-card hover:shadow-card-hover transition-all hover:-translate-y-1 hover:scale-105 cursor-pointer w-full`}
-  >
-    <div className="flex items-center justify-center gap-2 mb-1">
-      {icon}
-      <span className="text-xs font-medium">{label}</span>
-    </div>
-    <p className="text-3xl font-bold">{value}</p>
-  </button>
 );

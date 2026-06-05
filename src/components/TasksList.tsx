@@ -270,7 +270,7 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
               </div>
               <div className="flex items-center gap-1.5 text-foreground font-bold">
                 <Clock className="h-3.5 w-3.5" />
-                <span>المدة: {durationText}</span>
+                <span>تمت في {durationText}</span>
               </div>
             </div>
           );
@@ -502,28 +502,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
         </div>
       )}
 
-      <div className="grid grid-cols-5 gap-2">
-        <button onClick={() => setActiveFilter('waiting')} className="gradient-gold rounded-xl p-3 text-center text-primary-foreground shadow-card hover:shadow-card-hover transition-all hover:-translate-y-1 cursor-pointer">
-          <div className="flex items-center justify-center gap-1.5 mb-1"><Clock className="h-5 w-5" /><span className="text-xs font-medium">قيد الانتظار</span></div>
-          <p className="text-2xl font-bold">{stats.waiting}</p>
-        </button>
-        <button onClick={() => setActiveFilter('in_progress')} className="gradient-success rounded-xl p-3 text-center text-primary-foreground shadow-card hover:shadow-card-hover transition-all hover:-translate-y-1 cursor-pointer">
-          <div className="flex items-center justify-center gap-1.5 mb-1"><Wrench className="h-5 w-5" /><span className="text-xs font-medium">قيد التنفيذ</span></div>
-          <p className="text-2xl font-bold">{stats.in_progress}</p>
-        </button>
-        <button onClick={() => setActiveFilter('completed')} className="gradient-info rounded-xl p-3 text-center text-primary-foreground shadow-card hover:shadow-card-hover transition-all hover:-translate-y-1 cursor-pointer">
-          <div className="flex items-center justify-center gap-1.5 mb-1"><CheckCircle2 className="h-5 w-5" /><span className="text-xs font-medium">مكتملة</span></div>
-          <p className="text-2xl font-bold">{stats.completed}</p>
-        </button>
-        <button onClick={() => setActiveFilter('postponed')} className="gradient-gold rounded-xl p-3 text-center text-primary-foreground shadow-card hover:shadow-card-hover transition-all hover:-translate-y-1 cursor-pointer">
-          <div className="flex items-center justify-center gap-1.5 mb-1"><Pause className="h-5 w-5" /><span className="text-xs font-medium">مؤجلة</span></div>
-          <p className="text-2xl font-bold">{stats.postponed}</p>
-        </button>
-        <button onClick={() => setActiveFilter('late')} className="gradient-danger rounded-xl p-3 text-center text-primary-foreground shadow-card hover:shadow-card-hover transition-all hover:-translate-y-1 cursor-pointer">
-          <div className="flex items-center justify-center gap-1.5 mb-1"><AlertTriangle className="h-5 w-5" /><span className="text-xs font-medium">متأخرة</span></div>
-          <p className="text-2xl font-bold">{stats.late}</p>
-        </button>
-      </div>
+      {isAdmin && <Dashboard />}
 
       <div className="flex items-center justify-between gap-2">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide flex-1 min-w-0">
