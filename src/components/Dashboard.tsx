@@ -156,7 +156,7 @@ const PerformerCard = ({ title, subtitle, icon, performers, gradient, iconBg, co
   </div>
 );
 
-const StatCard = ({ label, value, gradient, icon, onClick }: { label: string; value: number; gradient: string; icon: React.ReactNode; onClick?: () => void }) => (
+const StatCard = ({ label, value, gradient, icon, onClick, compact }: { label: string; value: number; gradient: string; icon: React.ReactNode; onClick?: () => void; compact?: boolean }) => (
   <button
     onClick={onClick}
     className={`${gradient} rounded-xl p-4 text-center text-primary-foreground shadow-card hover:shadow-card-hover transition-all hover:-translate-y-1 hover:scale-105 cursor-pointer w-full`}
