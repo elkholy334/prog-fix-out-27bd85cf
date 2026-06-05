@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Star, Clock, MapPin, Phone, Archive, MessageCircle, Trash2, User, Plus, GripVertical, Timer, CheckCircle2, Wrench, Pause, AlertTriangle, LayoutGrid, List } from 'lucide-react';
-import { useTasks, useTechnicians, useDeleteTask, useUpdateTask, useSetting, useDashboardStats } from '@/hooks/useDatabase';
+import { useTasks, useTechnicians, useDeleteTask, useUpdateTask, useSetting } from '@/hooks/useDatabase';
+import { Dashboard } from '@/components/Dashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { TaskDetailDialog } from '@/components/TaskDetailDialog';
 import { SendWhatsAppDialog } from '@/components/SendWhatsAppDialog';
@@ -270,7 +271,7 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
               </div>
               <div className="flex items-center gap-1.5 text-foreground font-bold">
                 <Clock className="h-3.5 w-3.5" />
-                <span>المدة: {durationText}</span>
+                <span>تمت في {durationText}</span>
               </div>
             </div>
           );
@@ -375,7 +376,6 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
 
   const { data: tasks = [], isLoading } = useTasks();
   const { data: technicians = [] } = useTechnicians();
-  const { data: stats = { waiting: 0, in_progress: 0, completed: 0, postponed: 0, late: 0 } } = useDashboardStats();
   const { data: taskTypesData } = useSetting('task_types');
   const deleteTask = useDeleteTask();
 
@@ -502,28 +502,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
         </div>
       )}
 
-      <div className="grid grid-cols-5 gap-2">
-        <button onClick={() => setActiveFilter('waiting')} className="gradient-gold rounded-xl p-3 text-center text-primary-foreground shadow-card hover:shadow-card-hover transition-all hover:-translate-y-1 cursor-pointer">
-          <div className="flex items-center justify-center gap-1.5 mb-1"><Clock className="h-5 w-5" /><span className="text-xs font-medium">قيد الانتظار</span></div>
-          <p className="text-2xl font-bold">{stats.waiting}</p>
-        </button>
-        <button onClick={() => setActiveFilter('in_progress')} className="gradient-success rounded-xl p-3 text-center text-primary-foreground shadow-card hover:shadow-card-hover transition-all hover:-translate-y-1 cursor-pointer">
-          <div className="flex items-center justify-center gap-1.5 mb-1"><Wrench className="h-5 w-5" /><span className="text-xs font-medium">قيد التنفيذ</span></div>
-          <p className="text-2xl font-bold">{stats.in_progress}</p>
-        </button>
-        <button onClick={() => setActiveFilter('completed')} className="gradient-info rounded-xl p-3 text-center text-primary-foreground shadow-card hover:shadow-card-hover transition-all hover:-translate-y-1 cursor-pointer">
-          <div className="flex items-center justify-center gap-1.5 mb-1"><CheckCircle2 className="h-5 w-5" /><span className="text-xs font-medium">مكتملة</span></div>
-          <p className="text-2xl font-bold">{stats.completed}</p>
-        </button>
-        <button onClick={() => setActiveFilter('postponed')} className="gradient-gold rounded-xl p-3 text-center text-primary-foreground shadow-card hover:shadow-card-hover transition-all hover:-translate-y-1 cursor-pointer">
-          <div className="flex items-center justify-center gap-1.5 mb-1"><Pause className="h-5 w-5" /><span className="text-xs font-medium">مؤجلة</span></div>
-          <p className="text-2xl font-bold">{stats.postponed}</p>
-        </button>
-        <button onClick={() => setActiveFilter('late')} className="gradient-danger rounded-xl p-3 text-center text-primary-foreground shadow-card hover:shadow-card-hover transition-all hover:-translate-y-1 cursor-pointer">
-          <div className="flex items-center justify-center gap-1.5 mb-1"><AlertTriangle className="h-5 w-5" /><span className="text-xs font-medium">متأخرة</span></div>
-          <p className="text-2xl font-bold">{stats.late}</p>
-        </button>
-      </div>
+      {isAdmin && <Dashboard />}
 
       <div className="flex items-center justify-between gap-2">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide flex-1 min-w-0">
