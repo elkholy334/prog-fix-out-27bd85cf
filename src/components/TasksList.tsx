@@ -32,6 +32,7 @@ import { CSS } from '@dnd-kit/utilities';
 
 type TaskRow = Database['public']['Tables']['tasks']['Row'];
 type FilterTab = 'all' | 'assigned' | string;
+type TaskTypeSetting = { name?: string; imageUrl?: string };
 
 const EMPTY_TASKS: TaskRow[] = [];
 const EMPTY_TECHNICIANS: Database['public']['Tables']['technicians']['Row'][] = [];
@@ -342,7 +343,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
   const taskTypeImageMap = useMemo(() => {
     const map: Record<string, string> = {};
     if (Array.isArray(taskTypesData)) {
-      (taskTypesData as any[]).forEach((t: any) => { if (t.imageUrl) map[t.name] = t.imageUrl; });
+      (taskTypesData as TaskTypeSetting[]).forEach((t) => { if (t.name && t.imageUrl) map[t.name] = t.imageUrl; });
     }
     return map;
   }, [taskTypesData]);
@@ -398,7 +399,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
 
       // Save sort order to DB
       newOrder.forEach((taskId, index) => {
-        updateTask.mutate({ id: taskId, sort_order: index } as any);
+        updateTask.mutate({ id: taskId, sort_order: index });
       });
 
       return newOrder;
