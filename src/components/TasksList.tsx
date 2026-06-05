@@ -180,168 +180,119 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
     );
   }
 
+  // Compact grid card (matches reference: stacked buttons on left, info+logo on right)
+  const completedDuration = (() => {
+    if (task.status !== 'completed' || !task.start_time || !task.completion_time) return '';
+    const diffMs = new Date(task.completion_time).getTime() - new Date(task.start_time).getTime();
+    const h = Math.floor(diffMs / 3600000);
+    const m = Math.floor((diffMs % 3600000) / 60000);
+    return h > 0 ? `${h}س ${m}د` : `${m}د`;
+  })();
+
   return (
-    <div ref={setNodeRef} style={style} className={`rounded-2xl border-2 shadow-card hover:shadow-card-hover transition-all overflow-hidden ${CARD_BG_COLORS[task.status] || 'bg-card border-accent/20'} ${isExecuting ? 'animate-pulse-glow ring-2 ring-success/40' : ''} ${task.is_favorite ? 'ring-2 ring-accent/30 shadow-[0_0_15px_hsl(var(--accent)/0.2)]' : ''}`}>
-      {/* Drag Handle */}
-      {isAdmin && (
-        <div
-          {...attributes}
-          {...listeners}
-          className="flex items-center justify-center py-1 cursor-grab active:cursor-grabbing hover:bg-black/5 transition-colors"
-        >
-          <GripVertical className="h-4 w-4 text-muted-foreground/50" />
-        </div>
-      )}
-
-      <div className="px-4 pt-2 pb-1">
-        {/* Top row: Star | days ago + id */}
-        <div className="flex items-center justify-between mb-3">
-          <button onClick={() => onToggleFavorite(task)} className="hover:scale-125 transition-transform">
-            <Star className={`h-6 w-6 ${task.is_favorite ? 'fill-accent text-accent drop-shadow-[0_0_8px_hsl(var(--accent))]' : 'text-muted-foreground/40 hover:text-accent'}`} />
+    <div ref={setNodeRef} style={style} className={`rounded-2xl border-2 shadow-card hover:shadow-card-hover transition-all p-3 ${CARD_BG_COLORS[task.status] || 'bg-card border-accent/20'} ${isExecuting ? 'ring-2 ring-success/40' : ''} ${task.is_favorite ? 'ring-2 ring-accent/30' : ''}`}>
+      <div className="flex items-stretch gap-3">
+        {/* Left: stacked action buttons */}
+        <div className="flex flex-col gap-1.5 shrink-0 w-20">
+          <button
+            onClick={() => isExecuting ? onComplete(task) : onStatusChange(task)}
+            className={`px-2 py-1.5 rounded-lg text-xs font-bold ${isExecuting ? 'bg-success text-success-foreground' : STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
+          >
+            {isExecuting ? '✅ اتمام' : (isAdmin ? STATUS_LABELS[task.status] || task.status : (task.status === 'waiting' ? '🚀 بدء' : STATUS_LABELS[task.status] || task.status))}
           </button>
-          <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1 text-xs text-muted-foreground bg-white/60 rounded-full px-2.5 py-1">
-              <Clock className="h-3 w-3" />
-              منذ {daysAgo} يوم
-            </span>
-            <span className="text-xs font-bold text-muted-foreground">#{task.id}</span>
-          </div>
-        </div>
-
-        {/* Center: Logo beside Name + Type */}
-        <div className="flex items-center justify-center gap-3 mb-3 flex-row-reverse">
-          {taskTypeImage && (
-            <img src={taskTypeImage} alt={task.type} className="h-14 w-14 rounded-xl object-contain shrink-0 drop-shadow-md" />
+          <Button variant="outline" size="sm" className="text-xs rounded-lg h-7 px-1 bg-white/60" onClick={() => onDetails(task)}>
+            التفاصيل
+          </Button>
+          {isAdmin && (
+            <Button variant="outline" size="sm" className="text-xs rounded-lg h-7 px-1 text-success border-success/40 hover:bg-success/10 bg-white/60" onClick={() => onWhatsApp(task)}>
+              <MessageCircle className="h-3 w-3 ml-1" />واتساب
+            </Button>
           )}
-          <div className="text-center">
-            <h3 className="font-bold text-lg text-foreground leading-tight">{task.client_name}</h3>
-            <p className="text-sm text-muted-foreground">{task.type}</p>
-          </div>
-        </div>
-
-        {/* Info rows - aligned right */}
-        <div className="space-y-1.5 text-xs text-muted-foreground mb-3">
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5" />
-            <span>{new Date(task.created_at).toLocaleString('ar-EG')}</span>
-          </div>
-          {task.address && (
-            <div className="flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5" />
-              <span>{task.address}</span>
-            </div>
-          )}
-          {task.scheduled_time && (
-            <div className="flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5" />
-              <span>موعد التنفيذ: {task.scheduled_time}</span>
-            </div>
-          )}
-          {techName && (
-            <div className="flex items-center gap-1.5">
-              <User className="h-3.5 w-3.5" />
-              <span>مطلوب: {techName}</span>
-            </div>
-          )}
-          {executingTechName && task.status !== 'in_progress' && (
-            <div className="flex items-center gap-1.5 text-primary font-bold">
-              <User className="h-3.5 w-3.5" />
-              <span>نفذ بواسطة: {executingTechName}</span>
-            </div>
+          {isAdmin && (
+            <Button variant="outline" size="sm" className="text-xs rounded-lg h-7 px-1 bg-white/60" onClick={() => window.open(`tel:${task.phone}`)}>
+              <Phone className="h-3 w-3 ml-1" />اتصال
+            </Button>
           )}
         </div>
 
-        {/* Completed task timing info */}
-        {task.status === 'completed' && task.start_time && task.completion_time && (() => {
-          const start = new Date(task.start_time!);
-          const end = new Date(task.completion_time!);
-          const diffMs = end.getTime() - start.getTime();
-          const diffH = Math.floor(diffMs / 3600000);
-          const diffM = Math.floor((diffMs % 3600000) / 60000);
-          const durationText = diffH > 0 ? `${diffH} ساعة و ${diffM} دقيقة` : `${diffM} دقيقة`;
-          return (
-            <div className="mx-0 mb-3 p-2.5 rounded-xl bg-primary/5 border border-primary/20 space-y-1 text-xs">
-              <div className="flex items-center gap-1.5 text-success">
-                <Timer className="h-3.5 w-3.5" />
-                <span>بدء التنفيذ: {start.toLocaleString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true })} - {start.toLocaleDateString('ar-EG')}</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-primary">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                <span>انتهاء التنفيذ: {end.toLocaleString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true })} - {end.toLocaleDateString('ar-EG')}</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-foreground font-bold">
-                <Clock className="h-3.5 w-3.5" />
-                <span>تمت في {durationText}</span>
+        {/* Right: info + logo */}
+        <div className="flex-1 min-w-0 text-right flex flex-col">
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <div className="flex items-center gap-1 shrink-0">
+              <button onClick={() => onToggleFavorite(task)} className="hover:scale-110 transition-transform">
+                <Star className={`h-4 w-4 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground/40'}`} />
+              </button>
+              {isAdmin && (
+                <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+                  <GripVertical className="h-4 w-4 text-muted-foreground/50" />
+                </div>
+              )}
+              {isAdmin && (
+                <button onClick={() => onArchive(task)} title={task.is_archived ? 'إلغاء الأرشفة' : 'أرشفة'}>
+                  <Archive className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground" />
+                </button>
+              )}
+              {isAdmin && (
+                <button onClick={() => onDelete(task.id)}>
+                  <Trash2 className="h-3.5 w-3.5 text-destructive/60 hover:text-destructive" />
+                </button>
+              )}
+            </div>
+            <div className="flex items-start gap-2 flex-1 min-w-0 flex-row-reverse">
+              {taskTypeImage && (
+                <img src={taskTypeImage} alt={task.type} className="h-10 w-10 rounded-lg object-contain shrink-0" />
+              )}
+              <div className="min-w-0 flex-1 text-right">
+                <div className="flex items-baseline justify-end gap-1">
+                  <span className="text-[10px] font-bold text-muted-foreground">#{task.id}</span>
+                  <h3 className="font-bold text-sm text-foreground leading-tight break-words">{task.client_name}</h3>
+                </div>
+                <p className="text-[11px] text-muted-foreground truncate">{task.type}</p>
               </div>
             </div>
-          );
-        })()}
-      </div>
-
-      {/* Execution Banner */}
-      {isExecuting && (
-        <div className="mx-4 mb-2 p-3 rounded-xl bg-success/10 border border-success/30">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Timer className="h-4 w-4 text-success animate-pulse" />
-              <span className="text-xs font-bold text-success">جاري التنفيذ</span>
-            </div>
-            {task.start_time && <ElapsedTimer startTime={task.start_time} />}
           </div>
-          {executingTechName && (
-            <div className="flex items-center gap-1.5 mt-1.5">
-              <User className="h-3.5 w-3.5 text-success" />
-              <span className="text-xs font-bold text-foreground">{executingTechName}</span>
+
+          <div className="space-y-0.5 text-[11px] text-muted-foreground mt-1">
+            {task.address && (
+              <div className="flex items-center justify-end gap-1">
+                <span className="truncate">{task.address}</span>
+                <MapPin className="h-3 w-3 shrink-0" />
+              </div>
+            )}
+            {techName && (
+              <div className="flex items-center justify-end gap-1">
+                <span className="truncate">مطلوب: {techName}</span>
+                <User className="h-3 w-3 shrink-0" />
+              </div>
+            )}
+            {executingTechName && task.status !== 'in_progress' && (
+              <div className="flex items-center justify-end gap-1 text-primary font-bold">
+                <span className="truncate">نفذ: {executingTechName}</span>
+                <User className="h-3 w-3 shrink-0" />
+              </div>
+            )}
+            <div className="flex items-center justify-end gap-1">
+              <span>منذ {daysAgo} يوم</span>
+              <Clock className="h-3 w-3 shrink-0" />
+            </div>
+            {completedDuration && (
+              <div className="flex items-center justify-end gap-1 text-foreground font-bold">
+                <span>تمت في {completedDuration}</span>
+                <CheckCircle2 className="h-3 w-3 shrink-0 text-primary" />
+              </div>
+            )}
+          </div>
+
+          {isExecuting && task.start_time && (
+            <div className="mt-1.5 flex items-center justify-between rounded-lg bg-success/10 border border-success/30 px-2 py-1">
+              <ElapsedTimer startTime={task.start_time} />
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] font-bold text-success">جاري التنفيذ</span>
+                <Timer className="h-3 w-3 text-success animate-pulse" />
+              </div>
             </div>
           )}
         </div>
-      )}
-
-      {/* Status Button */}
-      <div className="px-4 pb-3">
-        <button
-          onClick={() => isExecuting ? onComplete(task) : onStatusChange(task)}
-          className={`w-full py-2.5 rounded-xl text-sm font-bold text-center cursor-pointer hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98] ${isExecuting ? 'bg-success text-success-foreground' : STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
-        >
-          {isExecuting
-            ? '✅ اتمام المهمة'
-            : isAdmin
-              ? STATUS_LABELS[task.status] || task.status
-              : task.status === 'waiting'
-                ? '🚀 بدء المهمة'
-                : STATUS_LABELS[task.status] || task.status}
-        </button>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-t border-black/5 bg-white/40">
-        <div className="flex items-center gap-0.5">
-          {isAdmin && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg" onClick={() => onDelete(task.id)}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          )}
-          {isAdmin && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted rounded-lg" onClick={() => onArchive(task)}
-              title={task.is_archived ? 'إلغاء الأرشفة' : 'أرشفة'}>
-              <Archive className="h-4 w-4" />
-            </Button>
-          )}
-          {isAdmin && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-success/70 hover:text-success hover:bg-success/10 rounded-lg" onClick={() => onWhatsApp(task)}>
-              <MessageCircle className="h-4 w-4" />
-            </Button>
-          )}
-          {isAdmin && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted rounded-lg"
-              onClick={() => window.open(`tel:${task.phone}`)}>
-              <Phone className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        <Button variant="outline" size="sm" className="text-xs border-black/10 rounded-lg hover:bg-white/60 bg-white/40" onClick={() => onDetails(task)}>
-          التفاصيل
-        </Button>
       </div>
     </div>
   );
