@@ -334,8 +334,8 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
   const isAdmin = role === 'admin';
   const isTechnician = role === 'technician';
 
-  const { data: tasks = [], isLoading } = useTasks();
-  const { data: technicians = [] } = useTechnicians();
+  const { data: tasks = EMPTY_TASKS, isLoading } = useTasks();
+  const { data: technicians = EMPTY_TECHNICIANS } = useTechnicians();
   const { data: taskTypesData } = useSetting('task_types');
   const deleteTask = useDeleteTask();
 
@@ -347,27 +347,30 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
     return map;
   }, [taskTypesData]);
 
-  const visibleTasks = isTechnician
+  const visibleTasks = useMemo(() => isTechnician
     ? tasks.filter((t) =>
         t.required_technician === technicianId ||
         t.technician_id === technicianId ||
         (Array.isArray(t.assigned_technicians) && t.assigned_technicians.includes(technicianId!))
       )
-    : tasks;
+    : tasks, [isTechnician, tasks, technicianId]);
 
-  const baseFiltered = visibleTasks.filter((task) => {
+  const baseFiltered = useMemo(() => visibleTasks.filter((task) => {
     if (activeFilter === 'archived') return task.is_archived === true;
     // Hide archived from all other filters
     if (task.is_archived) return false;
     if (activeFilter === 'all') return true;
     if (activeFilter === 'assigned') return task.required_technician != null;
     return task.status === activeFilter;
-  });
+  }), [activeFilter, visibleTasks]);
 
   // Sync orderedIds when tasks change
   useEffect(() => {
-    setOrderedIds(baseFiltered.map(t => t.id));
-  }, [tasks, activeFilter]);
+    setOrderedIds((prev) => {
+      const next = baseFiltered.map(t => t.id);
+      return prev.length === next.length && prev.every((id, index) => id === next[index]) ? prev : next;
+    });
+  }, [baseFiltered]);
 
   const filteredTasks = useMemo(() => {
     const taskMap = new Map(baseFiltered.map(t => [t.id, t]));
