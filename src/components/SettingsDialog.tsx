@@ -93,6 +93,15 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
           phone: raw.defaultPhone || '',
         }];
       }
+      // Seed preset Whats360 accounts on first run
+      if (accounts.length === 0) {
+        const presetToken = '0392298edaea4c115718ff67bf249e60796d62b18249fceebad6d2969b3ea697';
+        accounts = [
+          { id: 'acc-preset-1', name: 'واتس 1 - 01065644500', apiToken: presetToken, instanceId: 'device_mp75o6lc', phone: '201065644500' },
+          { id: 'acc-preset-2', name: 'واتس 2 - 01555553363', apiToken: presetToken, instanceId: 'device_mn3g1rl8', phone: '201555553363' },
+          { id: 'acc-preset-3', name: 'واتس 3 - 01111179565', apiToken: presetToken, instanceId: 'device_mp7ogjhz', phone: '201111179565' },
+        ];
+      }
       const defaultAccountId = raw.defaultAccountId && accounts.some(a => a.id === raw.defaultAccountId)
         ? raw.defaultAccountId
         : accounts[0]?.id;
