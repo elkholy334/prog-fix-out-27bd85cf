@@ -33,6 +33,9 @@ import { CSS } from '@dnd-kit/utilities';
 type TaskRow = Database['public']['Tables']['tasks']['Row'];
 type FilterTab = 'all' | 'assigned' | string;
 
+const EMPTY_TASKS: TaskRow[] = [];
+const EMPTY_TECHNICIANS: Database['public']['Tables']['technicians']['Row'][] = [];
+
 const STATUS_LABELS: Record<string, string> = {
   waiting: 'انتظار',
   in_progress: 'تنفيذ',
@@ -175,6 +178,12 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
               واتساب
             </Button>
           )}
+          {isAdmin && task.phone && (
+            <Button variant="outline" size="sm" className="text-xs rounded-lg h-7 border-primary/30 text-primary hover:bg-primary/10" onClick={() => window.open(`tel:${task.phone}`)}>
+              <Phone className="h-3.5 w-3.5 ml-1" />
+              اتصال
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -191,25 +200,25 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
 
   return (
     <div ref={setNodeRef} style={style} className={`rounded-2xl border-2 shadow-card hover:shadow-card-hover transition-all p-3 ${CARD_BG_COLORS[task.status] || 'bg-card border-accent/20'} ${isExecuting ? 'ring-2 ring-success/40' : ''} ${task.is_favorite ? 'ring-2 ring-accent/30' : ''}`}>
-      <div className="flex items-stretch gap-3">
+        <div className="flex items-start gap-2">
         {/* Left: stacked action buttons */}
-        <div className="flex flex-col gap-1.5 shrink-0 w-20">
+        <div className="flex flex-col gap-1.5 shrink-0 w-[76px]">
           <button
             onClick={() => isExecuting ? onComplete(task) : onStatusChange(task)}
-            className={`px-2 py-1.5 rounded-lg text-xs font-bold ${isExecuting ? 'bg-success text-success-foreground' : STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
+            className={`h-7 px-1 rounded-lg text-xs font-bold ${isExecuting ? 'bg-success text-success-foreground' : STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
           >
             {isExecuting ? '✅ اتمام' : (isAdmin ? STATUS_LABELS[task.status] || task.status : (task.status === 'waiting' ? '🚀 بدء' : STATUS_LABELS[task.status] || task.status))}
           </button>
-          <Button variant="outline" size="sm" className="text-xs rounded-lg h-7 px-1 bg-white/60" onClick={() => onDetails(task)}>
+          <Button variant="outline" size="sm" className="text-xs rounded-lg h-7 px-1 bg-card/70" onClick={() => onDetails(task)}>
             التفاصيل
           </Button>
           {isAdmin && (
-            <Button variant="outline" size="sm" className="text-xs rounded-lg h-7 px-1 text-success border-success/40 hover:bg-success/10 bg-white/60" onClick={() => onWhatsApp(task)}>
+            <Button variant="outline" size="sm" className="text-xs rounded-lg h-7 px-1 text-success border-success/40 hover:bg-success/10 bg-card/70" onClick={() => onWhatsApp(task)}>
               <MessageCircle className="h-3 w-3 ml-1" />واتساب
             </Button>
           )}
-          {isAdmin && (
-            <Button variant="outline" size="sm" className="text-xs rounded-lg h-7 px-1 bg-white/60" onClick={() => window.open(`tel:${task.phone}`)}>
+          {isAdmin && task.phone && (
+            <Button variant="outline" size="sm" className="text-xs rounded-lg h-7 px-1 text-primary border-primary/40 hover:bg-primary/10 bg-card/70" onClick={() => window.open(`tel:${task.phone}`)}>
               <Phone className="h-3 w-3 ml-1" />اتصال
             </Button>
           )}
