@@ -31,6 +31,7 @@ interface WhatsAppConfig {
   };
   accounts?: WhatsAppAccount[];
   defaultAccountId?: string;
+  pilotEnabled?: boolean;
 }
 
 const DEFAULT_ENDPOINTS = {
