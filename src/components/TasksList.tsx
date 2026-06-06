@@ -201,9 +201,10 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
 
   return (
     <div ref={setNodeRef} style={style} className={`rounded-2xl border-2 shadow-card hover:shadow-card-hover transition-all p-3 min-w-0 ${CARD_BG_COLORS[task.status] || 'bg-card border-accent/20'} ${isExecuting ? 'ring-2 ring-success/40' : ''} ${task.is_favorite ? 'ring-2 ring-accent/30' : ''}`}>
-        <div className="grid grid-cols-[76px_minmax(0,1fr)] gap-2 items-start">
+        <div className="grid grid-cols-[minmax(140px,auto)_minmax(0,1fr)] gap-2 items-start">
         {/* Left: stacked action buttons */}
-        <div className="flex flex-col gap-1.5 shrink-0 w-[76px]">
+        <div className="flex flex-col gap-1.5 shrink-0 min-w-[140px]">
+
           <button
             onClick={() => isExecuting ? onComplete(task) : onStatusChange(task)}
             className={`h-7 px-1 rounded-lg text-xs font-bold ${isExecuting ? 'bg-success text-success-foreground' : STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
