@@ -226,6 +226,7 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
               </Button>
             )}
             <div className="flex items-center justify-center gap-1 rounded-lg bg-card/50 px-1 h-7 shrink-0">
+              <span className="text-[10px] font-bold text-muted-foreground">#{task.id}</span>
               <button onClick={() => onToggleFavorite(task)} className="hover:scale-110 transition-transform">
                 <Star className={`h-3.5 w-3.5 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground/40'}`} />
               </button>
@@ -245,6 +246,7 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
                 </button>
               )}
             </div>
+
           </div>
 
         </div>
