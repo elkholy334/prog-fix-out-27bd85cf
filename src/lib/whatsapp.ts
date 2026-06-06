@@ -23,7 +23,40 @@ export interface WhatsAppConfig {
   endpoints: WhatsAppEndpoints;
   accounts?: WhatsAppAccount[];
   defaultAccountId?: string;
+  pilotEnabled?: boolean; // when false, all sends open wa.me instead of API
 }
+
+/** Whether the Whats360 (pilot) API is enabled. Defaults to true. */
+export const isPilotEnabled = (): boolean => {
+  try {
+    const saved = localStorage.getItem('whatsapp_config');
+    if (!saved) return true;
+    const cfg = JSON.parse(saved) as WhatsAppConfig;
+    return cfg.pilotEnabled !== false;
+  } catch { return true; }
+};
+
+/** Normalize a phone number to international format (no +) with default country code 20 (Egypt). */
+export const normalizePhone = (raw: string): string => {
+  const clean = (raw || '').replace(/[^0-9]/g, '');
+  if (!clean) return '';
+  if (clean.startsWith('20')) return clean;
+  if (clean.startsWith('0'))  return `20${clean.slice(1)}`;
+  if (clean.length === 10)    return `20${clean}`;
+  return clean;
+};
+
+/** Build a wa.me URL that opens WhatsApp directly with a prefilled message. */
+export const buildWaMeLink = (phone: string, message: string): string => {
+  const p = normalizePhone(phone);
+  return `https://wa.me/${p}?text=${encodeURIComponent(message)}`;
+};
+
+/** Open WhatsApp directly (web/app) — used when Pilot API is disabled. */
+export const openWhatsAppDirect = (phone: string, message: string) => {
+  const url = buildWaMeLink(phone, message);
+  window.open(url, '_blank', 'noopener,noreferrer');
+};
 
 /** Returns the effective single-account config (resolved from default account if present). */
 export const getWhatsAppConfig = (): WhatsAppConfig | null => {
@@ -58,18 +91,24 @@ export const resolveActiveAccount = (config: WhatsAppConfig): WhatsAppAccount | 
 
 const getBaseUrl = (endpoints: WhatsAppEndpoints) => endpoints.sendText.replace(/\/send-text.*$/, '');
 
-/** Probes the WhatsApp instance via the edge function proxy (bypasses browser CORS). */
+/** Probes the WhatsApp instance by sending a real ping message to the account's own number. */
 export const testWhatsAppConnection = async (
-  account: { apiToken: string; instanceId: string },
+  account: { apiToken: string; instanceId: string; phone?: string },
   endpoints: WhatsAppEndpoints
 ): Promise<{ connected: boolean; error?: string }> => {
   try {
+    const probePhone = normalizePhone(account.phone || '');
+    if (!probePhone) {
+      return { connected: false, error: 'أدخل رقم هاتف الحساب لإجراء فحص حقيقي' };
+    }
     const { data, error } = await supabase.functions.invoke('whatsapp-proxy', {
       body: {
         action: 'probe',
         token: account.apiToken,
         instance_id: account.instanceId,
         baseUrl: getBaseUrl(endpoints),
+        jid: probePhone,
+        msg: '✅ فحص اتصال — تم بنجاح',
       },
     });
     if (error) return { connected: false, error: error.message || 'فشل الاتصال بخادم الفحص' };
@@ -99,8 +138,8 @@ export const sendWhatsAppMessage = async (
     return { success: false, error: 'إعدادات الواتساب غير مكتملة. يرجى إدخال API Token و Instance ID في الإعدادات.' };
   }
 
-  const cleanPhone = phone.replace(/[^0-9]/g, '');
-  if (!cleanPhone || cleanPhone.length < 10) {
+  const normalizedPhone = normalizePhone(phone);
+  if (!normalizedPhone || normalizedPhone.length < 10) {
     await logWhatsAppMessage({
       recipientPhone: phone,
       recipientName: logInfo?.recipientName || '',
@@ -112,14 +151,6 @@ export const sendWhatsAppMessage = async (
     });
     return { success: false, error: 'رقم الهاتف غير صالح' };
   }
-
-  const normalizedPhone = cleanPhone.startsWith('20')
-    ? cleanPhone
-    : cleanPhone.startsWith('0')
-      ? `20${cleanPhone.slice(1)}`
-      : cleanPhone.length === 10
-        ? `20${cleanPhone}`
-        : cleanPhone;
 
   try {
     const { data, error: invokeErr } = await supabase.functions.invoke('whatsapp-proxy', {

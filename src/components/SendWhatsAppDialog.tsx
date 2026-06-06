@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Send, Loader2, MessageCircle } from 'lucide-react';
-import { sendWhatsAppMessage, buildMessageFromTemplate, getWhatsAppConfig } from '@/lib/whatsapp';
+import { sendWhatsAppMessage, buildMessageFromTemplate, getWhatsAppConfig, isPilotEnabled, openWhatsAppDirect } from '@/lib/whatsapp';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -90,6 +90,14 @@ export const SendWhatsAppDialog = ({ task, onClose }: SendWhatsAppDialogProps) =
   };
 
   const handleSend = async () => {
+    // If Whats Pilot API is disabled → open wa.me directly with prefilled message
+    if (!isPilotEnabled()) {
+      if (!phone) { toast.error('رقم الهاتف فارغ'); return; }
+      openWhatsAppDirect(phone, message);
+      toast.success('تم فتح واتساب — اضغط إرسال داخل التطبيق');
+      onClose();
+      return;
+    }
     const config = getWhatsAppConfig();
     if (!config) {
       toast.error('إعدادات الواتساب غير مكتملة. افتح الإعدادات وأدخل API Token و Instance ID.');

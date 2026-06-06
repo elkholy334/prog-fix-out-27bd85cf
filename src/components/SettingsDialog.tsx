@@ -31,6 +31,7 @@ interface WhatsAppConfig {
   };
   accounts?: WhatsAppAccount[];
   defaultAccountId?: string;
+  pilotEnabled?: boolean;
 }
 
 const DEFAULT_ENDPOINTS = {
@@ -69,6 +70,8 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   });
   const [showToken, setShowToken] = useState(false);
   const [shopName, setShopName] = useState('شركة الفيروز للستالايت');
+  const [tagline, setTagline] = useState('إدارة التركيبات والخدمات');
+  const [logoUrl, setLogoUrl] = useState('');
   const [adminPhone, setAdminPhone] = useState('');
   const [delayHours, setDelayHours] = useState(24);
   const [newTechName, setNewTechName] = useState('');
@@ -112,6 +115,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
         endpoints: raw.endpoints || { ...DEFAULT_ENDPOINTS },
         accounts,
         defaultAccountId,
+        pilotEnabled: raw.pilotEnabled !== false,
       };
       setWaConfig(config);
       localStorage.setItem('whatsapp_config', JSON.stringify(config));
@@ -122,6 +126,8 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     if (generalData) {
       const g = generalData as any;
       if (g.shopName) setShopName(g.shopName);
+      if (g.tagline) setTagline(g.tagline);
+      if (g.logoUrl) setLogoUrl(g.logoUrl);
       if (g.adminPhone) setAdminPhone(g.adminPhone);
       if (g.delayHours) setDelayHours(g.delayHours);
     }
@@ -214,9 +220,16 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
 
   const saveGeneral = () => {
     upsertSetting.mutate(
-      { key: 'general', value: { shopName, adminPhone, delayHours } as any },
+      { key: 'general', value: { shopName, tagline, logoUrl, adminPhone, delayHours } as any },
       { onSuccess: () => toast.success('تم حفظ الإعدادات العامة') }
     );
+  };
+
+  const onLogoFileSelected = (file: File) => {
+    if (file.size > 2 * 1024 * 1024) { toast.error('الصورة كبيرة جدًا (الحد 2MB)'); return; }
+    const reader = new FileReader();
+    reader.onload = () => setLogoUrl(String(reader.result || ''));
+    reader.readAsDataURL(file);
   };
 
   const updateCommissionRate = async (techId: string, rate: number) => {
@@ -286,9 +299,44 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
 
             <TabsContent value="general" className="space-y-4">
               <div className="space-y-1.5">
-                <Label className="text-right block">اسم المحل</Label>
-                <Input value={shopName} onChange={(e) => setShopName(e.target.value)} className="text-right" />
+                <Label className="text-right block">اسم الشركة</Label>
+                <Input value={shopName} onChange={(e) => setShopName(e.target.value)} className="text-right" placeholder="مثال: شركة الفيروز للستالايت" />
               </div>
+              <div className="space-y-1.5">
+                <Label className="text-right block">الوصف الفرعي (تحت الاسم)</Label>
+                <Input value={tagline} onChange={(e) => setTagline(e.target.value)} className="text-right" placeholder="مثال: إدارة التركيبات والخدمات" />
+              </div>
+
+              <div className="space-y-1.5 border border-border rounded-lg p-3 bg-muted/30">
+                <Label className="text-right block">لوجو الشركة</Label>
+                <div className="flex items-center gap-3">
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="logo" className="h-14 w-14 rounded-lg object-cover border border-border bg-card" />
+                  ) : (
+                    <div className="h-14 w-14 rounded-lg border-2 border-dashed border-border flex items-center justify-center text-muted-foreground">
+                      <ImageIcon className="h-6 w-6" />
+                    </div>
+                  )}
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      value={logoUrl}
+                      onChange={(e) => setLogoUrl(e.target.value)}
+                      placeholder="رابط مباشر للصورة (https://...)"
+                      className="text-left text-xs font-mono h-8" dir="ltr"
+                    />
+                    <div className="flex items-center gap-2">
+                      <label className="flex-1">
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) onLogoFileSelected(f); }} />
+                        <span className="block w-full text-center text-xs bg-primary text-primary-foreground rounded-lg py-1.5 cursor-pointer hover:opacity-90">📤 رفع صورة من الجهاز</span>
+                      </label>
+                      {logoUrl && (
+                        <Button size="sm" variant="ghost" className="h-7 text-destructive text-xs" onClick={() => setLogoUrl('')}>إزالة</Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <Label className="text-right block">رقم هاتف المدير (للإشعارات)</Label>
                 <Input
@@ -482,7 +530,33 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
             </TabsContent>
 
             <TabsContent value="whatsapp" className="space-y-6">
-              <div className="border-2 border-success/30 rounded-xl p-4 space-y-4 bg-success/5">
+              {/* Pilot API toggle */}
+              <div className={`rounded-xl border-2 p-4 space-y-2 ${waConfig.pilotEnabled === false ? 'border-warning/40 bg-warning/5' : 'border-primary/30 bg-primary/5'}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <button
+                    onClick={() => {
+                      const updated = { ...waConfig, pilotEnabled: !(waConfig.pilotEnabled !== false) };
+                      setWaConfig(updated);
+                      localStorage.setItem('whatsapp_config', JSON.stringify(updated));
+                      upsertSetting.mutate({ key: 'whatsapp_config', value: updated as any });
+                      toast.success(updated.pilotEnabled === false ? 'تم تعطيل الإرسال التلقائي — الرسائل ستفتح واتساب مباشر' : 'تم تفعيل الإرسال التلقائي عبر Whats Pilot');
+                    }}
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${waConfig.pilotEnabled !== false ? 'bg-success' : 'bg-muted-foreground/40'}`}
+                  >
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${waConfig.pilotEnabled !== false ? 'translate-x-1' : 'translate-x-6'}`} />
+                  </button>
+                  <div className="flex-1 text-right">
+                    <h3 className="font-bold text-sm">الواتساب التلقائي (Whats Pilot)</h3>
+                    <p className="text-xs text-muted-foreground">
+                      {waConfig.pilotEnabled !== false
+                        ? 'الإرسال يتم تلقائيًا عبر API'
+                        : 'الإرسال يفتح واتساب مباشر (wa.me) لإرسال يدوي للعميل'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`border-2 rounded-xl p-4 space-y-4 ${waConfig.pilotEnabled === false ? 'border-muted bg-muted/20 opacity-60' : 'border-success/30 bg-success/5'}`}>
                 <div className="flex items-center justify-center gap-2 text-success">
                   <Link2 className="h-5 w-5" />
                   <h3 className="font-bold">ربط حساب Whats360</h3>
