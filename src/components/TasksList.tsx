@@ -223,17 +223,13 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
               <Phone className="h-3 w-3 ml-1" />اتصال
             </Button>
           )}
-        </div>
-
-        {/* Right: info + logo */}
-        <div className="flex-1 min-w-0 text-right flex flex-col">
-          <div className="flex items-center justify-start gap-1 mb-1 rounded-lg bg-card/50 px-1.5 py-1 w-fit">
+          <div className="flex items-center justify-center gap-1 rounded-lg bg-card/50 px-1 py-1">
             <button onClick={() => onToggleFavorite(task)} className="hover:scale-110 transition-transform">
-              <Star className={`h-4 w-4 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground/40'}`} />
+              <Star className={`h-3.5 w-3.5 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground/40'}`} />
             </button>
             {isAdmin && (
               <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-                <GripVertical className="h-4 w-4 text-muted-foreground/50" />
+                <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50" />
               </div>
             )}
             {isAdmin && (
@@ -247,6 +243,11 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
               </button>
             )}
           </div>
+        </div>
+
+        {/* Right: info + logo */}
+        <div className="flex-1 min-w-0 text-right flex flex-col">
+
           <div className="flex items-start gap-2 min-w-0 flex-row-reverse mb-1">
             {taskTypeImage && (
               <img src={taskTypeImage} alt={task.type} className="h-10 w-10 rounded-lg object-contain shrink-0" />
