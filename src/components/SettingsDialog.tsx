@@ -115,6 +115,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
         endpoints: raw.endpoints || { ...DEFAULT_ENDPOINTS },
         accounts,
         defaultAccountId,
+        pilotEnabled: raw.pilotEnabled !== false,
       };
       setWaConfig(config);
       localStorage.setItem('whatsapp_config', JSON.stringify(config));
