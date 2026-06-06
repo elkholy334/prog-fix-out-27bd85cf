@@ -201,9 +201,10 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
 
   return (
     <div ref={setNodeRef} style={style} className={`rounded-2xl border-2 shadow-card hover:shadow-card-hover transition-all p-3 min-w-0 ${CARD_BG_COLORS[task.status] || 'bg-card border-accent/20'} ${isExecuting ? 'ring-2 ring-success/40' : ''} ${task.is_favorite ? 'ring-2 ring-accent/30' : ''}`}>
-        <div className="grid grid-cols-[76px_minmax(0,1fr)] gap-2 items-start">
+        <div className="grid grid-cols-[minmax(140px,auto)_minmax(0,1fr)] gap-2 items-start">
         {/* Left: stacked action buttons */}
-        <div className="flex flex-col gap-1.5 shrink-0 w-[76px]">
+        <div className="flex flex-col gap-1.5 shrink-0 min-w-[140px]">
+
           <button
             onClick={() => isExecuting ? onComplete(task) : onStatusChange(task)}
             className={`h-7 px-1 rounded-lg text-xs font-bold ${isExecuting ? 'bg-success text-success-foreground' : STATUS_COLORS[task.status] || 'bg-muted text-muted-foreground'}`}
@@ -218,31 +219,34 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
               <MessageCircle className="h-3 w-3 ml-1" />واتساب
             </Button>
           )}
-          {isAdmin && task.phone && (
-            <Button variant="outline" size="sm" className="text-xs rounded-lg h-7 px-1 text-primary border-primary/40 hover:bg-primary/10 bg-card/70" onClick={() => window.open(`tel:${task.phone}`)}>
-              <Phone className="h-3 w-3 ml-1" />اتصال
-            </Button>
-          )}
-          <div className="flex items-center justify-center gap-1 rounded-lg bg-card/50 px-1 py-1">
-            <button onClick={() => onToggleFavorite(task)} className="hover:scale-110 transition-transform">
-              <Star className={`h-3.5 w-3.5 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground/40'}`} />
-            </button>
-            {isAdmin && (
-              <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-                <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50" />
-              </div>
+          <div className="flex items-center gap-1">
+            {isAdmin && task.phone && (
+              <Button variant="outline" size="sm" className="text-xs rounded-lg h-7 px-1 text-primary border-primary/40 hover:bg-primary/10 bg-card/70 flex-1 min-w-0" onClick={() => window.open(`tel:${task.phone}`)}>
+                <Phone className="h-3 w-3 ml-1" />اتصال
+              </Button>
             )}
-            {isAdmin && (
-              <button onClick={() => onArchive(task)} title={task.is_archived ? 'إلغاء الأرشفة' : 'أرشفة'}>
-                <Archive className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground" />
+            <div className="flex items-center justify-center gap-1 rounded-lg bg-card/50 px-1 h-7 shrink-0">
+              <button onClick={() => onToggleFavorite(task)} className="hover:scale-110 transition-transform">
+                <Star className={`h-3.5 w-3.5 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground/40'}`} />
               </button>
-            )}
-            {isAdmin && (
-              <button onClick={() => onDelete(task.id)}>
-                <Trash2 className="h-3.5 w-3.5 text-destructive/60 hover:text-destructive" />
-              </button>
-            )}
+              {isAdmin && (
+                <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+                  <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50" />
+                </div>
+              )}
+              {isAdmin && (
+                <button onClick={() => onArchive(task)} title={task.is_archived ? 'إلغاء الأرشفة' : 'أرشفة'}>
+                  <Archive className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground" />
+                </button>
+              )}
+              {isAdmin && (
+                <button onClick={() => onDelete(task.id)}>
+                  <Trash2 className="h-3.5 w-3.5 text-destructive/60 hover:text-destructive" />
+                </button>
+              )}
+            </div>
           </div>
+
         </div>
 
         {/* Right: info + logo */}
