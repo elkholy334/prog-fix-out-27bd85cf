@@ -36,19 +36,18 @@ const Login = () => {
   // Load all users from technicians table
   useEffect(() => {
     const fetchUsers = async () => {
-      const { data: techs } = await supabase
-        .from('technicians')
-        .select('id, name, email, color, is_admin')
-        .eq('is_active', true)
-        .order('name');
-
+      const { data: techs, error } = await supabase.rpc('get_login_users');
+      if (error) {
+        console.error('Failed to load login users:', error);
+        return;
+      }
       if (!techs) return;
 
-      const allUsers: UserOption[] = techs.map(t => ({
+      const allUsers: UserOption[] = (techs as any[]).map(t => ({
         id: t.id,
         name: t.name,
-        email: (t as any).email || '',
-        role: (t as any).is_admin ? 'admin' as const : 'technician' as const,
+        email: t.email || '',
+        role: t.is_admin ? 'admin' as const : 'technician' as const,
         color: t.color,
       }));
 
