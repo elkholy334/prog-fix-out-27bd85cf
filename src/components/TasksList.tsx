@@ -226,6 +226,7 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
               </Button>
             )}
             <div className="flex items-center justify-center gap-1 rounded-lg bg-card/50 px-1 h-7 shrink-0">
+              <span className="text-[10px] font-bold text-muted-foreground">#{task.id}</span>
               <button onClick={() => onToggleFavorite(task)} className="hover:scale-110 transition-transform">
                 <Star className={`h-3.5 w-3.5 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground/40'}`} />
               </button>
@@ -245,6 +246,7 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
                 </button>
               )}
             </div>
+
           </div>
 
         </div>
@@ -257,12 +259,10 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
               <img src={taskTypeImage} alt={task.type} className="h-10 w-10 rounded-lg object-contain shrink-0" />
             )}
             <div className="min-w-0 flex-1 text-right">
-              <div className="flex items-baseline justify-end gap-1 min-w-0">
-                <span className="text-[10px] font-bold text-muted-foreground shrink-0">#{task.id}</span>
-                <h3 title={task.client_name} className="font-bold text-sm text-foreground leading-tight truncate min-w-0">{task.client_name}</h3>
-              </div>
+              <h3 title={task.client_name} className="font-bold text-foreground leading-tight min-w-0 break-words [font-size:clamp(0.7rem,2.6vw,0.95rem)]">{task.client_name}</h3>
               <p className="text-[11px] text-muted-foreground truncate">{task.type}</p>
             </div>
+
           </div>
 
 
