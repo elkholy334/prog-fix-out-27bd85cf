@@ -297,9 +297,44 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
 
             <TabsContent value="general" className="space-y-4">
               <div className="space-y-1.5">
-                <Label className="text-right block">اسم المحل</Label>
-                <Input value={shopName} onChange={(e) => setShopName(e.target.value)} className="text-right" />
+                <Label className="text-right block">اسم الشركة</Label>
+                <Input value={shopName} onChange={(e) => setShopName(e.target.value)} className="text-right" placeholder="مثال: شركة الفيروز للستالايت" />
               </div>
+              <div className="space-y-1.5">
+                <Label className="text-right block">الوصف الفرعي (تحت الاسم)</Label>
+                <Input value={tagline} onChange={(e) => setTagline(e.target.value)} className="text-right" placeholder="مثال: إدارة التركيبات والخدمات" />
+              </div>
+
+              <div className="space-y-1.5 border border-border rounded-lg p-3 bg-muted/30">
+                <Label className="text-right block">لوجو الشركة</Label>
+                <div className="flex items-center gap-3">
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="logo" className="h-14 w-14 rounded-lg object-cover border border-border bg-card" />
+                  ) : (
+                    <div className="h-14 w-14 rounded-lg border-2 border-dashed border-border flex items-center justify-center text-muted-foreground">
+                      <ImageIcon className="h-6 w-6" />
+                    </div>
+                  )}
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      value={logoUrl}
+                      onChange={(e) => setLogoUrl(e.target.value)}
+                      placeholder="رابط مباشر للصورة (https://...)"
+                      className="text-left text-xs font-mono h-8" dir="ltr"
+                    />
+                    <div className="flex items-center gap-2">
+                      <label className="flex-1">
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) onLogoFileSelected(f); }} />
+                        <span className="block w-full text-center text-xs bg-primary text-primary-foreground rounded-lg py-1.5 cursor-pointer hover:opacity-90">📤 رفع صورة من الجهاز</span>
+                      </label>
+                      {logoUrl && (
+                        <Button size="sm" variant="ghost" className="h-7 text-destructive text-xs" onClick={() => setLogoUrl('')}>إزالة</Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <Label className="text-right block">رقم هاتف المدير (للإشعارات)</Label>
                 <Input
