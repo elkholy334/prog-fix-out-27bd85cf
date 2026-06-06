@@ -227,40 +227,39 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
 
         {/* Right: info + logo */}
         <div className="flex-1 min-w-0 text-right flex flex-col">
-          <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2 mb-1 items-start">
-            <div className="flex items-center gap-1 shrink-0 rounded-lg bg-card/50 px-1.5 py-1">
-              <button onClick={() => onToggleFavorite(task)} className="hover:scale-110 transition-transform">
-                <Star className={`h-4 w-4 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground/40'}`} />
-              </button>
-              {isAdmin && (
-                <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-                  <GripVertical className="h-4 w-4 text-muted-foreground/50" />
-                </div>
-              )}
-              {isAdmin && (
-                <button onClick={() => onArchive(task)} title={task.is_archived ? 'إلغاء الأرشفة' : 'أرشفة'}>
-                  <Archive className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground" />
-                </button>
-              )}
-              {isAdmin && (
-                <button onClick={() => onDelete(task.id)}>
-                  <Trash2 className="h-3.5 w-3.5 text-destructive/60 hover:text-destructive" />
-                </button>
-              )}
-            </div>
-            <div className="flex items-start gap-2 min-w-0 flex-row-reverse">
-              {taskTypeImage && (
-                <img src={taskTypeImage} alt={task.type} className="h-10 w-10 rounded-lg object-contain shrink-0" />
-              )}
-              <div className="min-w-0 flex-1 text-right">
-                <div className="flex items-baseline justify-end gap-1 min-w-0">
-                  <span className="text-[10px] font-bold text-muted-foreground shrink-0">#{task.id}</span>
-                  <h3 title={task.client_name} className="font-bold text-sm text-foreground leading-tight truncate min-w-0">{task.client_name}</h3>
-                </div>
-                <p className="text-[11px] text-muted-foreground truncate">{task.type}</p>
+          <div className="flex items-center justify-start gap-1 mb-1 rounded-lg bg-card/50 px-1.5 py-1 w-fit">
+            <button onClick={() => onToggleFavorite(task)} className="hover:scale-110 transition-transform">
+              <Star className={`h-4 w-4 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground/40'}`} />
+            </button>
+            {isAdmin && (
+              <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+                <GripVertical className="h-4 w-4 text-muted-foreground/50" />
               </div>
+            )}
+            {isAdmin && (
+              <button onClick={() => onArchive(task)} title={task.is_archived ? 'إلغاء الأرشفة' : 'أرشفة'}>
+                <Archive className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground" />
+              </button>
+            )}
+            {isAdmin && (
+              <button onClick={() => onDelete(task.id)}>
+                <Trash2 className="h-3.5 w-3.5 text-destructive/60 hover:text-destructive" />
+              </button>
+            )}
+          </div>
+          <div className="flex items-start gap-2 min-w-0 flex-row-reverse mb-1">
+            {taskTypeImage && (
+              <img src={taskTypeImage} alt={task.type} className="h-10 w-10 rounded-lg object-contain shrink-0" />
+            )}
+            <div className="min-w-0 flex-1 text-right">
+              <div className="flex items-baseline justify-end gap-1 min-w-0">
+                <span className="text-[10px] font-bold text-muted-foreground shrink-0">#{task.id}</span>
+                <h3 title={task.client_name} className="font-bold text-sm text-foreground leading-tight truncate min-w-0">{task.client_name}</h3>
+              </div>
+              <p className="text-[11px] text-muted-foreground truncate">{task.type}</p>
             </div>
           </div>
+
 
           <div className="space-y-0.5 text-[11px] text-muted-foreground mt-1">
             {task.address && (
