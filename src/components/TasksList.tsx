@@ -218,31 +218,34 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
               <MessageCircle className="h-3 w-3 ml-1" />واتساب
             </Button>
           )}
-          {isAdmin && task.phone && (
-            <Button variant="outline" size="sm" className="text-xs rounded-lg h-7 px-1 text-primary border-primary/40 hover:bg-primary/10 bg-card/70" onClick={() => window.open(`tel:${task.phone}`)}>
-              <Phone className="h-3 w-3 ml-1" />اتصال
-            </Button>
-          )}
-          <div className="flex items-center justify-center gap-1 rounded-lg bg-card/50 px-1 py-1">
-            <button onClick={() => onToggleFavorite(task)} className="hover:scale-110 transition-transform">
-              <Star className={`h-3.5 w-3.5 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground/40'}`} />
-            </button>
-            {isAdmin && (
-              <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-                <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50" />
-              </div>
+          <div className="flex items-center gap-1">
+            {isAdmin && task.phone && (
+              <Button variant="outline" size="sm" className="text-xs rounded-lg h-7 px-1 text-primary border-primary/40 hover:bg-primary/10 bg-card/70 flex-1 min-w-0" onClick={() => window.open(`tel:${task.phone}`)}>
+                <Phone className="h-3 w-3 ml-1" />اتصال
+              </Button>
             )}
-            {isAdmin && (
-              <button onClick={() => onArchive(task)} title={task.is_archived ? 'إلغاء الأرشفة' : 'أرشفة'}>
-                <Archive className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground" />
+            <div className="flex items-center justify-center gap-1 rounded-lg bg-card/50 px-1 h-7 shrink-0">
+              <button onClick={() => onToggleFavorite(task)} className="hover:scale-110 transition-transform">
+                <Star className={`h-3.5 w-3.5 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground/40'}`} />
               </button>
-            )}
-            {isAdmin && (
-              <button onClick={() => onDelete(task.id)}>
-                <Trash2 className="h-3.5 w-3.5 text-destructive/60 hover:text-destructive" />
-              </button>
-            )}
+              {isAdmin && (
+                <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+                  <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50" />
+                </div>
+              )}
+              {isAdmin && (
+                <button onClick={() => onArchive(task)} title={task.is_archived ? 'إلغاء الأرشفة' : 'أرشفة'}>
+                  <Archive className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground" />
+                </button>
+              )}
+              {isAdmin && (
+                <button onClick={() => onDelete(task.id)}>
+                  <Trash2 className="h-3.5 w-3.5 text-destructive/60 hover:text-destructive" />
+                </button>
+              )}
+            </div>
           </div>
+
         </div>
 
         {/* Right: info + logo */}
