@@ -53,6 +53,21 @@ export const ThemeSwitcher = ({ showLabels = false }: ThemeSwitcherProps) => {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {showLabels && (
+        <div className="flex items-center gap-1 rounded-xl border border-border bg-card px-2 py-1">
+          {THEMES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTheme(t.id)}
+              className={`h-5 w-5 rounded-full border-2 transition-all ${theme === t.id ? 'border-ring scale-110' : 'border-border hover:border-ring/60'}`}
+              style={{ background: t.accentColor }}
+              title={t.name}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
