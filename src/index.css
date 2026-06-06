@@ -59,30 +59,35 @@
     --primary: 262 83% 58%; --secondary: 262 60% 25%; --ring: 262 83% 58%;
     --accent: 280 90% 60%; --accent-foreground: 0 0% 100%;
     --header-bg: 262 60% 18%;
+    --background: 270 30% 97%; --muted: 270 25% 92%; --border: 270 25% 87%;
     --gradient-hero: linear-gradient(135deg, hsl(262 60% 12%), hsl(262 70% 22%), hsl(280 75% 32%));
   }
   .theme-emerald {
     --primary: 160 84% 39%; --secondary: 160 60% 22%; --ring: 160 84% 39%;
     --accent: 142 76% 45%; --accent-foreground: 0 0% 100%;
     --header-bg: 160 50% 16%;
+    --background: 150 30% 96%; --muted: 150 25% 91%; --border: 150 25% 86%;
     --gradient-hero: linear-gradient(135deg, hsl(160 60% 10%), hsl(160 70% 20%), hsl(142 70% 28%));
   }
   .theme-sunset {
     --primary: 24 95% 53%; --secondary: 14 80% 30%; --ring: 24 95% 53%;
     --accent: 45 100% 55%; --accent-foreground: 14 40% 15%;
     --header-bg: 14 50% 18%;
+    --background: 30 60% 97%; --muted: 30 40% 92%; --border: 30 40% 87%;
     --gradient-hero: linear-gradient(135deg, hsl(14 60% 14%), hsl(20 80% 28%), hsl(35 90% 40%));
   }
   .theme-crimson {
     --primary: 0 84% 50%; --secondary: 0 60% 25%; --ring: 0 84% 50%;
     --accent: 350 90% 55%; --accent-foreground: 0 0% 100%;
     --header-bg: 0 50% 18%;
+    --background: 0 30% 97%; --muted: 0 25% 92%; --border: 0 25% 87%;
     --gradient-hero: linear-gradient(135deg, hsl(0 60% 12%), hsl(0 70% 22%), hsl(350 80% 35%));
   }
   .theme-graphite {
     --primary: 215 25% 35%; --secondary: 215 20% 22%; --ring: 215 25% 35%;
     --accent: 200 70% 50%; --accent-foreground: 0 0% 100%;
     --header-bg: 215 25% 14%;
+    --background: 215 15% 95%; --muted: 215 15% 90%; --border: 215 15% 85%;
     --gradient-hero: linear-gradient(135deg, hsl(215 20% 10%), hsl(215 22% 20%), hsl(215 25% 30%));
   }
 
