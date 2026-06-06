@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { App } from '@capacitor/app';
+import { Badge } from '@capawesome/capacitor-badge';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -26,6 +27,15 @@ const saveSeenIds = (set: Set<number>) => {
 
 const setBadge = async (count: number) => {
   localStorage.setItem(BADGE_KEY, String(count));
+  if (isNative()) {
+    try {
+      const supported = await Badge.isSupported();
+      if (supported.isSupported) {
+        if (count > 0) await Badge.set({ count });
+        else await Badge.clear();
+      }
+    } catch { /* ignore */ }
+  }
   // Web badging API (PWA on Android Chrome supports this)
   const nav: any = navigator;
   try {
@@ -79,6 +89,7 @@ export const initTaskNotifications = async () => {
   // Ask permission upfront
   if (isNative()) {
     try { await LocalNotifications.requestPermissions(); } catch { /* ignore */ }
+    try { await Badge.requestPermissions(); } catch { /* ignore */ }
   } else if ('Notification' in window && Notification.permission === 'default') {
     try { await Notification.requestPermission(); } catch { /* ignore */ }
   }
