@@ -69,6 +69,8 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   });
   const [showToken, setShowToken] = useState(false);
   const [shopName, setShopName] = useState('شركة الفيروز للستالايت');
+  const [tagline, setTagline] = useState('إدارة التركيبات والخدمات');
+  const [logoUrl, setLogoUrl] = useState('');
   const [adminPhone, setAdminPhone] = useState('');
   const [delayHours, setDelayHours] = useState(24);
   const [newTechName, setNewTechName] = useState('');
@@ -122,6 +124,8 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     if (generalData) {
       const g = generalData as any;
       if (g.shopName) setShopName(g.shopName);
+      if (g.tagline) setTagline(g.tagline);
+      if (g.logoUrl) setLogoUrl(g.logoUrl);
       if (g.adminPhone) setAdminPhone(g.adminPhone);
       if (g.delayHours) setDelayHours(g.delayHours);
     }
