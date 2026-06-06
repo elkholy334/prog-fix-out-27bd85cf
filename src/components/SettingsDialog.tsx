@@ -218,9 +218,16 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
 
   const saveGeneral = () => {
     upsertSetting.mutate(
-      { key: 'general', value: { shopName, adminPhone, delayHours } as any },
+      { key: 'general', value: { shopName, tagline, logoUrl, adminPhone, delayHours } as any },
       { onSuccess: () => toast.success('تم حفظ الإعدادات العامة') }
     );
+  };
+
+  const onLogoFileSelected = (file: File) => {
+    if (file.size > 2 * 1024 * 1024) { toast.error('الصورة كبيرة جدًا (الحد 2MB)'); return; }
+    const reader = new FileReader();
+    reader.onload = () => setLogoUrl(String(reader.result || ''));
+    reader.readAsDataURL(file);
   };
 
   const updateCommissionRate = async (techId: string, rate: number) => {
