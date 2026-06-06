@@ -200,8 +200,8 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
   })();
 
   return (
-    <div ref={setNodeRef} style={style} className={`rounded-2xl border-2 shadow-card hover:shadow-card-hover transition-all p-3 ${CARD_BG_COLORS[task.status] || 'bg-card border-accent/20'} ${isExecuting ? 'ring-2 ring-success/40' : ''} ${task.is_favorite ? 'ring-2 ring-accent/30' : ''}`}>
-        <div className="flex items-start gap-2">
+    <div ref={setNodeRef} style={style} className={`rounded-2xl border-2 shadow-card hover:shadow-card-hover transition-all p-3 min-w-0 ${CARD_BG_COLORS[task.status] || 'bg-card border-accent/20'} ${isExecuting ? 'ring-2 ring-success/40' : ''} ${task.is_favorite ? 'ring-2 ring-accent/30' : ''}`}>
+        <div className="grid grid-cols-[76px_minmax(0,1fr)] gap-2 items-start">
         {/* Left: stacked action buttons */}
         <div className="flex flex-col gap-1.5 shrink-0 w-[76px]">
           <button
@@ -227,8 +227,8 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
 
         {/* Right: info + logo */}
         <div className="flex-1 min-w-0 text-right flex flex-col">
-          <div className="flex items-start justify-between gap-2 mb-1">
-            <div className="flex items-center gap-1 shrink-0">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2 mb-1 items-start">
+            <div className="flex items-center gap-1 shrink-0 rounded-lg bg-card/50 px-1.5 py-1">
               <button onClick={() => onToggleFavorite(task)} className="hover:scale-110 transition-transform">
                 <Star className={`h-4 w-4 ${task.is_favorite ? 'fill-accent text-accent' : 'text-muted-foreground/40'}`} />
               </button>
@@ -248,14 +248,14 @@ const SortableTaskCard = ({ task, techName, executingTechName, daysAgo, isAdmin,
                 </button>
               )}
             </div>
-            <div className="flex items-start gap-2 flex-1 min-w-0 flex-row-reverse">
+            <div className="flex items-start gap-2 min-w-0 flex-row-reverse">
               {taskTypeImage && (
                 <img src={taskTypeImage} alt={task.type} className="h-10 w-10 rounded-lg object-contain shrink-0" />
               )}
               <div className="min-w-0 flex-1 text-right">
-                <div className="flex items-baseline justify-end gap-1">
-                  <span className="text-[10px] font-bold text-muted-foreground">#{task.id}</span>
-                  <h3 className="font-bold text-sm text-foreground leading-tight break-words">{task.client_name}</h3>
+                <div className="flex items-baseline justify-end gap-1 min-w-0">
+                  <span className="text-[10px] font-bold text-muted-foreground shrink-0">#{task.id}</span>
+                  <h3 title={task.client_name} className="font-bold text-sm text-foreground leading-tight truncate min-w-0">{task.client_name}</h3>
                 </div>
                 <p className="text-[11px] text-muted-foreground truncate">{task.type}</p>
               </div>
@@ -512,7 +512,7 @@ export const TasksList = ({ initialFilter = 'all' }: TasksListProps) => {
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={filteredTasks.map(t => t.id)} strategy={rectSortingStrategy}>
-            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3' : 'flex flex-col gap-2'}>
+            <div className={viewMode === 'grid' ? 'grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-3' : 'flex flex-col gap-2'}>
               {filteredTasks.map((task) => {
                 const techName = task.required_technician
                   ? technicians.find((t) => t.id === task.required_technician)?.name || ''
