@@ -528,7 +528,33 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
             </TabsContent>
 
             <TabsContent value="whatsapp" className="space-y-6">
-              <div className="border-2 border-success/30 rounded-xl p-4 space-y-4 bg-success/5">
+              {/* Pilot API toggle */}
+              <div className={`rounded-xl border-2 p-4 space-y-2 ${waConfig.pilotEnabled === false ? 'border-warning/40 bg-warning/5' : 'border-primary/30 bg-primary/5'}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <button
+                    onClick={() => {
+                      const updated = { ...waConfig, pilotEnabled: !(waConfig.pilotEnabled !== false) };
+                      setWaConfig(updated);
+                      localStorage.setItem('whatsapp_config', JSON.stringify(updated));
+                      upsertSetting.mutate({ key: 'whatsapp_config', value: updated as any });
+                      toast.success(updated.pilotEnabled === false ? 'تم تعطيل الإرسال التلقائي — الرسائل ستفتح واتساب مباشر' : 'تم تفعيل الإرسال التلقائي عبر Whats Pilot');
+                    }}
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${waConfig.pilotEnabled !== false ? 'bg-success' : 'bg-muted-foreground/40'}`}
+                  >
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${waConfig.pilotEnabled !== false ? 'translate-x-1' : 'translate-x-6'}`} />
+                  </button>
+                  <div className="flex-1 text-right">
+                    <h3 className="font-bold text-sm">الواتساب التلقائي (Whats Pilot)</h3>
+                    <p className="text-xs text-muted-foreground">
+                      {waConfig.pilotEnabled !== false
+                        ? 'الإرسال يتم تلقائيًا عبر API'
+                        : 'الإرسال يفتح واتساب مباشر (wa.me) لإرسال يدوي للعميل'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`border-2 rounded-xl p-4 space-y-4 ${waConfig.pilotEnabled === false ? 'border-muted bg-muted/20 opacity-60' : 'border-success/30 bg-success/5'}`}>
                 <div className="flex items-center justify-center gap-2 text-success">
                   <Link2 className="h-5 w-5" />
                   <h3 className="font-bold">ربط حساب Whats360</h3>
