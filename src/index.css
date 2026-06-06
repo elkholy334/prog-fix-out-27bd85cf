@@ -4,51 +4,38 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
 
+/* ========= Default theme (firoz / light) ========= */
 @layer base {
-  :root {
+  :root, .theme-firoz {
     --background: 220 20% 97%;
     --foreground: 220 40% 13%;
-
     --card: 0 0% 100%;
     --card-foreground: 220 40% 13%;
     --card-warm: 42 60% 96%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 220 40% 13%;
-
     --primary: 215 80% 48%;
     --primary-foreground: 0 0% 100%;
-
     --secondary: 220 50% 25%;
     --secondary-foreground: 0 0% 100%;
-
     --muted: 220 15% 92%;
     --muted-foreground: 220 10% 46%;
-
     --accent: 42 100% 50%;
     --accent-foreground: 220 40% 13%;
-
     --success: 145 60% 42%;
     --success-foreground: 0 0% 100%;
-
     --warning: 35 95% 55%;
     --warning-foreground: 0 0% 100%;
-
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
-
     --info: 200 80% 55%;
     --info-foreground: 0 0% 100%;
-
     --border: 220 15% 88%;
     --input: 220 15% 88%;
     --ring: 215 80% 48%;
-
     --radius: 0.75rem;
-
     --header-bg: 220 50% 18%;
     --header-foreground: 0 0% 95%;
-
     --sidebar-background: 220 50% 18%;
     --sidebar-foreground: 220 10% 90%;
     --sidebar-primary: 215 80% 48%;
@@ -57,65 +44,96 @@
     --sidebar-accent-foreground: 220 10% 90%;
     --sidebar-border: 220 30% 25%;
     --sidebar-ring: 215 80% 48%;
-
     --gradient-hero: linear-gradient(135deg, hsl(220, 55%, 12%), hsl(215, 65%, 22%), hsl(210, 70%, 30%));
     --gradient-gold: linear-gradient(135deg, hsl(42, 100%, 50%), hsl(35, 95%, 55%));
     --gradient-success: linear-gradient(135deg, hsl(145, 60%, 42%), hsl(160, 60%, 45%));
     --gradient-danger: linear-gradient(135deg, hsl(0, 72%, 55%), hsl(15, 80%, 55%));
     --gradient-info: linear-gradient(135deg, hsl(200, 80%, 55%), hsl(215, 80%, 48%));
-
     --shadow-card: 0 2px 12px -2px hsl(220 50% 18% / 0.08);
     --shadow-card-hover: 0 8px 24px -4px hsl(220 50% 18% / 0.15);
     --shadow-elevated: 0 12px 40px -8px hsl(220 50% 18% / 0.2);
   }
+
+  /* ========= Color theme overrides (light mode) ========= */
+  .theme-royal {
+    --primary: 262 83% 58%; --secondary: 262 60% 25%; --ring: 262 83% 58%;
+    --accent: 280 90% 60%; --accent-foreground: 0 0% 100%;
+    --header-bg: 262 60% 18%;
+    --gradient-hero: linear-gradient(135deg, hsl(262 60% 12%), hsl(262 70% 22%), hsl(280 75% 32%));
+  }
+  .theme-emerald {
+    --primary: 160 84% 39%; --secondary: 160 60% 22%; --ring: 160 84% 39%;
+    --accent: 142 76% 45%; --accent-foreground: 0 0% 100%;
+    --header-bg: 160 50% 16%;
+    --gradient-hero: linear-gradient(135deg, hsl(160 60% 10%), hsl(160 70% 20%), hsl(142 70% 28%));
+  }
+  .theme-sunset {
+    --primary: 24 95% 53%; --secondary: 14 80% 30%; --ring: 24 95% 53%;
+    --accent: 45 100% 55%; --accent-foreground: 14 40% 15%;
+    --header-bg: 14 50% 18%;
+    --gradient-hero: linear-gradient(135deg, hsl(14 60% 14%), hsl(20 80% 28%), hsl(35 90% 40%));
+  }
+  .theme-crimson {
+    --primary: 0 84% 50%; --secondary: 0 60% 25%; --ring: 0 84% 50%;
+    --accent: 350 90% 55%; --accent-foreground: 0 0% 100%;
+    --header-bg: 0 50% 18%;
+    --gradient-hero: linear-gradient(135deg, hsl(0 60% 12%), hsl(0 70% 22%), hsl(350 80% 35%));
+  }
+  .theme-graphite {
+    --primary: 215 25% 35%; --secondary: 215 20% 22%; --ring: 215 25% 35%;
+    --accent: 200 70% 50%; --accent-foreground: 0 0% 100%;
+    --header-bg: 215 25% 14%;
+    --gradient-hero: linear-gradient(135deg, hsl(215 20% 10%), hsl(215 22% 20%), hsl(215 25% 30%));
+  }
+
+  /* ========= Dark mode overrides for all themes ========= */
+  .dark {
+    --background: 220 20% 8%;
+    --foreground: 220 15% 92%;
+    --card: 220 20% 12%;
+    --card-foreground: 220 15% 92%;
+    --card-warm: 42 30% 14%;
+    --popover: 220 20% 12%;
+    --popover-foreground: 220 15% 92%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 10% 65%;
+    --border: 220 15% 22%;
+    --input: 220 15% 22%;
+    --header-bg: 220 25% 6%;
+    --header-foreground: 220 15% 95%;
+    --sidebar-background: 220 25% 6%;
+    --sidebar-foreground: 220 15% 90%;
+    --sidebar-border: 220 20% 15%;
+    --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.4);
+    --shadow-card-hover: 0 8px 24px -4px hsl(0 0% 0% / 0.5);
+    --shadow-elevated: 0 12px 40px -8px hsl(0 0% 0% / 0.6);
+  }
+  .dark.theme-royal    { --header-bg: 262 40% 8%; }
+  .dark.theme-emerald  { --header-bg: 160 35% 7%; }
+  .dark.theme-sunset   { --header-bg: 14 35% 8%; }
+  .dark.theme-crimson  { --header-bg: 0 35% 8%; }
+  .dark.theme-graphite { --header-bg: 215 20% 6%; }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-
-  html {
-    direction: rtl;
-  }
-
-  body {
-    @apply bg-background text-foreground font-cairo antialiased;
-  }
+  * { @apply border-border; }
+  html { direction: rtl; }
+  body { @apply bg-background text-foreground font-cairo antialiased; }
 }
 
 @layer utilities {
-  .gradient-hero {
-    background: var(--gradient-hero);
-  }
-  .gradient-gold {
-    background: var(--gradient-gold);
-  }
-  .gradient-success {
-    background: var(--gradient-success);
-  }
-  .gradient-danger {
-    background: var(--gradient-danger);
-  }
-  .gradient-info {
-    background: var(--gradient-info);
-  }
-  .shadow-card {
-    box-shadow: var(--shadow-card);
-  }
-  .shadow-card-hover {
-    box-shadow: var(--shadow-card-hover);
-  }
-  .shadow-elevated {
-    box-shadow: var(--shadow-elevated);
-  }
+  .gradient-hero    { background: var(--gradient-hero); }
+  .gradient-gold    { background: var(--gradient-gold); }
+  .gradient-success { background: var(--gradient-success); }
+  .gradient-danger  { background: var(--gradient-danger); }
+  .gradient-info    { background: var(--gradient-info); }
+  .shadow-card        { box-shadow: var(--shadow-card); }
+  .shadow-card-hover  { box-shadow: var(--shadow-card-hover); }
+  .shadow-elevated    { box-shadow: var(--shadow-elevated); }
 }
 
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 8px hsl(var(--success) / 0.3); }
-  50% { box-shadow: 0 0 20px hsl(var(--success) / 0.6); }
+  50%      { box-shadow: 0 0 20px hsl(var(--success) / 0.6); }
 }
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
