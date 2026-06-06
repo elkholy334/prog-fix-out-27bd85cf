@@ -10,6 +10,7 @@ import { useSetting, useUpsertSetting, useTechnicians } from '@/hooks/useDatabas
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { testWhatsAppConnection, sendWhatsAppMessage, type WhatsAppAccount } from '@/lib/whatsapp';
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 
 interface TaskType {
   id: string;
@@ -298,6 +299,14 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
             </TabsList>
 
             <TabsContent value="general" className="space-y-4">
+              <div className="rounded-xl border border-border bg-muted/30 p-3 space-y-3">
+                <div className="text-right">
+                  <h3 className="font-bold text-sm text-foreground">مظهر البرنامج</h3>
+                  <p className="text-xs text-muted-foreground mt-1">غيّر الثيم والوضع الفاتح/الداكن من هنا أو من الهيدر.</p>
+                </div>
+                <ThemeSwitcher showLabels />
+              </div>
+
               <div className="space-y-1.5">
                 <Label className="text-right block">اسم الشركة</Label>
                 <Input value={shopName} onChange={(e) => setShopName(e.target.value)} className="text-right" placeholder="مثال: شركة الفيروز للستالايت" />
