@@ -121,7 +121,7 @@ export const PWAInstallPrompt = () => {
             <div className="flex-1 text-right">
               <h3 className="font-bold text-sm text-foreground">📲 ثبّت التطبيق على جهازك</h3>
               <p className="text-xs text-muted-foreground mt-0.5">
-                للوصول السريع والعمل بدون إنترنت
+                للوصول السريع من شاشة الهاتف
               </p>
             </div>
             <Button

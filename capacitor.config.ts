@@ -14,6 +14,10 @@ const config: CapacitorConfig = {
       iconColor: '#1e88e5',
       sound: 'default',
     },
+    Badge: {
+      persist: true,
+      autoClear: false,
+    },
   },
 };
 

@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { ArrowRight, User, Shield, Wrench } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 
 interface UserOption {
   id: string;
@@ -107,7 +108,10 @@ const Login = () => {
     : <Wrench className="h-5 w-5 text-accent-foreground" />;
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 transition-colors" dir="rtl">
+      <div className="fixed left-4 top-4 z-10">
+        <ThemeSwitcher showLabels />
+      </div>
       <div className="w-full max-w-md">
         {!selectedUser ? (
           /* User Selection Grid */
@@ -115,7 +119,7 @@ const Login = () => {
             {/* Header */}
             <div className="text-center space-y-2">
               <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center ring-1 ring-primary/20">
                   <User className="h-8 w-8 text-primary" />
                 </div>
               </div>
@@ -133,7 +137,7 @@ const Login = () => {
                     onClick={() => setSelectedUser(user)}
                     className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all group ${
                       isAdmin
-                        ? 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/40 hover:border-primary hover:shadow-lg col-span-3 flex-row justify-center py-5 ring-1 ring-primary/20'
+                        ? 'gradient-hero text-primary-foreground border-primary/40 hover:border-primary hover:shadow-lg col-span-3 flex-row justify-center py-5 ring-1 ring-primary/20'
                         : 'bg-card border-border hover:border-primary/40 hover:shadow-card'
                     }`}
                   >
@@ -148,10 +152,10 @@ const Login = () => {
                       }
                     </div>
                     <div className={isAdmin ? 'mr-3 text-right' : 'text-center'}>
-                      <span className={`font-bold text-foreground leading-tight ${isAdmin ? 'text-base' : 'text-xs'}`}>
+                      <span className={`font-bold leading-tight ${isAdmin ? 'text-base text-primary-foreground' : 'text-xs text-foreground'}`}>
                         {user.name}
                       </span>
-                      <span className={`block ${isAdmin ? 'text-xs text-primary font-semibold' : 'text-[10px] text-muted-foreground'}`}>
+                      <span className={`block ${isAdmin ? 'text-xs text-primary-foreground/80 font-semibold' : 'text-[10px] text-muted-foreground'}`}>
                         {getRoleLabel(user.role)}
                       </span>
                     </div>

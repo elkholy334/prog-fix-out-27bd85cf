@@ -124,20 +124,6 @@ export const sendWhatsAppMessage = async (
   message: string,
   logInfo?: { taskId?: number; recipientName?: string; messageType?: string }
 ): Promise<{ success: boolean; error?: string }> => {
-  const config = getWhatsAppConfig();
-  if (!config) {
-    await logWhatsAppMessage({
-      recipientPhone: phone,
-      recipientName: logInfo?.recipientName || '',
-      messageType: logInfo?.messageType || 'general',
-      messageText: message,
-      taskId: logInfo?.taskId,
-      status: 'failed',
-      errorMessage: 'إعدادات الواتساب غير مكتملة',
-    });
-    return { success: false, error: 'إعدادات الواتساب غير مكتملة. يرجى إدخال API Token و Instance ID في الإعدادات.' };
-  }
-
   const normalizedPhone = normalizePhone(phone);
   if (!normalizedPhone || normalizedPhone.length < 10) {
     await logWhatsAppMessage({
@@ -150,6 +136,34 @@ export const sendWhatsAppMessage = async (
       errorMessage: 'رقم الهاتف غير صالح',
     });
     return { success: false, error: 'رقم الهاتف غير صالح' };
+  }
+
+  if (!isPilotEnabled()) {
+    openWhatsAppDirect(normalizedPhone, message);
+    await logWhatsAppMessage({
+      recipientPhone: normalizedPhone,
+      recipientName: logInfo?.recipientName || '',
+      messageType: logInfo?.messageType || 'general',
+      messageText: message,
+      taskId: logInfo?.taskId,
+      status: 'success',
+      errorMessage: 'تم فتح واتساب مباشر للإرسال اليدوي',
+    });
+    return { success: true };
+  }
+
+  const config = getWhatsAppConfig();
+  if (!config) {
+    await logWhatsAppMessage({
+      recipientPhone: normalizedPhone,
+      recipientName: logInfo?.recipientName || '',
+      messageType: logInfo?.messageType || 'general',
+      messageText: message,
+      taskId: logInfo?.taskId,
+      status: 'failed',
+      errorMessage: 'إعدادات الواتساب غير مكتملة',
+    });
+    return { success: false, error: 'إعدادات الواتساب غير مكتملة. يرجى إدخال API Token و Instance ID في الإعدادات.' };
   }
 
   try {

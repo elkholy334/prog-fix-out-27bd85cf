@@ -3,30 +3,36 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { THEMES, useTheme } from '@/hooks/useTheme';
 
-export const ThemeSwitcher = () => {
+interface ThemeSwitcherProps {
+  showLabels?: boolean;
+}
+
+export const ThemeSwitcher = ({ showLabels = false }: ThemeSwitcherProps) => {
   const { theme, mode, setTheme, toggleMode } = useTheme();
 
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="flex items-center gap-1.5">
       <Button
         variant="ghost"
-        size="icon"
+        size={showLabels ? 'sm' : 'icon'}
         onClick={toggleMode}
-        className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl"
+        className={showLabels ? 'rounded-xl border border-border bg-card hover:bg-muted' : 'text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl'}
         title={mode === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن'}
       >
         {mode === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        {showLabels && <span>{mode === 'dark' ? 'فاتح' : 'داكن'}</span>}
       </Button>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            size="icon"
-            className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl"
+            size={showLabels ? 'sm' : 'icon'}
+            className={showLabels ? 'rounded-xl border border-border bg-card hover:bg-muted' : 'text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl'}
             title="تغيير الثيم"
           >
             <Palette className="h-5 w-5" />
+            {showLabels && <span>الألوان</span>}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
@@ -47,6 +53,21 @@ export const ThemeSwitcher = () => {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {showLabels && (
+        <div className="flex items-center gap-1 rounded-xl border border-border bg-card px-2 py-1">
+          {THEMES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTheme(t.id)}
+              className={`h-5 w-5 rounded-full border-2 transition-all ${theme === t.id ? 'border-ring scale-110' : 'border-border hover:border-ring/60'}`}
+              style={{ background: t.accentColor }}
+              title={t.name}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
