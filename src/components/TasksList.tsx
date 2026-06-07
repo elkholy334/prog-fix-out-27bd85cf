@@ -56,11 +56,11 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const CARD_BG_COLORS: Record<string, string> = {
-  waiting: 'bg-[hsl(42_100%_96%)] border-accent/40',
-  in_progress: 'bg-[hsl(145_60%_96%)] border-success/40',
-  completed: 'bg-[hsl(215_80%_96%)] border-primary/40',
-  postponed: 'bg-[hsl(35_95%_95%)] border-warning/40',
-  late: 'bg-[hsl(0_72%_96%)] border-destructive/40',
+  waiting: 'bg-accent/10 border-accent/40',
+  in_progress: 'bg-success/10 border-success/40',
+  completed: 'bg-primary/10 border-primary/40',
+  postponed: 'bg-warning/10 border-warning/40',
+  late: 'bg-destructive/10 border-destructive/40',
   unrated: 'bg-muted/30 border-muted-foreground/20',
 };
 
