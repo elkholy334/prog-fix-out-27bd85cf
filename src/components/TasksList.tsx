@@ -48,8 +48,8 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   waiting: 'bg-accent text-accent-foreground',
-  in_progress: 'bg-success text-success-foreground',
-  completed: 'bg-primary text-primary-foreground',
+  in_progress: 'bg-info text-info-foreground',
+  completed: 'bg-success text-success-foreground',
   postponed: 'bg-warning text-warning-foreground',
   late: 'bg-destructive text-destructive-foreground',
   unrated: 'bg-muted text-muted-foreground',
@@ -57,8 +57,8 @@ const STATUS_COLORS: Record<string, string> = {
 
 const CARD_BG_COLORS: Record<string, string> = {
   waiting: 'bg-accent/10 border-accent/40',
-  in_progress: 'bg-success/10 border-success/40',
-  completed: 'bg-primary/10 border-primary/40',
+  in_progress: 'bg-info/10 border-info/40',
+  completed: 'bg-success/10 border-success/40',
   postponed: 'bg-warning/10 border-warning/40',
   late: 'bg-destructive/10 border-destructive/40',
   unrated: 'bg-muted/30 border-muted-foreground/20',
