@@ -31,52 +31,56 @@ export const AppHeader = ({ currentView, onViewChange, onSettingsOpen, onBackupO
         }} />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-32 bg-accent/5 rounded-full blur-3xl" />
 
-        <div className="relative container flex items-center justify-between py-4 gap-2">
-          <div className="flex items-center gap-0.5 flex-shrink-0">
-            {isAdmin && (
-              <>
-                <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl h-9 w-9 sm:h-10 sm:w-10" onClick={onSettingsOpen} title="الإعدادات">
-                  <Settings className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl h-9 w-9 sm:h-10 sm:w-10" onClick={onBackupOpen} title="النسخ الاحتياطي">
-                  <Database className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl h-9 w-9 sm:h-10 sm:w-10" onClick={onStatsOpen} title="الإحصائيات">
-                  <BarChart3 className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl h-9 w-9 sm:h-10 sm:w-10" onClick={onAccountOpen} title="حسابات الفنيين">
-                  <Wallet className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl h-9 w-9 sm:h-10 sm:w-10" onClick={onWhatsAppLogsOpen} title="تقارير الواتساب">
-                  <MessageSquare className="h-5 w-5" />
-                </Button>
-              </>
-            )}
-            <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl h-9 w-9 sm:h-10 sm:w-10" onClick={signOut} title="تسجيل الخروج">
-              <LogOut className="h-5 w-5" />
-            </Button>
+        <div className="relative container py-3 sm:py-4">
+          {/* Top row: icons + theme switcher */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-0.5 flex-shrink-0 flex-wrap">
+              {isAdmin && (
+                <>
+                  <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl h-9 w-9 sm:h-10 sm:w-10" onClick={onSettingsOpen} title="الإعدادات">
+                    <Settings className="h-5 w-5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl h-9 w-9 sm:h-10 sm:w-10" onClick={onBackupOpen} title="النسخ الاحتياطي">
+                    <Database className="h-5 w-5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl h-9 w-9 sm:h-10 sm:w-10" onClick={onStatsOpen} title="الإحصائيات">
+                    <BarChart3 className="h-5 w-5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl h-9 w-9 sm:h-10 sm:w-10" onClick={onAccountOpen} title="حسابات الفنيين">
+                    <Wallet className="h-5 w-5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl h-9 w-9 sm:h-10 sm:w-10" onClick={onWhatsAppLogsOpen} title="تقارير الواتساب">
+                    <MessageSquare className="h-5 w-5" />
+                  </Button>
+                </>
+              )}
+              <Button variant="ghost" size="icon" className="text-header-foreground/80 hover:text-header-foreground hover:bg-header-foreground/10 rounded-xl h-9 w-9 sm:h-10 sm:w-10" onClick={signOut} title="تسجيل الخروج">
+                <LogOut className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <div className="flex-shrink-0">
+              <ThemeSwitcher />
+            </div>
           </div>
 
-          <div className="text-center min-w-0 flex-1">
+          {/* Brand row: centered logo, name, tagline, online */}
+          <div className="text-center mt-3">
             <div className="flex items-center justify-center gap-2 mb-1">
               {logoUrl ? (
-                <img src={logoUrl} alt={shopName} className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg object-cover bg-accent/20 flex-shrink-0" />
+                <img src={logoUrl} alt={shopName} className="h-8 w-8 rounded-lg object-cover bg-accent/20 flex-shrink-0" />
               ) : (
-                <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-accent/20 flex items-center justify-center flex-shrink-0">
+                <div className="h-8 w-8 rounded-lg bg-accent/20 flex items-center justify-center flex-shrink-0">
                   <Wrench className="h-4 w-4 text-accent" />
                 </div>
               )}
-              <h1 className="text-sm sm:text-xl font-bold text-header-foreground tracking-wide truncate">{shopName}</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-header-foreground tracking-wide">{shopName}</h1>
             </div>
-            <p className="text-[10px] sm:text-xs text-header-foreground/60 font-medium truncate">{shopTagline}</p>
+            <p className="text-xs text-header-foreground/60 font-medium">{shopTagline}</p>
             <div className="flex items-center justify-center gap-1.5 mt-1">
               <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
-              <span className="text-[10px] sm:text-xs text-header-foreground/70">متصل (Online)</span>
+              <span className="text-xs text-header-foreground/70">متصل (Online)</span>
             </div>
-          </div>
-
-          <div className="flex-shrink-0">
-            <ThemeSwitcher />
           </div>
         </div>
 
