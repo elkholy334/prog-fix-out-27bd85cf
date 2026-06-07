@@ -1,49 +1,34 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
-import { VitePWA } from "vite-plugin-pwa";
 
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-    hmr: {
-      overlay: false,
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+  const backendUrl = env.VITE_SUPABASE_URL || "https://euhgfxhxyzxaukqkcejt.supabase.co";
+  const backendKey = env.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIc3ViYXNlIiwicmVmIjoiZXVoZ2Z4aHh5enhhdWtxa2NlanQiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc3NDMwNTg2NiwiZXhwIjoyMDg5ODgxODY2fQ.4Ocw-T2-fpq581seDr1dm4vgkwuS_5yHhb41pBFhD-8";
+
+  return {
+    define: {
+      "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(backendUrl),
+      "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(backendKey),
     },
-  },
-  plugins: [
-    react(),
-    mode === "development" && componentTagger(),
-    VitePWA({
-      registerType: "autoUpdate",
-      includeAssets: ["favicon.svg", "icon-192.png", "icon-512.png"],
-      manifest: {
-        name: "الفيروز - إدارة التركيبات والخدمات",
-        short_name: "الفيروز",
-        description: "نظام إدارة التركيبات والخدمات",
-        theme_color: "#1e2d4a",
-        background_color: "#f5f5f7",
-        display: "standalone",
-        orientation: "portrait",
-        dir: "rtl",
-        lang: "ar",
-        start_url: "/",
-        icons: [
-          { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
-          { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
-        ],
+    server: {
+      host: "::",
+      port: 8080,
+      hmr: {
+        overlay: false,
       },
-      workbox: {
-        navigateFallbackDenylist: [/^\/~oauth/],
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-      },
-    }),
-  ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
     },
-    dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
-  },
-}));
+    plugins: [
+      react(),
+      mode === "development" && componentTagger(),
+    ].filter(Boolean),
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
+      dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
+    },
+  };
+});
