@@ -95,7 +95,7 @@ export const initTaskNotifications = async () => {
   }
 
   // Seed seen set with existing tasks so we don't notify on first load
-  const { data: existing } = await supabase.from('tasks').select('id');
+  const { data: existing } = await (supabase as any).from('tasks_view').select('id');
   const seen = getSeenIds();
   (existing || []).forEach(t => seen.add(t.id));
   saveSeenIds(seen);

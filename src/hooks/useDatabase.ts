@@ -12,8 +12,8 @@ export const useTechnicians = () =>
   useQuery({
     queryKey: ['technicians'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('technicians')
+      const { data, error } = await (supabase as any)
+        .from('technicians_public')
         .select('*')
         .eq('is_active', true)
         .order('name');
@@ -27,7 +27,7 @@ export const useTasks = (statusFilter?: string) =>
   useQuery({
     queryKey: ['tasks', statusFilter],
     queryFn: async () => {
-      let query = supabase.from('tasks').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false });
+      let query = (supabase as any).from('tasks_view').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false });
       if (statusFilter && statusFilter !== 'all' && statusFilter !== 'assigned') {
         query = query.eq('status', statusFilter);
       }
@@ -146,7 +146,7 @@ export const useDashboardStats = () =>
   useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('tasks').select('status');
+      const { data, error } = await (supabase as any).from('tasks_view').select('status');
       if (error) throw error;
       const counts = { waiting: 0, in_progress: 0, completed: 0, postponed: 0, late: 0 };
       data?.forEach((t) => {
