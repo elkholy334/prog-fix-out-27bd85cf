@@ -68,6 +68,13 @@ export type Database = {
             referencedRelation: "technicians"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "profiles_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       tasks: {
@@ -164,10 +171,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tasks_required_technician_fkey"
+            columns: ["required_technician"]
+            isOneToOne: false
+            referencedRelation: "technicians_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tasks_technician_id_fkey"
             columns: ["technician_id"]
             isOneToOne: false
             referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians_public"
             referencedColumns: ["id"]
           },
         ]
@@ -212,10 +233,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "technician_transactions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "technician_transactions_technician_id_fkey"
             columns: ["technician_id"]
             isOneToOne: false
             referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_transactions_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians_public"
             referencedColumns: ["id"]
           },
         ]
@@ -322,11 +357,160 @@ export type Database = {
             referencedRelation: "tasks"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "whatsapp_logs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      tasks_view: {
+        Row: {
+          address: string | null
+          assigned_technicians: string[] | null
+          client_name: string | null
+          completion_time: string | null
+          created_at: string | null
+          expected_amount: number | null
+          id: number | null
+          is_archived: boolean | null
+          is_favorite: boolean | null
+          money_delivered_to_shop: boolean | null
+          paid_amount: number | null
+          phone: string | null
+          problem: string | null
+          repair_date: string | null
+          required_technician: string | null
+          scheduled_date: string | null
+          scheduled_time: string | null
+          shop_net: number | null
+          sort_order: number | null
+          start_time: string | null
+          status: string | null
+          technician_commission: number | null
+          technician_id: string | null
+          technician_notes: string | null
+          type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          assigned_technicians?: string[] | null
+          client_name?: string | null
+          completion_time?: string | null
+          created_at?: string | null
+          expected_amount?: never
+          id?: number | null
+          is_archived?: boolean | null
+          is_favorite?: boolean | null
+          money_delivered_to_shop?: never
+          paid_amount?: never
+          phone?: never
+          problem?: string | null
+          repair_date?: string | null
+          required_technician?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          shop_net?: never
+          sort_order?: number | null
+          start_time?: string | null
+          status?: string | null
+          technician_commission?: never
+          technician_id?: string | null
+          technician_notes?: string | null
+          type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          assigned_technicians?: string[] | null
+          client_name?: string | null
+          completion_time?: string | null
+          created_at?: string | null
+          expected_amount?: never
+          id?: number | null
+          is_archived?: boolean | null
+          is_favorite?: boolean | null
+          money_delivered_to_shop?: never
+          paid_amount?: never
+          phone?: never
+          problem?: string | null
+          repair_date?: string | null
+          required_technician?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          shop_net?: never
+          sort_order?: number | null
+          start_time?: string | null
+          status?: string | null
+          technician_commission?: never
+          technician_id?: string | null
+          technician_notes?: string | null
+          type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_required_technician_fkey"
+            columns: ["required_technician"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_required_technician_fkey"
+            columns: ["required_technician"]
+            isOneToOne: false
+            referencedRelation: "technicians_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      technicians_public: {
+        Row: {
+          color: string | null
+          id: string | null
+          is_active: boolean | null
+          is_admin: boolean | null
+          name: string | null
+          tasks_count: number | null
+        }
+        Insert: {
+          color?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          is_admin?: boolean | null
+          name?: string | null
+          tasks_count?: number | null
+        }
+        Update: {
+          color?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          is_admin?: boolean | null
+          name?: string | null
+          tasks_count?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_login_users: {
