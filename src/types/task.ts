@@ -52,8 +52,8 @@ export const STATUS_LABELS: Record<TaskStatus, string> = {
 
 export const STATUS_COLORS: Record<TaskStatus, string> = {
   waiting: 'bg-accent text-accent-foreground',
-  in_progress: 'bg-success text-success-foreground',
-  completed: 'bg-primary text-primary-foreground',
+  in_progress: 'bg-info text-info-foreground',
+  completed: 'bg-success text-success-foreground',
   postponed: 'bg-warning text-warning-foreground',
   late: 'bg-destructive text-destructive-foreground',
   unrated: 'bg-muted text-muted-foreground',
